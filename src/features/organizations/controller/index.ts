@@ -82,8 +82,13 @@ export class OrganizationController {
       const { id } = req.params;
       const { skip = '0', take = '20', status } = req.query;
 
-      // TODO: Implement with authorization checks
-      res.json({ message: 'TODO: Implement organization members listing' });
+      const members = await organizationService.getOrganizationMembers(id, req.user!, {
+        skip: parseInt(skip as string, 10),
+        take: parseInt(take as string, 10),
+        status: typeof status === 'string' ? status : undefined,
+      });
+
+      res.json(members);
     } catch (error) {
       handleError(error, res);
     }
