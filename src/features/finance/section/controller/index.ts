@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { sectionFinanceService } from '../service';
-import { CreateSectionReceiptSchema, CreateSectionExpenditureSchema, ApproveSectionExpenditureSchema } from '../types';
+import { CreateSectionReceiptSchema, CreateSectionExpenditureSchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 
@@ -68,8 +68,16 @@ export class SectionFinanceController {
       const { sectionId } = req.params;
       const { skip = '0', take = '20' } = req.query;
 
-      // TODO: Implement actual pending expenditure listing with authorization
-      res.json({ message: 'TODO: Implement pending expenditure listing' });
+      const pending = await sectionFinanceService.listPendingExpenditures(
+        sectionId,
+        req.user!,
+        {
+          skip: parseInt(skip as string, 10),
+          take: parseInt(take as string, 10),
+        }
+      );
+
+      res.json(pending);
     } catch (error) {
       handleError(error, res);
     }
@@ -93,7 +101,8 @@ export class SectionFinanceController {
         expenditureId,
         approved,
         approverNotes,
-        req.user!
+        req.user!,
+        sectionId
       );
 
       res.json(result);
@@ -108,7 +117,7 @@ export class SectionFinanceController {
    */
   async paymentExpenditure(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { expenditureId } = req.params;
+      const { sectionId, expenditureId } = req.params;
       const { paymentMethod } = req.body;
 
       if (!paymentMethod) {
@@ -119,7 +128,8 @@ export class SectionFinanceController {
       const result = await sectionFinanceService.paymentSectionExpenditure(
         expenditureId,
         paymentMethod,
-        req.user!
+        req.user!,
+        sectionId
       );
 
       res.json(result);
