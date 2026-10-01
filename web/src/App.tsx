@@ -3,8 +3,10 @@ import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
 import { DistrictDashboard } from '@/pages/district/DistrictDashboard';
 import { DistrictCircuits } from '@/pages/district/DistrictCircuits';
 import { DistrictCommittees } from '@/pages/district/DistrictCommittees';
+import { DistrictCommitteesManagement } from '@/pages/district/DistrictCommitteesManagement';
 import { DistrictPrograms } from '@/pages/district/DistrictPrograms';
 import { DistrictReports } from '@/pages/district/DistrictReports';
+import { DistrictManagement } from '@/pages/district/DistrictManagement';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
@@ -21,8 +23,10 @@ function App() {
         <Route path="/" element={<Navigate to="/district" replace />} />
 
         <Route path="/district" element={<ProtectedRoute><DistrictDashboard /></ProtectedRoute>} />
+        <Route path="/district/management" element={<ProtectedRoute><DistrictManagement /></ProtectedRoute>} />
         <Route path="/district/circuits" element={<ProtectedRoute><DistrictCircuits /></ProtectedRoute>} />
         <Route path="/district/committees" element={<ProtectedRoute><DistrictCommittees /></ProtectedRoute>} />
+        <Route path="/district/committees/manage" element={<ProtectedRoute><DistrictCommitteesManagement /></ProtectedRoute>} />
         <Route path="/district/programs" element={<ProtectedRoute><DistrictPrograms /></ProtectedRoute>} />
         <Route path="/district/reports" element={<ProtectedRoute><DistrictReports /></ProtectedRoute>} />
 
