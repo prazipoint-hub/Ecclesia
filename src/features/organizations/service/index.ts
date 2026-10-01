@@ -44,6 +44,34 @@ export class OrganizationService {
   }
 
   /**
+   * Get organization members with pagination and optional status filtering
+   */
+  async getOrganizationMembers(
+    organizationId: string,
+    user: AuthorizedUser,
+    options?: { skip?: number; take?: number; status?: string }
+  ) {
+    const org = await organizationRepository.findById(organizationId, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    if (!user.permissions.includes('organization:view')) {
+      throw new Error('Unauthorized: organization:view permission required');
+    }
+
+    const result = await organizationRepository.getOrganizationMembers(organizationId, options);
+
+    return {
+      organizationId,
+      ...result,
+      skip: options?.skip ?? 0,
+      take: options?.take ?? 20,
+      status: options?.status ?? null,
+    };
+  }
+
+  /**
    * Create organization
    * Authorization: Must have organization:create permission
    */
