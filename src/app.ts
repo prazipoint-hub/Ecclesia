@@ -9,6 +9,7 @@ import membershipRoutes from '@/features/membership/routes';
 import reportingRoutes from '@/features/reporting/routes';
 import sectionFinanceRoutes from '@/features/finance/section/routes';
 import mainChurchFinanceRoutes from '@/features/finance/main/routes';
+import districtFinanceRoutes from '@/features/finance/district/routes';
 
 export function createApp(): Application {
   const app = express();
@@ -29,6 +30,7 @@ export function createApp(): Application {
   app.use('/api/v2/reports', reportingRoutes);
   app.use('/api/v2/sections', sectionFinanceRoutes);
   app.use('/api/v2/churches', mainChurchFinanceRoutes);
+  app.use('/api/v2/circuits', districtFinanceRoutes);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
