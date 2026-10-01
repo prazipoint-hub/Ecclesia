@@ -1,6 +1,10 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
-import { Dashboard } from '@/features/Dashboard';
+import { DistrictDashboard } from '@/pages/district/DistrictDashboard';
+import { DistrictCircuits } from '@/pages/district/DistrictCircuits';
+import { DistrictCommittees } from '@/pages/district/DistrictCommittees';
+import { DistrictPrograms } from '@/pages/district/DistrictPrograms';
+import { DistrictReports } from '@/pages/district/DistrictReports';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
@@ -14,7 +18,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/" element={<Navigate to="/district" replace />} />
+
+        <Route path="/district" element={<ProtectedRoute><DistrictDashboard /></ProtectedRoute>} />
+        <Route path="/district/circuits" element={<ProtectedRoute><DistrictCircuits /></ProtectedRoute>} />
+        <Route path="/district/committees" element={<ProtectedRoute><DistrictCommittees /></ProtectedRoute>} />
+        <Route path="/district/programs" element={<ProtectedRoute><DistrictPrograms /></ProtectedRoute>} />
+        <Route path="/district/reports" element={<ProtectedRoute><DistrictReports /></ProtectedRoute>} />
+
         <Route path="/members" element={protectedPage('Members', 'Manage people, families, and member records.')} />
         <Route path="/membership" element={protectedPage('Membership', 'Track membership status and lifecycle workflows.')} />
         <Route path="/events" element={protectedPage('Events', 'Plan services, gatherings, and attendance.')} />
