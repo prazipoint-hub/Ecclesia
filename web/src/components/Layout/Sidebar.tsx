@@ -1,6 +1,20 @@
-import { useOrganizationStore } from '@stores/organizationStore';
-import { type LucideIcon, BarChart3, BookOpen, Building2, Calendar, FileText, Home, Layers3, ShieldCheck, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
+import {
+  BarChart3,
+  BookOpen,
+  Building2,
+  Calendar,
+  FileText,
+  FolderKanban,
+  Home,
+  Layers3,
+  Settings,
+  ShieldCheck,
+  Users,
+  X,
+} from 'lucide-react';
+import { useOrganizationStore } from '@stores/organizationStore';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,12 +25,12 @@ const circuitNavigation: Array<{ name: string; href: string; icon: LucideIcon }>
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Members', href: '/members', icon: Users },
   { name: 'Families', href: '/membership', icon: BookOpen },
-  { name: 'Committees', href: '/events', icon: Layers3 },
-  { name: 'Organizations', href: '/finance', icon: Building2 },
-  { name: 'Finance', href: '/reports', icon: BarChart3 },
-  { name: 'Reports', href: '/settings', icon: FileText },
+  { name: 'Committees', href: '/district/committees', icon: Layers3 },
+  { name: 'Organizations', href: '/district/management', icon: Building2 },
+  { name: 'Finance', href: '/finance', icon: BarChart3 },
+  { name: 'Reports', href: '/district/reports', icon: FileText },
   { name: 'Church Records', href: '/district', icon: Calendar },
-  { name: 'Settings', href: '/settings', icon: ShieldCheck },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const districtNavigation: Array<{ name: string; href: string; icon: LucideIcon }> = [
@@ -28,7 +42,8 @@ const districtNavigation: Array<{ name: string; href: string; icon: LucideIcon }
   { name: 'District Finance', href: '/finance', icon: BarChart3 },
   { name: 'District Reports', href: '/district/reports', icon: FileText },
   { name: 'Users', href: '/settings', icon: Users },
-  { name: 'Settings', href: '/settings', icon: ShieldCheck },
+  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'District Management', href: '/district/management', icon: FolderKanban },
 ];
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
@@ -51,7 +66,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         }`}
       >
         <div className="flex items-center justify-between px-4 py-4 lg:hidden">
-          <h2 className="text-xl font-bold">{scope === 'DISTRICT' ? 'District' : 'Circuit'} Tools</h2>
+          <h2 className="text-xl font-bold">{scope === 'DISTRICT' ? 'District Tools' : 'Circuit Tools'}</h2>
           <button onClick={onClose} aria-label="Close menu">
             <X className="h-5 w-5" />
           </button>
@@ -60,7 +75,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         <nav className="space-y-2 px-4">
           {navigation.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.href || (item.href === '/district' && location.pathname.startsWith('/district'));
+            const isActive =
+              location.pathname === item.href ||
+              (item.href === '/district' && location.pathname.startsWith('/district'));
 
             return (
               <Link

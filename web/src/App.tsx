@@ -12,7 +12,9 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 
 const protectedPage = (title: string, description: string) => (
-  <ProtectedRoute><PlaceholderPage title={title} description={description} /></ProtectedRoute>
+  <ProtectedRoute>
+    <PlaceholderPage title={title} description={description} />
+  </ProtectedRoute>
 );
 
 function App() {
