@@ -1,4 +1,4 @@
-export type OrganizationUnitType = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT';
+export type OrganizationUnitType = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT' | 'SECTION';
 
 export type OrganizationStatus = 'ACTIVE' | 'INACTIVE';
 

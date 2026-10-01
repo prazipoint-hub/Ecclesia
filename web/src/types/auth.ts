@@ -1,33 +1,25 @@
-export type OrganizationLevel = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT' | 'SECTION';
-
-export type UserRole = 
-  | 'CONFERENCE_LEADER'
-  | 'DISTRICT_LEADER'
-  | 'DISTRICT_ORGANIZATION_LEADER'
-  | 'CIRCUIT_LEADER'
-  | 'CIRCUIT_ORGANIZATION_LEADER'
-  | 'SECTION_LEADER'
-  | 'MEMBER';
-
-export interface UserOrganizationContext {
-  roleId: string;
-  role: UserRole;
-  organizationId: string;
-  organizationName: string;
-  organizationLevel: OrganizationLevel;
-  isDefault?: boolean;
-}
-
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  churchId: string;
+  churchId?: string;
   permissions: string[];
   avatar?: string;
-  organizationContexts: UserOrganizationContext[];
-  defaultContextId?: string;
+  committees: UserCommitteeMembership[];
+}
+
+export interface UserCommitteeMembership {
+  committeeId: string;
+  committeeName: string;
+  committeeLevel: 'DISTRICT' | 'CIRCUIT' | 'SECTION' | 'CONFERENCE';
+  scopeId: string; // The unit ID (district, circuit, etc.)
+  scopeName: string;
+  role: 'CHAIR' | 'VICE_CHAIR' | 'SECRETARY' | 'TREASURER' | 'MEMBER';
+  isConfirmed: boolean;
+  confirmedBy?: string;
+  confirmedAt?: string;
+  dashboardAccess: boolean;
 }
 
 export interface AuthState {
@@ -36,7 +28,7 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  currentContextId?: string;
+  activeCommitteeId?: string; // Currently viewed committee context
 }
 
 export interface LoginRequest {
@@ -49,7 +41,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
-  churchId: string;
+  churchId?: string;
 }
 
 export interface AuthResponse {

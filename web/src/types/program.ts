@@ -1,9 +1,10 @@
-export type ProgramStatus = 'PLANNED' | 'ACTIVE' | 'COMPLETED';
-
 export interface Program {
   id: string;
   name: string;
   ownerCommitteeId: string;
   scopeId: string;
-  status: ProgramStatus;
+  status: 'PLANNED' | 'ACTIVE' | 'COMPLETED';
+  description?: string;
+  startDate?: string;
+  endDate?: string;
 }
