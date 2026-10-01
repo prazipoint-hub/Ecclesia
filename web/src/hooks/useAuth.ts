@@ -8,15 +8,5 @@ export const useAuth = () => {
     checkAuth();
   }, [checkAuth]);
 
-  return {
-    user,
-    isAuthenticated,
-    isLoading,
-    error,
-  };
-};
-
-export const useRequireAuth = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  return { isAuthenticated, isLoading };
+  return { user, isAuthenticated, isLoading, error };
 };
