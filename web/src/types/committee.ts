@@ -1,15 +1,5 @@
 export type CommitteeMemberRole = 'CHAIR' | 'VICE_CHAIR' | 'SECRETARY' | 'TREASURER' | 'MEMBER';
-
-export type CommitteeDashboardView =
-  | 'FINANCE'
-  | 'YOUTH'
-  | 'WOMENS'
-  | 'PROPERTY'
-  | 'NOMINATIONS'
-  | 'STEWARDSHIP'
-  | 'EVANGELISM'
-  | 'WORSHIP'
-  | 'EDUCATION';
+export type CommitteeDashboardView = 'FINANCE' | 'YOUTH' | 'WOMENS' | 'PROPERTY' | 'NOMINATIONS' | 'STEWARDSHIP' | 'EVANGELISM' | 'WORSHIP' | 'EDUCATION';
 
 export interface Committee {
   id: string;
@@ -30,8 +20,8 @@ export interface CommitteeMember {
   startDate?: string;
   endDate?: string;
   status: 'ACTIVE' | 'INACTIVE';
-  confirmedBy?: string; // ID of pastor (circuit) or superintendent (district)
-  confirmedAt?: string;
-  nominatedBy?: string; // ID of nominating committee
+  nominatedBy?: string;
   nominatedAt?: string;
+  confirmedBy?: string;
+  confirmedAt?: string;
 }

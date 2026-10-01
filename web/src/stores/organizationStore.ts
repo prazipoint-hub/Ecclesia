@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import type { Committee } from '@/types/committee';
 import type { OrganizationUnit } from '@/types/organization';
 import type { Program } from '@/types/program';
+import type { Sbu, SbuOversight } from '@/types/sbu';
 
-export type OrganizationScope = 'DISTRICT' | 'CIRCUIT';
+export type OrganizationScope = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT' | 'SECTION';
 
 interface OrganizationStore {
   scope: OrganizationScope;
@@ -11,59 +12,63 @@ interface OrganizationStore {
   units: OrganizationUnit[];
   committees: Committee[];
   programs: Program[];
+  sbus: Sbu[];
+  oversight: SbuOversight[];
   setScope: (scope: OrganizationScope) => void;
   setSelectedUnitId: (unitId: string) => void;
   getCurrentScopeLabel: () => string;
+  getSbusForScope: (scopeId?: string) => Sbu[];
+  getOversightForSbu: (sbuId: string) => SbuOversight | undefined;
 }
 
-const conferenceUnit: OrganizationUnit = {
-  id: 'conference-harare',
-  name: 'Harare Conference',
-  displayName: 'HARARE CONFERENCE',
-  type: 'CONFERENCE',
-  status: 'ACTIVE',
-};
-
-const districtUnit: OrganizationUnit = {
-  id: 'district-harare',
-  name: 'Harare District',
-  displayName: 'HARARE DISTRICT',
-  type: 'DISTRICT',
-  parentId: 'conference-harare',
-  status: 'ACTIVE',
-};
-
-const circuitUnits: OrganizationUnit[] = [
-  { id: 'circuit-cranborne', name: 'Cranborne', displayName: 'Cranborne', type: 'CIRCUIT', parentId: 'district-harare', status: 'ACTIVE' },
-  { id: 'circuit-borrowdale', name: 'Borrowdale', displayName: 'Borrowdale', type: 'CIRCUIT', parentId: 'district-harare', status: 'ACTIVE' },
-  { id: 'circuit-mbare', name: 'Mbare', displayName: 'Mbare', type: 'CIRCUIT', parentId: 'district-harare', status: 'ACTIVE' },
-  { id: 'circuit-chitungwiza', name: 'Chitungwiza', displayName: 'Chitungwiza', type: 'CIRCUIT', parentId: 'district-harare', status: 'ACTIVE' },
+const conference: OrganizationUnit = { id: 'conference-harare', name: 'Harare Conference', displayName: 'HARARE CONFERENCE', type: 'CONFERENCE', status: 'ACTIVE' };
+const district: OrganizationUnit = { id: 'district-harare', name: 'Harare District', displayName: 'HARARE DISTRICT', type: 'DISTRICT', parentId: conference.id, status: 'ACTIVE' };
+const circuits: OrganizationUnit[] = [
+  { id: 'circuit-cranborne', name: 'Cranborne', displayName: 'Cranborne', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
+  { id: 'circuit-borrowdale', name: 'Borrowdale', displayName: 'Borrowdale', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
+  { id: 'circuit-mbare', name: 'Mbare', displayName: 'Mbare', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
 ];
 
-const districtCommittees: Committee[] = [
-  { id: 'committee-finance', name: 'District Finance Committee', scopeId: 'district-harare' },
-  { id: 'committee-youth', name: 'District Youth Committee', scopeId: 'district-harare' },
-  { id: 'committee-womens', name: 'District Women\'s Committee', scopeId: 'district-harare' },
-  { id: 'committee-property', name: 'District Property Committee', scopeId: 'district-harare' },
+const sbuDefinitions = [
+  { key: 'RRW' as const, name: 'Rural and Urban Women (RRW)' },
+  { key: 'UMYF' as const, name: 'United Methodist Youth Fellowship (UMYF)' },
+  { key: 'MUMC' as const, name: 'Men of the United Methodist Church (MUMC)' },
+  { key: 'CHILDRENS_MINISTRY' as const, name: "Children's Ministry" },
 ];
 
-const districtPrograms: Program[] = [
-  { id: 'program-youth-conference', name: 'Youth Conference', ownerCommitteeId: 'committee-youth', scopeId: 'district-harare', status: 'ACTIVE' },
-  { id: 'program-leadership', name: 'Leadership Training', ownerCommitteeId: 'committee-youth', scopeId: 'district-harare', status: 'ACTIVE' },
-  { id: 'program-financial-literacy', name: 'Financial Literacy', ownerCommitteeId: 'committee-finance', scopeId: 'district-harare', status: 'PLANNED' },
-  { id: 'program-community-outreach', name: 'Community Outreach', ownerCommitteeId: 'committee-property', scopeId: 'district-harare', status: 'COMPLETED' },
+const sbus: Sbu[] = [
+  ...[conference, district, ...circuits].flatMap((unit) => sbuDefinitions.map((definition) => ({
+    id: `${unit.id}-${definition.key.toLowerCase()}`,
+    ...definition,
+    displayName: definition.name,
+    scopeId: unit.id,
+    scopeType: unit.type as 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT',
+    status: 'ACTIVE' as const,
+  }))),
 ];
+
+const oversight: SbuOversight[] = sbus.map((sbu) => ({
+  sbuId: sbu.id,
+  scopeId: sbu.scopeId,
+  overseerRole: sbu.scopeType === 'CIRCUIT' ? 'PASTOR' : sbu.scopeType === 'DISTRICT' ? 'DISTRICT_SUPERINTENDENT' : 'BISHOP',
+  canReview: true,
+  canApprove: false,
+}));
 
 export const useOrganizationStore = create<OrganizationStore>((set, get) => ({
   scope: 'DISTRICT',
-  selectedUnitId: districtUnit.id,
-  units: [conferenceUnit, districtUnit, ...circuitUnits],
-  committees: districtCommittees,
-  programs: districtPrograms,
+  selectedUnitId: district.id,
+  units: [conference, district, ...circuits],
+  committees: [],
+  programs: [],
+  sbus,
+  oversight,
   setScope: (scope) => set({ scope }),
-  setSelectedUnitId: (unitId) => set({ selectedUnitId: unitId }),
-  getCurrentScopeLabel: () => {
-    const current = get().units.find((unit) => unit.id === get().selectedUnitId) ?? districtUnit;
-    return current.displayName;
+  setSelectedUnitId: (unitId) => {
+    const unit = get().units.find((item) => item.id === unitId);
+    if (unit) set({ selectedUnitId: unitId, scope: unit.type });
   },
+  getCurrentScopeLabel: () => get().units.find((unit) => unit.id === get().selectedUnitId)?.displayName ?? district.displayName,
+  getSbusForScope: (scopeId = get().selectedUnitId) => get().sbus.filter((sbu) => sbu.scopeId === scopeId),
+  getOversightForSbu: (sbuId) => get().oversight.find((item) => item.sbuId === sbuId),
 }));
