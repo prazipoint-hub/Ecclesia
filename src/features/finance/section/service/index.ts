@@ -56,6 +56,40 @@ export class SectionFinanceService {
   }
 
   /**
+   * List pending expenditures awaiting approval for a section.
+   */
+  async listPendingExpenditures(
+    sectionId: string,
+    user: AuthorizedUser,
+    options: { skip: number; take: number } = { skip: 0, take: 20 }
+  ) {
+    const section = await prisma.section.findUnique({
+      where: { id: sectionId },
+    });
+
+    if (!section || section.churchId !== user.churchId) {
+      throw new Error('Unauthorized: section not found or user not in same church');
+    }
+
+    if (!user.permissions.includes('section_expenditure:approve')) {
+      throw new Error('Unauthorized: section_expenditure:approve permission required');
+    }
+
+    const { expenditures, total } = await sectionFinanceRepository.listPendingExpenditures(sectionId, {
+      skip: options.skip,
+      take: options.take,
+    });
+
+    return {
+      sectionId,
+      expenditures,
+      total,
+      skip: options.skip,
+      take: options.take,
+    };
+  }
+
+  /**
    * Create section receipt
    * Authorization: User must have section_receipt:create permission
    */
@@ -222,7 +256,8 @@ export class SectionFinanceService {
     expenditureId: string,
     approved: boolean,
     approverNotes: string | undefined,
-    user: AuthorizedUser
+    user: AuthorizedUser,
+    sectionId?: string
   ) {
     // Authorization: must have section expenditure approval permission
     if (!user.permissions.includes('section_expenditure:approve')) {
@@ -236,6 +271,10 @@ export class SectionFinanceService {
 
     if (!expenditure) {
       throw new Error('Expenditure not found');
+    }
+
+    if (sectionId && expenditure.sectionId !== sectionId) {
+      throw new Error('Expenditure does not belong to the provided section');
     }
 
     // Verify section and user church match
@@ -286,7 +325,8 @@ export class SectionFinanceService {
   async paymentSectionExpenditure(
     expenditureId: string,
     paymentMethod: string,
-    user: AuthorizedUser
+    user: AuthorizedUser,
+    sectionId?: string
   ) {
     // Authorization: section treasurer can pay
     if (!user.permissions.includes('section_payment:create')) {
@@ -300,6 +340,10 @@ export class SectionFinanceService {
 
     if (!expenditure) {
       throw new Error('Expenditure not found');
+    }
+
+    if (sectionId && expenditure.sectionId !== sectionId) {
+      throw new Error('Expenditure does not belong to the provided section');
     }
 
     // Verify it's approved
