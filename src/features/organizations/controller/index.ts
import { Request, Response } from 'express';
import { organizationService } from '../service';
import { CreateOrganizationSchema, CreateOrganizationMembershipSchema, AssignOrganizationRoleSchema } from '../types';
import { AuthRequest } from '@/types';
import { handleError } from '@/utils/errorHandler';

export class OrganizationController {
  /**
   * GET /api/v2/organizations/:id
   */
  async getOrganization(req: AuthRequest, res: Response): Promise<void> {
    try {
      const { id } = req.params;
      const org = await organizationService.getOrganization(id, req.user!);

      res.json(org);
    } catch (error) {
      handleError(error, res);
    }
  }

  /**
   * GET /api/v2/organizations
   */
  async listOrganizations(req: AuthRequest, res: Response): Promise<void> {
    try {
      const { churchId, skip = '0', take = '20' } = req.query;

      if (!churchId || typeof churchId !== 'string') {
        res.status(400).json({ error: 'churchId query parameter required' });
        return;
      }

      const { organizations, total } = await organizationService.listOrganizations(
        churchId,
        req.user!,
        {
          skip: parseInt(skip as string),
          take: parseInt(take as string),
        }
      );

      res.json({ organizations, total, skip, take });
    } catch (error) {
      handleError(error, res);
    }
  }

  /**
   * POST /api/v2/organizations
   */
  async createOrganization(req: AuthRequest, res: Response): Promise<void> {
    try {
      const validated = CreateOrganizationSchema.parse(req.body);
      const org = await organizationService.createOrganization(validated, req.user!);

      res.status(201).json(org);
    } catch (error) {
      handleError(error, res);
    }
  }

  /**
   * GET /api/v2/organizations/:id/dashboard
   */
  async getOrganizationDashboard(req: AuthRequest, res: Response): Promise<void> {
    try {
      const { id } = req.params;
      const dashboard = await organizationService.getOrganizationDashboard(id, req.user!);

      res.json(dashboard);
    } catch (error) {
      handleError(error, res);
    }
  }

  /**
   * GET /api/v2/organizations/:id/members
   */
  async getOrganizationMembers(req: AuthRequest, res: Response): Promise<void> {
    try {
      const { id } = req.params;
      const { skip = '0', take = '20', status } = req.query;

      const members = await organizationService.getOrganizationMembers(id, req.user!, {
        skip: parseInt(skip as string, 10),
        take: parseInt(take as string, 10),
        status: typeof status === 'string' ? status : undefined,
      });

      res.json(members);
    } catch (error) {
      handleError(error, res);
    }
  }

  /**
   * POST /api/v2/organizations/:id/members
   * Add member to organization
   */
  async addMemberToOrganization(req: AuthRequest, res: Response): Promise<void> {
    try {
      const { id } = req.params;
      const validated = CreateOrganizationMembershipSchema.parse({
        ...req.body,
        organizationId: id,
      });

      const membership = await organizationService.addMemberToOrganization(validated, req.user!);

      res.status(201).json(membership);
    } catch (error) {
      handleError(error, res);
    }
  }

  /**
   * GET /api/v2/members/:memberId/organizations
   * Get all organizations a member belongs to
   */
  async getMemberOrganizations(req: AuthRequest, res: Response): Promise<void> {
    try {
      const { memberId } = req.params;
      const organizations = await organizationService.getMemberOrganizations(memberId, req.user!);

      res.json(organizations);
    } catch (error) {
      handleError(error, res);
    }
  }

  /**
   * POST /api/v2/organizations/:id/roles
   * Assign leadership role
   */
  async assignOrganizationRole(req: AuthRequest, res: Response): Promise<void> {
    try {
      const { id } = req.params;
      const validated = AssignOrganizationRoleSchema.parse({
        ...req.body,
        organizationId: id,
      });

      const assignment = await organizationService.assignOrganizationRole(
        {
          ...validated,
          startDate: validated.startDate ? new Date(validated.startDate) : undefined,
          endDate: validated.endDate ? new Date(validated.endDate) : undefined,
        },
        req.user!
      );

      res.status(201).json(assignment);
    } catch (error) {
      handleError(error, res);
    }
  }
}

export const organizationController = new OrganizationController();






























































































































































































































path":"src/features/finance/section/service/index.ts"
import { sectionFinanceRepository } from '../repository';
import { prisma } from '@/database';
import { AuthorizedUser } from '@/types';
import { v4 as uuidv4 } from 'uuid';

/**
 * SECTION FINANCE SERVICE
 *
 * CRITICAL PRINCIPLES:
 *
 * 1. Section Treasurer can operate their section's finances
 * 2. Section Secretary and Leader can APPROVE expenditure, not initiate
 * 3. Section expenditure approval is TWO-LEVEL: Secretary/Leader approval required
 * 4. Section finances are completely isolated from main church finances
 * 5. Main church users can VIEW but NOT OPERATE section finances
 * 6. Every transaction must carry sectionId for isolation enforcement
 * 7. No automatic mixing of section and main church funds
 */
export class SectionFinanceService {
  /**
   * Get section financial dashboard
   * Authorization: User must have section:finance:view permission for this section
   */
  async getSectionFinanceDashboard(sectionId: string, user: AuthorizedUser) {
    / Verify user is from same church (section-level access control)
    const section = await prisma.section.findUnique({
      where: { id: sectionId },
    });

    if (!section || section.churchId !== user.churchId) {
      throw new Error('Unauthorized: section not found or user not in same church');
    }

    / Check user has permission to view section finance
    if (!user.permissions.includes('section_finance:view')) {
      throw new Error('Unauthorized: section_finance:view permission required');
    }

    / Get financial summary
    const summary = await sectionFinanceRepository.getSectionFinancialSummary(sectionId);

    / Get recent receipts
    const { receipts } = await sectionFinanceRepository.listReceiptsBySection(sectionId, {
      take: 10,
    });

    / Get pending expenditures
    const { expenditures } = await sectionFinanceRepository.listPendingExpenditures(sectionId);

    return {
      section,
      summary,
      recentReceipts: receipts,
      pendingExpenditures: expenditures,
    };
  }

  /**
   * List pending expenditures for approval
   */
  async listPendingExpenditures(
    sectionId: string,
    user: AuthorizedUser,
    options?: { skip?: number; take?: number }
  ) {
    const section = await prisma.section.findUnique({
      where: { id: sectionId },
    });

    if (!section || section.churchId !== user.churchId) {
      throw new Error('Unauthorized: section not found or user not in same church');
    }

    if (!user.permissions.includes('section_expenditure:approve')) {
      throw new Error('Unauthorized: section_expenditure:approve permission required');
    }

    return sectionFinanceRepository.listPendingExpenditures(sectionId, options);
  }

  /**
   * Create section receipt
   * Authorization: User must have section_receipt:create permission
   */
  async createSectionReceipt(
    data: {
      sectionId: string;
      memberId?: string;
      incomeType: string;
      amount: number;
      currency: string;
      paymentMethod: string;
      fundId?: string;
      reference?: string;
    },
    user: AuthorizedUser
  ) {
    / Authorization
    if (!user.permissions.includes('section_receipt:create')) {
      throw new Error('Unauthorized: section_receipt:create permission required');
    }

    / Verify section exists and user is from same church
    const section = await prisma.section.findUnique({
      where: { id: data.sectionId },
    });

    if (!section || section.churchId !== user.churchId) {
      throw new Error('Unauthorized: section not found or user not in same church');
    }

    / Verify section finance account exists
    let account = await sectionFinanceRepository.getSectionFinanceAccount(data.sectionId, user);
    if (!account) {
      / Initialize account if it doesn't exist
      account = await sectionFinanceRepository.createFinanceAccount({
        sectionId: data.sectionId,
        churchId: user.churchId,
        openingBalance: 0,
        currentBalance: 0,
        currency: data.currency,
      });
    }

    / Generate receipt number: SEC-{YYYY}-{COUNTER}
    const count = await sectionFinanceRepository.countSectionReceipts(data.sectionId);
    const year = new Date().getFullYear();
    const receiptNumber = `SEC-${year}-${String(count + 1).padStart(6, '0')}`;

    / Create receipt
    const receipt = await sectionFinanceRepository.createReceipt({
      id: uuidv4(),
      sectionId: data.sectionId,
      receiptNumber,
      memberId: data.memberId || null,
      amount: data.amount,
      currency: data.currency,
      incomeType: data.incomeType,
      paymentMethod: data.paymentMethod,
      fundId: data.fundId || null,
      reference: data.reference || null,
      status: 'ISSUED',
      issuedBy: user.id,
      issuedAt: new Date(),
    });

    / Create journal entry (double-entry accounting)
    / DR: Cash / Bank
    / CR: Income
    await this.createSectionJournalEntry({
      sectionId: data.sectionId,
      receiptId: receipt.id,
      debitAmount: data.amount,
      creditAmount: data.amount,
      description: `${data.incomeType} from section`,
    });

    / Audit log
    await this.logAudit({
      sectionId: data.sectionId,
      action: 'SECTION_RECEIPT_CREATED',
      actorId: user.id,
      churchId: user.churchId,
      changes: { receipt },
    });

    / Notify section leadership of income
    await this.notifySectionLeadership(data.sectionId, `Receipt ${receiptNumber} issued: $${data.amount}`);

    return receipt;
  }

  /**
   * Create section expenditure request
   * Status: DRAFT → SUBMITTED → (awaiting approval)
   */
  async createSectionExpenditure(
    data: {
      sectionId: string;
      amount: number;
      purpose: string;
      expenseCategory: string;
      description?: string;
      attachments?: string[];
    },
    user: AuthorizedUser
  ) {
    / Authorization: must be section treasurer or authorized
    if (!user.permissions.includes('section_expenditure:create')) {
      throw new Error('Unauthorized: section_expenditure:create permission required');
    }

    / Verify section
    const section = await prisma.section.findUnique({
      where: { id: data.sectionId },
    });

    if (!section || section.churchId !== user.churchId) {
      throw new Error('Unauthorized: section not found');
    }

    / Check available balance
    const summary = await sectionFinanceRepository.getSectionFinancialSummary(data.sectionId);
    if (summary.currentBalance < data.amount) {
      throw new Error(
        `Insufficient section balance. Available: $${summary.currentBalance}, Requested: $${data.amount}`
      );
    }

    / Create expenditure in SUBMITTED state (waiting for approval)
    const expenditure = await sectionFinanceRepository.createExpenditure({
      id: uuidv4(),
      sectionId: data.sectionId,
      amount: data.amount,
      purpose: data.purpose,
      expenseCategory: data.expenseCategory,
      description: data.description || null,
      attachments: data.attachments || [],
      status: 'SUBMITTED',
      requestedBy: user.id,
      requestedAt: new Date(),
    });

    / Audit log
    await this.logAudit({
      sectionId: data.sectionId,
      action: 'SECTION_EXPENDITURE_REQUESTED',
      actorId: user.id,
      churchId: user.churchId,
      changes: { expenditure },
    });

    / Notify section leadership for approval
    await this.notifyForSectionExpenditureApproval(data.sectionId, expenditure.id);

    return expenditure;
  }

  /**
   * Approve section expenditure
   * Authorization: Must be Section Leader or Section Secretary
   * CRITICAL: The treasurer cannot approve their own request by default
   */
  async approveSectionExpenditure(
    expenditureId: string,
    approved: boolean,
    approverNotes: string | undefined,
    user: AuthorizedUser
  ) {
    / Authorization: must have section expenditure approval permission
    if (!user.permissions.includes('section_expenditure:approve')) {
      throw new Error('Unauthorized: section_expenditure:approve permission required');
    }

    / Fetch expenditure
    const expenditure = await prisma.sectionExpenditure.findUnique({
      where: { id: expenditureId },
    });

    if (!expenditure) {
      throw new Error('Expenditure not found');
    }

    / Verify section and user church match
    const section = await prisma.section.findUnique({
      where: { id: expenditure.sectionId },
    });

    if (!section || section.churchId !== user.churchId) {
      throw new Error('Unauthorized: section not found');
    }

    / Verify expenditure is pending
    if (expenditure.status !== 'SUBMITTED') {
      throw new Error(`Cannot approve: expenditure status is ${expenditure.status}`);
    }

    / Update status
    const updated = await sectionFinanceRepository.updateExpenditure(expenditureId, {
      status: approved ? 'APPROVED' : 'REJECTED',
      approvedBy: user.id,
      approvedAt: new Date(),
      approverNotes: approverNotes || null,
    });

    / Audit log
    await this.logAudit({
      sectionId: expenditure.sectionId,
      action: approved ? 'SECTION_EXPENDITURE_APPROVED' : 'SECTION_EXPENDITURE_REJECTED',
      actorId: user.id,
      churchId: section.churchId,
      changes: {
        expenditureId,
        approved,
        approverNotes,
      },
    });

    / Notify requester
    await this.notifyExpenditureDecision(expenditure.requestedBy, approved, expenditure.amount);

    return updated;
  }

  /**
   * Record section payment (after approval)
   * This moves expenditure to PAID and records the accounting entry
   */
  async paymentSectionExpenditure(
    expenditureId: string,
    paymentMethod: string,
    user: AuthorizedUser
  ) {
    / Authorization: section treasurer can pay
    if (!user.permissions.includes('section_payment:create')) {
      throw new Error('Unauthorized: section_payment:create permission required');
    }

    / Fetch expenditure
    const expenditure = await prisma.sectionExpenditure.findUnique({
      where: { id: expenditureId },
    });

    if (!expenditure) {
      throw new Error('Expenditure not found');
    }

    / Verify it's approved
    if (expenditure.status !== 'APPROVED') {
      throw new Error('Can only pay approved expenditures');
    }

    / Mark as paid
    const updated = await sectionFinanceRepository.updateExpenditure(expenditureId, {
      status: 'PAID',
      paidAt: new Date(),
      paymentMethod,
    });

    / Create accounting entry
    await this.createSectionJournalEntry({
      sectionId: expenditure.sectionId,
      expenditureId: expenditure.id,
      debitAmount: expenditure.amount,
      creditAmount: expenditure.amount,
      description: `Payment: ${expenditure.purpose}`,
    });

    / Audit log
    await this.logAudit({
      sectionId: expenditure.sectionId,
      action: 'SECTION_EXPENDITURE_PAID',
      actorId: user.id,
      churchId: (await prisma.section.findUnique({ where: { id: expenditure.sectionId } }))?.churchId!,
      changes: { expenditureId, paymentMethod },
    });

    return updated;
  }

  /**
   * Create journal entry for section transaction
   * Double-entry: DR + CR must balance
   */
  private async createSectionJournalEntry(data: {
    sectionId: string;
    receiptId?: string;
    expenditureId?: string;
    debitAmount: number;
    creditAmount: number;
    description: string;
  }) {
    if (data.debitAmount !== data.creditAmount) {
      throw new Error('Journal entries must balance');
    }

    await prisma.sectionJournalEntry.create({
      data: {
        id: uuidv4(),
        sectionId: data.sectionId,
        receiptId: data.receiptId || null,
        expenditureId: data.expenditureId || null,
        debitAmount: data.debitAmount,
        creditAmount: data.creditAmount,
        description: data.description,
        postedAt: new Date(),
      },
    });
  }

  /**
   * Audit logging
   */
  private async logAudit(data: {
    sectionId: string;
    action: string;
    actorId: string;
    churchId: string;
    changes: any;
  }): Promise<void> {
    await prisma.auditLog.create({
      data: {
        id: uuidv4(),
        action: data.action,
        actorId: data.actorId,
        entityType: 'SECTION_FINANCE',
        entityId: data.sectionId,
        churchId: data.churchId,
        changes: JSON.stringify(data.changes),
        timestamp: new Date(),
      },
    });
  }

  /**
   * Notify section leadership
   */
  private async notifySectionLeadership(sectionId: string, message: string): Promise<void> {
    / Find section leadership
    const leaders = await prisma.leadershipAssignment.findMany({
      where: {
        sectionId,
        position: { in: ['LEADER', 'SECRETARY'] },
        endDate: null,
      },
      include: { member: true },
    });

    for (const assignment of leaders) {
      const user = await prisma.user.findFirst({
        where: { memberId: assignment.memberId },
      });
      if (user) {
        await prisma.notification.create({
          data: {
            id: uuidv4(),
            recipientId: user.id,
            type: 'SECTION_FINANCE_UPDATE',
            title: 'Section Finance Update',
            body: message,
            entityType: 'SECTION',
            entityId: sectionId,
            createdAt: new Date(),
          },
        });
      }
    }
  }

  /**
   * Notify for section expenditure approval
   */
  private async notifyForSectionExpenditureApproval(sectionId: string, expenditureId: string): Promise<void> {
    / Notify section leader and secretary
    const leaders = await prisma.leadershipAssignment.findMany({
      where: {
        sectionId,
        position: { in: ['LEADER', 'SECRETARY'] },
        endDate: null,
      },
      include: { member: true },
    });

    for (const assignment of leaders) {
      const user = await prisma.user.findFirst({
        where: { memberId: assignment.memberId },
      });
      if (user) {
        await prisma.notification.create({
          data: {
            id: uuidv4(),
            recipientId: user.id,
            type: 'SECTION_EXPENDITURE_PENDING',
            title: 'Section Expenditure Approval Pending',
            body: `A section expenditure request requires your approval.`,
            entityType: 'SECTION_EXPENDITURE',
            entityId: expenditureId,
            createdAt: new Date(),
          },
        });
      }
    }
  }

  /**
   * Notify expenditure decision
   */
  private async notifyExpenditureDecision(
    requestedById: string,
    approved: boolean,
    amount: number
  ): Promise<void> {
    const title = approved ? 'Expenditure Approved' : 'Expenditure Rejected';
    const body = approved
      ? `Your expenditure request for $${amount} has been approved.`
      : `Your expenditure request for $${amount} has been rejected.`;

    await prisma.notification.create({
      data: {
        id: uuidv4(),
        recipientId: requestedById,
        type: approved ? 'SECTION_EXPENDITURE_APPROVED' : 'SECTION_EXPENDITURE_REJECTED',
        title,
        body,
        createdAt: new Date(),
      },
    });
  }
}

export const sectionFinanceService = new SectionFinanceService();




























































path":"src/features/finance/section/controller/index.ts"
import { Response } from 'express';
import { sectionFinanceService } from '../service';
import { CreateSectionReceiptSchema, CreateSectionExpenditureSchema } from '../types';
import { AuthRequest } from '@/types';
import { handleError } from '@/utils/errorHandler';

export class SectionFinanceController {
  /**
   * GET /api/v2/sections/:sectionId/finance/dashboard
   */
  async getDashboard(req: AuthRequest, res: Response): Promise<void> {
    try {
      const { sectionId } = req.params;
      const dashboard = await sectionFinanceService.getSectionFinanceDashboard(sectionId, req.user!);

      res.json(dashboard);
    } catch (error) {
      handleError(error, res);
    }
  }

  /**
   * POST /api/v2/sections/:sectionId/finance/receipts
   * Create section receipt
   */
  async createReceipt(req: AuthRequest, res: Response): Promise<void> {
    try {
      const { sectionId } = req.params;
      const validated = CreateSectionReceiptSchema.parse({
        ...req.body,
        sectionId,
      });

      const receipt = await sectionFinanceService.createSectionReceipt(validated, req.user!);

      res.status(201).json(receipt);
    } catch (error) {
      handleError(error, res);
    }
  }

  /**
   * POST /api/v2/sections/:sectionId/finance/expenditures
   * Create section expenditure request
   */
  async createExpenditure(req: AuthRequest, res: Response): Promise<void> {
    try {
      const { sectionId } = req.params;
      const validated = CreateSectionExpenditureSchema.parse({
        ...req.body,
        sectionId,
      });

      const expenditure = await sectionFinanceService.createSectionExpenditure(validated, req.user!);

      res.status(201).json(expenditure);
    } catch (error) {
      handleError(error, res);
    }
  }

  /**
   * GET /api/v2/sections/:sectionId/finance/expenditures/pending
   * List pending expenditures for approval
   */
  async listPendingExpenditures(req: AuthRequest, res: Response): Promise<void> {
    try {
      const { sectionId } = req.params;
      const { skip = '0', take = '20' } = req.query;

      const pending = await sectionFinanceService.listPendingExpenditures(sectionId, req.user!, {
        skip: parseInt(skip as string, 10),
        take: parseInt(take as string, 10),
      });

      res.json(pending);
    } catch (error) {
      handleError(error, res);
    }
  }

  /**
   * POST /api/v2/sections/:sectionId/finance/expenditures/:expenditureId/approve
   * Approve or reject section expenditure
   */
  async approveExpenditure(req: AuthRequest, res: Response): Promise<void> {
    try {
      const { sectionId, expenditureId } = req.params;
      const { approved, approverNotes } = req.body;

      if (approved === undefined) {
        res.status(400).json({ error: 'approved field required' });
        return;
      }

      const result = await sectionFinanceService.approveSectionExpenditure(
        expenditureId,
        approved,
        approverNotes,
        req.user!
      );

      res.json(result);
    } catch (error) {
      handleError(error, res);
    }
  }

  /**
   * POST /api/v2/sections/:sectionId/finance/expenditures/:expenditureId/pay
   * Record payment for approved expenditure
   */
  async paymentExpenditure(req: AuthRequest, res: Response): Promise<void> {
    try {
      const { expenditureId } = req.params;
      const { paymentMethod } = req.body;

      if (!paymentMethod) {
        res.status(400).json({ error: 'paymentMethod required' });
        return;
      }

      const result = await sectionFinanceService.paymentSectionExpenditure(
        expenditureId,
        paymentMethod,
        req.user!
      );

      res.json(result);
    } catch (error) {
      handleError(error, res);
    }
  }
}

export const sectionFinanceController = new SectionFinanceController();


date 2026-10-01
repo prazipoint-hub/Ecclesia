@@ -1,0 +1,370 @@
+import { organizationRepository } from '../repository';
+import { prisma } from '@/database';
+import { AuthorizedUser } from '@/types';
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * ORGANIZATION SERVICE
+ *
+ * CRITICAL PRINCIPLES:
+ * 1. Organizations are workspaces within Ecclesia, not separate systems
+ * 2. One member record supports multiple organizational memberships
+ * 3. Organization leadership uses existing role/permission system
+ * 4. Each organization has financially isolated accounts
+ * 5. Permissions are organization-scoped
+ */
+export class OrganizationService {
+  /**
+   * Get organization
+   */
+  async getOrganization(id: string, user: AuthorizedUser) {
+    const org = await organizationRepository.findById(id, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    // Get member count
+    const memberCount = await organizationRepository.countMembers(id, 'ACTIVE');
+
+    return {
+      ...org,
+      memberCount,
+    };
+  }
+
+  /**
+   * List organizations for church
+   */
+  async listOrganizations(
+    churchId: string,
+    user: AuthorizedUser,
+    options?: { skip?: number; take?: number }
+  ) {
+    return organizationRepository.listByChurch(churchId, user, options);
+  }
+
+  /**
+   * List organization members
+   */
+  async getOrganizationMembers(
+    organizationId: string,
+    user: AuthorizedUser,
+    options?: { skip?: number; take?: number; status?: string }
+  ) {
+    const org = await organizationRepository.findById(organizationId, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    return organizationRepository.getOrganizationMembers(organizationId, options);
+  }
+
+  /**
+   * Create organization
+   * Authorization: Must have organization:create permission
+   */
+  async createOrganization(
+    data: {
+      churchId: string;
+      organizationType: string;
+      name: string;
+      shortName: string;
+      description?: string;
+    },
+    user: AuthorizedUser
+  ) {
+    if (!user.permissions.includes('organization:create')) {
+      throw new Error('Unauthorized: organization:create permission required');
+    }
+
+    if (data.churchId !== user.churchId && !user.permissions.includes('organization:create:all_churches')) {
+      throw new Error('Unauthorized: cannot create organization in another church');
+    }
+
+    const org = await organizationRepository.create({
+      id: uuidv4(),
+      churchId: data.churchId,
+      organizationType: data.organizationType,
+      name: data.name,
+      shortName: data.shortName,
+      description: data.description || null,
+      status: 'ACTIVE',
+    });
+
+    // Create financial account for organization
+    await prisma.organizationFinancialAccount.create({
+      data: {
+        id: uuidv4(),
+        organizationId: org.id,
+        churchId: data.churchId,
+        openingBalance: 0,
+        currentBalance: 0,
+        currency: 'USD',
+      },
+    });
+
+    // Audit log
+    await this.logAudit({
+      organizationId: org.id,
+      action: 'ORGANIZATION_CREATED',
+      actorId: user.id,
+      churchId: data.churchId,
+      changes: { created: org },
+    });
+
+    return org;
+  }
+
+  /**
+   * Add member to organization
+   * CRITICAL: Does not create new member, only links existing member to organization
+   */
+  async addMemberToOrganization(
+    data: {
+      organizationId: string;
+      memberId: string;
+      membershipStatus?: string;
+      notes?: string;
+    },
+    user: AuthorizedUser
+  ) {
+    if (!user.permissions.includes('organization:manage')) {
+      throw new Error('Unauthorized: organization:manage permission required');
+    }
+
+    // Verify organization exists and user's church matches
+    const org = await organizationRepository.findById(data.organizationId, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    // Verify member exists and is from same church
+    const member = await prisma.member.findUnique({
+      where: { id: data.memberId },
+    });
+
+    if (!member || member.churchId !== org.churchId) {
+      throw new Error('Member not found in this church');
+    }
+
+    // Check if already a member
+    const existing = await prisma.organizationMembership.findFirst({
+      where: {
+        organizationId: data.organizationId,
+        memberId: data.memberId,
+      },
+    });
+
+    if (existing && existing.membershipStatus !== 'LEFT') {
+      throw new Error('Member is already part of this organization');
+    }
+
+    // Create membership
+    const membership = await organizationRepository.createMembership({
+      id: uuidv4(),
+      organizationId: data.organizationId,
+      memberId: data.memberId,
+      membershipStatus: data.membershipStatus || 'ACTIVE',
+      joinedAt: new Date(),
+      endedAt: null,
+      notes: data.notes || null,
+    });
+
+    // Audit log
+    await this.logAudit({
+      organizationId: data.organizationId,
+      action: 'ORGANIZATION_MEMBER_ADDED',
+      actorId: user.id,
+      churchId: org.churchId,
+      changes: { memberId: data.memberId, membershipStatus: data.membershipStatus },
+    });
+
+    // Notify member
+    await this.notifyMemberOfOrganizationAddition(data.memberId, org.name);
+
+    return membership;
+  }
+
+  /**
+   * Get member's organizations
+   * Shows all organizations the member belongs to, regardless of role
+   */
+  async getMemberOrganizations(memberId: string, user: AuthorizedUser) {
+    // Verify member exists and user can access
+    const member = await prisma.member.findUnique({
+      where: { id: memberId },
+    });
+
+    if (!member) {
+      throw new Error('Member not found');
+    }
+
+    if (member.churchId !== user.churchId && !user.permissions.includes('member:view:all_churches')) {
+      throw new Error('Unauthorized: cannot view member in another church');
+    }
+
+    return organizationRepository.getMemberOrganizationsWithRoles(memberId);
+  }
+
+  /**
+   * Assign organization leadership role
+   * Authorization: Must have organization:manage permission
+   */
+  async assignOrganizationRole(
+    data: {
+      organizationId: string;
+      memberId: string;
+      position: string;
+      startDate?: Date;
+      endDate?: Date;
+    },
+    user: AuthorizedUser
+  ) {
+    if (!user.permissions.includes('organization:manage')) {
+      throw new Error('Unauthorized: organization:manage permission required');
+    }
+
+    // Verify organization
+    const org = await organizationRepository.findById(data.organizationId, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    // Verify member exists
+    const member = await prisma.member.findUnique({
+      where: { id: data.memberId },
+    });
+
+    if (!member || member.churchId !== org.churchId) {
+      throw new Error('Member not found in this church');
+    }
+
+    // Verify member is part of organization
+    const membership = await prisma.organizationMembership.findFirst({
+      where: {
+        organizationId: data.organizationId,
+        memberId: data.memberId,
+        membershipStatus: 'ACTIVE',
+      },
+    });
+
+    if (!membership) {
+      throw new Error('Member must be part of organization to hold a role');
+    }
+
+    // Assign role
+    const assignment = await organizationRepository.assignRole({
+      id: uuidv4(),
+      organizationId: data.organizationId,
+      memberId: data.memberId,
+      position: data.position,
+      startDate: data.startDate || new Date(),
+      endDate: data.endDate || null,
+    });
+
+    // Audit log
+    await this.logAudit({
+      organizationId: data.organizationId,
+      action: 'ORGANIZATION_ROLE_ASSIGNED',
+      actorId: user.id,
+      churchId: org.churchId,
+      changes: { memberId: data.memberId, position: data.position },
+    });
+
+    return assignment;
+  }
+
+  /**
+   * Get organization dashboard (for members with access)
+   */
+  async getOrganizationDashboard(organizationId: string, user: AuthorizedUser) {
+    // Verify user has permission to view organization
+    if (!user.permissions.includes('organization:view')) {
+      throw new Error('Unauthorized: organization:view permission required');
+    }
+
+    const org = await organizationRepository.findById(organizationId, user);
+    if (!org) {
+      throw new Error('Organization not found');
+    }
+
+    // Get statistics
+    const activeMembers = await organizationRepository.countMembers(organizationId, 'ACTIVE');
+    const leadership = await organizationRepository.getOrganizationLeadership(organizationId);
+
+    // Get financial account
+    const financialAccount = await prisma.organizationFinancialAccount.findUnique({
+      where: { organizationId },
+    });
+
+    // Get upcoming events
+    const events = await prisma.event.findMany({
+      where: {
+        organizationId,
+        startDateTime: {
+          gte: new Date(),
+        },
+      },
+      take: 5,
+      orderBy: { startDateTime: 'asc' },
+    });
+
+    return {
+      organization: org,
+      activeMembers,
+      leadership,
+      financialAccount,
+      upcomingEvents: events,
+    };
+  }
+
+  /**
+   * Audit logging
+   */
+  private async logAudit(data: {
+    organizationId: string;
+    action: string;
+    actorId: string;
+    churchId: string;
+    changes: any;
+  }): Promise<void> {
+    await prisma.auditLog.create({
+      data: {
+        id: uuidv4(),
+        action: data.action,
+        actorId: data.actorId,
+        entityType: 'ORGANIZATION',
+        entityId: data.organizationId,
+        churchId: data.churchId,
+        changes: JSON.stringify(data.changes),
+        timestamp: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Notify member of organization addition
+   */
+  private async notifyMemberOfOrganizationAddition(memberId: string, organizationName: string): Promise<void> {
+    const user = await prisma.user.findFirst({
+      where: { memberId },
+    });
+
+    if (!user) return;
+
+    await prisma.notification.create({
+      data: {
+        id: uuidv4(),
+        recipientId: user.id,
+        type: 'ORGANIZATION_MEMBERSHIP',
+        title: `Added to ${organizationName}`,
+        body: `You have been added to the ${organizationName} organization.`,
+        entityType: 'ORGANIZATION',
+        entityId: memberId,
+        createdAt: new Date(),
+      },
+    });
+  }
+}
+
+export const organizationService = new OrganizationService();
