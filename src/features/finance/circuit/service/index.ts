@@ -1,38 +1,38 @@
 import { prisma } from '@/database';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { districtFinanceRepository } from '../repository';
+import { circuitFinanceRepository } from '../repository';
 
 /**
- * DISTRICT FINANCE SERVICE
+ * CIRCUIT FINANCE SERVICE
  *
  * CRITICAL PRINCIPLES:
  *
- * 1. District (Circuit in org model) finances are completely isolated
- * 2. Circuit Treasurer can operate district finances
+ * 1. Circuit finances are completely isolated from church finances
+ * 2. Circuit Treasurer can operate circuit finances
  * 3. Circuit Leadership can APPROVE expenditures
  * 4. Every transaction must carry circuitId for isolation enforcement
- * 5. No automatic mixing of district and circuit church funds
- * 6. District receives consolidated receipts from churches/circuits (transfers)
+ * 5. No automatic mixing of circuit and church funds
+ * 6. Circuit receives consolidated receipts from churches (transfers)
  */
 
-export class DistrictFinanceService {
-  async getDistrictFinanceDashboard(circuitId: string, user: AuthorizedUser) {
+export class CircuitFinanceService {
+  async getCircuitFinanceDashboard(circuitId: string, user: AuthorizedUser) {
     const circuit = await prisma.circuit.findUnique({
       where: { id: circuitId },
     });
 
     if (!circuit) {
-      throw new Error('District (Circuit) not found');
+      throw new Error('Circuit not found');
     }
 
-    if (!user.permissions.includes('district_finance:view')) {
-      throw new Error('Unauthorized: district_finance:view permission required');
+    if (!user.permissions.includes('circuit_finance:view')) {
+      throw new Error('Unauthorized: circuit_finance:view permission required');
     }
 
-    const summary = await districtFinanceRepository.getFinancialSummary(circuitId);
-    const { receipts } = await districtFinanceRepository.listReceiptsByDistrict(circuitId, { take: 10 });
-    const { expenditures } = await districtFinanceRepository.listPendingExpenditures(circuitId, { take: 10 });
+    const summary = await circuitFinanceRepository.getFinancialSummary(circuitId);
+    const { receipts } = await circuitFinanceRepository.listReceiptsByCircuit(circuitId, { take: 10 });
+    const { expenditures } = await circuitFinanceRepository.listPendingExpenditures(circuitId, { take: 10 });
 
     return {
       circuit,
@@ -42,7 +42,7 @@ export class DistrictFinanceService {
     };
   }
 
-  async createDistrictReceipt(
+  async createCircuitReceipt(
     data: {
       circuitId: string;
       memberId?: string;
@@ -55,18 +55,18 @@ export class DistrictFinanceService {
     },
     user: AuthorizedUser
   ) {
-    if (!user.permissions.includes('district_receipt:create')) {
-      throw new Error('Unauthorized: district_receipt:create permission required');
+    if (!user.permissions.includes('circuit_receipt:create')) {
+      throw new Error('Unauthorized: circuit_receipt:create permission required');
     }
 
     const circuit = await prisma.circuit.findUnique({ where: { id: data.circuitId } });
     if (!circuit) {
-      throw new Error('District (Circuit) not found');
+      throw new Error('Circuit not found');
     }
 
-    let account = await districtFinanceRepository.getFinanceAccount(data.circuitId);
+    let account = await circuitFinanceRepository.getFinanceAccount(data.circuitId);
     if (!account) {
-      account = await districtFinanceRepository.createFinanceAccount({
+      account = await circuitFinanceRepository.createFinanceAccount({
         circuitId: data.circuitId,
         openingBalance: 0,
         currentBalance: 0,
@@ -74,11 +74,11 @@ export class DistrictFinanceService {
       });
     }
 
-    const count = await districtFinanceRepository.countReceipts(data.circuitId);
+    const count = await circuitFinanceRepository.countReceipts(data.circuitId);
     const year = new Date().getFullYear();
-    const receiptNumber = `DST-${year}-${String(count + 1).padStart(6, '0')}`;
+    const receiptNumber = `CIR-${year}-${String(count + 1).padStart(6, '0')}`;
 
-    const receipt = await districtFinanceRepository.createReceipt({
+    const receipt = await circuitFinanceRepository.createReceipt({
       id: uuidv4(),
       circuitId: data.circuitId,
       memberId: data.memberId || null,
@@ -97,9 +97,9 @@ export class DistrictFinanceService {
     await prisma.auditLog.create({
       data: {
         id: uuidv4(),
-        action: 'DISTRICT_RECEIPT_CREATED',
+        action: 'CIRCUIT_RECEIPT_CREATED',
         actorId: user.id,
-        entityType: 'DISTRICT_FINANCE',
+        entityType: 'CIRCUIT_FINANCE',
         entityId: data.circuitId,
         churchId: user.churchId,
         changes: JSON.stringify({ receipt }),
@@ -110,7 +110,7 @@ export class DistrictFinanceService {
     return receipt;
   }
 
-  async createDistrictExpenditure(
+  async createCircuitExpenditure(
     data: {
       circuitId: string;
       amount: number;
@@ -122,23 +122,23 @@ export class DistrictFinanceService {
     },
     user: AuthorizedUser
   ) {
-    if (!user.permissions.includes('district_expenditure:create')) {
-      throw new Error('Unauthorized: district_expenditure:create permission required');
+    if (!user.permissions.includes('circuit_expenditure:create')) {
+      throw new Error('Unauthorized: circuit_expenditure:create permission required');
     }
 
     const circuit = await prisma.circuit.findUnique({ where: { id: data.circuitId } });
     if (!circuit) {
-      throw new Error('District (Circuit) not found');
+      throw new Error('Circuit not found');
     }
 
-    const summary = await districtFinanceRepository.getFinancialSummary(data.circuitId);
+    const summary = await circuitFinanceRepository.getFinancialSummary(data.circuitId);
     if (summary.currentBalance < data.amount) {
       throw new Error(
-        `Insufficient district balance. Available: $${summary.currentBalance}, Requested: $${data.amount}`
+        `Insufficient circuit balance. Available: $${summary.currentBalance}, Requested: $${data.amount}`
       );
     }
 
-    const expenditure = await districtFinanceRepository.createExpenditure({
+    const expenditure = await circuitFinanceRepository.createExpenditure({
       id: uuidv4(),
       circuitId: data.circuitId,
       amount: data.amount,
@@ -154,9 +154,9 @@ export class DistrictFinanceService {
     await prisma.auditLog.create({
       data: {
         id: uuidv4(),
-        action: 'DISTRICT_EXPENDITURE_REQUESTED',
+        action: 'CIRCUIT_EXPENDITURE_REQUESTED',
         actorId: user.id,
-        entityType: 'DISTRICT_FINANCE',
+        entityType: 'CIRCUIT_FINANCE',
         entityId: data.circuitId,
         churchId: user.churchId,
         changes: JSON.stringify({ expenditure }),
@@ -170,14 +170,14 @@ export class DistrictFinanceService {
   async listPendingExpenditures(circuitId: string, user: AuthorizedUser, options?: { skip?: number; take?: number }) {
     const circuit = await prisma.circuit.findUnique({ where: { id: circuitId } });
     if (!circuit) {
-      throw new Error('District (Circuit) not found');
+      throw new Error('Circuit not found');
     }
 
-    if (!user.permissions.includes('district_expenditure:approve')) {
-      throw new Error('Unauthorized: district_expenditure:approve permission required');
+    if (!user.permissions.includes('circuit_expenditure:approve')) {
+      throw new Error('Unauthorized: circuit_expenditure:approve permission required');
     }
 
-    const { expenditures, total } = await districtFinanceRepository.listPendingExpenditures(circuitId, options);
+    const { expenditures, total } = await circuitFinanceRepository.listPendingExpenditures(circuitId, options);
 
     return {
       circuitId,
@@ -188,18 +188,18 @@ export class DistrictFinanceService {
     };
   }
 
-  async approveDistrictExpenditure(
+  async approveCircuitExpenditure(
     expenditureId: string,
     approved: boolean,
     approverNotes: string | undefined,
     user: AuthorizedUser,
     circuitId?: string
   ) {
-    if (!user.permissions.includes('district_expenditure:approve')) {
-      throw new Error('Unauthorized: district_expenditure:approve permission required');
+    if (!user.permissions.includes('circuit_expenditure:approve')) {
+      throw new Error('Unauthorized: circuit_expenditure:approve permission required');
     }
 
-    const expenditure = await prisma.districtExpenditure.findUnique({
+    const expenditure = await prisma.circuitExpenditure.findUnique({
       where: { id: expenditureId },
     });
 
@@ -208,14 +208,14 @@ export class DistrictFinanceService {
     }
 
     if (circuitId && expenditure.circuitId !== circuitId) {
-      throw new Error('Expenditure does not belong to the provided district');
+      throw new Error('Expenditure does not belong to the provided circuit');
     }
 
     if (expenditure.status !== 'SUBMITTED') {
       throw new Error(`Cannot approve: expenditure status is ${expenditure.status}`);
     }
 
-    const updated = await districtFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await circuitFinanceRepository.updateExpenditure(expenditureId, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
       approvedAt: new Date(),
@@ -225,9 +225,9 @@ export class DistrictFinanceService {
     await prisma.auditLog.create({
       data: {
         id: uuidv4(),
-        action: approved ? 'DISTRICT_EXPENDITURE_APPROVED' : 'DISTRICT_EXPENDITURE_REJECTED',
+        action: approved ? 'CIRCUIT_EXPENDITURE_APPROVED' : 'CIRCUIT_EXPENDITURE_REJECTED',
         actorId: user.id,
-        entityType: 'DISTRICT_FINANCE',
+        entityType: 'CIRCUIT_FINANCE',
         entityId: expenditure.circuitId,
         churchId: user.churchId,
         changes: JSON.stringify({ expenditureId, approved, approverNotes }),
@@ -238,30 +238,30 @@ export class DistrictFinanceService {
     return updated;
   }
 
-  async paymentDistrictExpenditure(
+  async paymentCircuitExpenditure(
     expenditureId: string,
     paymentMethod: string,
     user: AuthorizedUser,
     circuitId?: string
   ) {
-    if (!user.permissions.includes('district_payment:create')) {
-      throw new Error('Unauthorized: district_payment:create permission required');
+    if (!user.permissions.includes('circuit_payment:create')) {
+      throw new Error('Unauthorized: circuit_payment:create permission required');
     }
 
-    const expenditure = await prisma.districtExpenditure.findUnique({ where: { id: expenditureId } });
+    const expenditure = await prisma.circuitExpenditure.findUnique({ where: { id: expenditureId } });
     if (!expenditure) {
       throw new Error('Expenditure not found');
     }
 
     if (circuitId && expenditure.circuitId !== circuitId) {
-      throw new Error('Expenditure does not belong to the provided district');
+      throw new Error('Expenditure does not belong to the provided circuit');
     }
 
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');
     }
 
-    const updated = await districtFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await circuitFinanceRepository.updateExpenditure(expenditureId, {
       status: 'PAID',
       paidAt: new Date(),
       paymentMethod,
@@ -270,9 +270,9 @@ export class DistrictFinanceService {
     await prisma.auditLog.create({
       data: {
         id: uuidv4(),
-        action: 'DISTRICT_EXPENDITURE_PAID',
+        action: 'CIRCUIT_EXPENDITURE_PAID',
         actorId: user.id,
-        entityType: 'DISTRICT_FINANCE',
+        entityType: 'CIRCUIT_FINANCE',
         entityId: expenditure.circuitId,
         churchId: user.churchId,
         changes: JSON.stringify({ expenditureId, paymentMethod }),
@@ -284,4 +284,4 @@ export class DistrictFinanceService {
   }
 }
 
-export const districtFinanceService = new DistrictFinanceService();
+export const circuitFinanceService = new CircuitFinanceService();

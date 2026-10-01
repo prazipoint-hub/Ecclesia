@@ -1,7 +1,7 @@
 import { prisma } from '@/database';
 import { Prisma } from '@prisma/client';
 
-export class DistrictFinanceRepository {
+export class CircuitFinanceRepository {
   async getCircuit(circuitId: string) {
     return prisma.circuit.findUnique({
       where: { id: circuitId },
@@ -9,32 +9,32 @@ export class DistrictFinanceRepository {
   }
 
   async getFinanceAccount(circuitId: string) {
-    return prisma.districtFinancialAccount.findUnique({
+    return prisma.circuitFinancialAccount.findUnique({
       where: { circuitId },
     });
   }
 
-  async createFinanceAccount(data: Prisma.DistrictFinancialAccountCreateInput) {
-    return prisma.districtFinancialAccount.create({ data });
+  async createFinanceAccount(data: Prisma.CircuitFinancialAccountCreateInput) {
+    return prisma.circuitFinancialAccount.create({ data });
   }
 
-  async createReceipt(data: Prisma.DistrictReceiptCreateInput) {
-    return prisma.districtReceipt.create({ data });
+  async createReceipt(data: Prisma.CircuitReceiptCreateInput) {
+    return prisma.circuitReceipt.create({ data });
   }
 
-  async createExpenditure(data: Prisma.DistrictExpenditureCreateInput) {
-    return prisma.districtExpenditure.create({ data });
+  async createExpenditure(data: Prisma.CircuitExpenditureCreateInput) {
+    return prisma.circuitExpenditure.create({ data });
   }
 
-  async listReceiptsByDistrict(circuitId: string, options?: { skip?: number; take?: number }) {
+  async listReceiptsByCircuit(circuitId: string, options?: { skip?: number; take?: number }) {
     const [receipts, total] = await Promise.all([
-      prisma.districtReceipt.findMany({
+      prisma.circuitReceipt.findMany({
         where: { circuitId },
         skip: options?.skip,
         take: options?.take,
         orderBy: { issuedAt: 'desc' },
       }),
-      prisma.districtReceipt.count({ where: { circuitId } }),
+      prisma.circuitReceipt.count({ where: { circuitId } }),
     ]);
 
     return { receipts, total };
@@ -42,7 +42,7 @@ export class DistrictFinanceRepository {
 
   async listPendingExpenditures(circuitId: string, options?: { skip?: number; take?: number }) {
     const [expenditures, total] = await Promise.all([
-      prisma.districtExpenditure.findMany({
+      prisma.circuitExpenditure.findMany({
         where: {
           circuitId,
           status: 'SUBMITTED',
@@ -51,7 +51,7 @@ export class DistrictFinanceRepository {
         take: options?.take,
         orderBy: { requestedAt: 'desc' },
       }),
-      prisma.districtExpenditure.count({
+      prisma.circuitExpenditure.count({
         where: {
           circuitId,
           status: 'SUBMITTED',
@@ -62,26 +62,26 @@ export class DistrictFinanceRepository {
     return { expenditures, total };
   }
 
-  async updateExpenditure(id: string, data: Prisma.DistrictExpenditureUpdateInput) {
-    return prisma.districtExpenditure.update({
+  async updateExpenditure(id: string, data: Prisma.CircuitExpenditureUpdateInput) {
+    return prisma.circuitExpenditure.update({
       where: { id },
       data,
     });
   }
 
   async countReceipts(circuitId: string) {
-    return prisma.districtReceipt.count({ where: { circuitId } });
+    return prisma.circuitReceipt.count({ where: { circuitId } });
   }
 
   async getFinancialSummary(circuitId: string) {
     const account = await this.getFinanceAccount(circuitId);
 
     const [incomeAggregate, expenseAggregate] = await Promise.all([
-      prisma.districtReceipt.aggregate({
+      prisma.circuitReceipt.aggregate({
         _sum: { amount: true },
         where: { circuitId, status: { not: 'VOIDED' } },
       }),
-      prisma.districtExpenditure.aggregate({
+      prisma.circuitExpenditure.aggregate({
         _sum: { amount: true },
         where: { circuitId, status: { in: ['APPROVED', 'PAID'] } },
       }),
@@ -101,4 +101,4 @@ export class DistrictFinanceRepository {
   }
 }
 
-export const districtFinanceRepository = new DistrictFinanceRepository();
+export const circuitFinanceRepository = new CircuitFinanceRepository();

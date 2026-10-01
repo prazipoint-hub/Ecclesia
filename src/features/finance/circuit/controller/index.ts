@@ -1,14 +1,14 @@
 import { Response } from 'express';
-import { districtFinanceService } from '../service';
-import { CreateDistrictReceiptSchema, CreateDistrictExpenditureSchema } from '../types';
+import { circuitFinanceService } from '../service';
+import { CreateCircuitReceiptSchema, CreateCircuitExpenditureSchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 
-export class DistrictFinanceController {
+export class CircuitFinanceController {
   async getDashboard(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { circuitId } = req.params;
-      const dashboard = await districtFinanceService.getDistrictFinanceDashboard(circuitId, req.user!);
+      const dashboard = await circuitFinanceService.getCircuitFinanceDashboard(circuitId, req.user!);
       res.json(dashboard);
     } catch (error) {
       handleError(error, res);
@@ -18,12 +18,12 @@ export class DistrictFinanceController {
   async createReceipt(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { circuitId } = req.params;
-      const validated = CreateDistrictReceiptSchema.parse({
+      const validated = CreateCircuitReceiptSchema.parse({
         ...req.body,
         circuitId,
       });
 
-      const receipt = await districtFinanceService.createDistrictReceipt(validated, req.user!);
+      const receipt = await circuitFinanceService.createCircuitReceipt(validated, req.user!);
       res.status(201).json(receipt);
     } catch (error) {
       handleError(error, res);
@@ -33,12 +33,12 @@ export class DistrictFinanceController {
   async createExpenditure(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { circuitId } = req.params;
-      const validated = CreateDistrictExpenditureSchema.parse({
+      const validated = CreateCircuitExpenditureSchema.parse({
         ...req.body,
         circuitId,
       });
 
-      const expenditure = await districtFinanceService.createDistrictExpenditure(validated, req.user!);
+      const expenditure = await circuitFinanceService.createCircuitExpenditure(validated, req.user!);
       res.status(201).json(expenditure);
     } catch (error) {
       handleError(error, res);
@@ -50,7 +50,7 @@ export class DistrictFinanceController {
       const { circuitId } = req.params;
       const { skip = '0', take = '20' } = req.query;
 
-      const pending = await districtFinanceService.listPendingExpenditures(
+      const pending = await circuitFinanceService.listPendingExpenditures(
         circuitId,
         req.user!,
         {
@@ -75,7 +75,7 @@ export class DistrictFinanceController {
         return;
       }
 
-      const result = await districtFinanceService.approveDistrictExpenditure(
+      const result = await circuitFinanceService.approveCircuitExpenditure(
         expenditureId,
         approved,
         approverNotes,
@@ -99,7 +99,7 @@ export class DistrictFinanceController {
         return;
       }
 
-      const result = await districtFinanceService.paymentDistrictExpenditure(
+      const result = await circuitFinanceService.paymentCircuitExpenditure(
         expenditureId,
         paymentMethod,
         req.user!,
@@ -113,4 +113,4 @@ export class DistrictFinanceController {
   }
 }
 
-export const districtFinanceController = new DistrictFinanceController();
+export const circuitFinanceController = new CircuitFinanceController();

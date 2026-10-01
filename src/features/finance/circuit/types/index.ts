@@ -1,20 +1,19 @@
 import { z } from 'zod';
 
 /**
- * DISTRICT FINANCE TYPES
+ * CIRCUIT FINANCE TYPES
  *
- * District finances are completely isolated from circuit finances.
- * Every district financial entity carries districtId to enforce isolation.
- * In this system, Circuit is the district organizational unit.
+ * Circuit finances are completely isolated from church finances.
+ * Every circuit financial entity carries circuitId to enforce isolation.
  */
 
-export const CreateDistrictFinanceAccountSchema = z.object({
+export const CreateCircuitFinanceAccountSchema = z.object({
   circuitId: z.string().uuid(),
   openingBalance: z.number().default(0),
   currency: z.string().default('USD'),
 });
 
-export const CreateDistrictReceiptSchema = z.object({
+export const CreateCircuitReceiptSchema = z.object({
   circuitId: z.string().uuid(),
   memberId: z.string().uuid().optional(),
   amount: z.number().positive(),
@@ -25,7 +24,7 @@ export const CreateDistrictReceiptSchema = z.object({
   description: z.string().optional(),
 });
 
-export const CreateDistrictExpenditureSchema = z.object({
+export const CreateCircuitExpenditureSchema = z.object({
   circuitId: z.string().uuid(),
   amount: z.number().positive(),
   purpose: z.string().min(1),
@@ -35,13 +34,13 @@ export const CreateDistrictExpenditureSchema = z.object({
   attachments: z.array(z.string()).optional(),
 });
 
-export const ApproveDistrictExpenditureSchema = z.object({
+export const ApproveCircuitExpenditureSchema = z.object({
   expenditureId: z.string().uuid(),
   approved: z.boolean(),
   approverNotes: z.string().optional(),
 });
 
-export type CreateDistrictFinanceAccountInput = z.infer<typeof CreateDistrictFinanceAccountSchema>;
-export type CreateDistrictReceiptInput = z.infer<typeof CreateDistrictReceiptSchema>;
-export type CreateDistrictExpenditureInput = z.infer<typeof CreateDistrictExpenditureSchema>;
-export type ApproveDistrictExpenditureInput = z.infer<typeof ApproveDistrictExpenditureSchema>;
+export type CreateCircuitFinanceAccountInput = z.infer<typeof CreateCircuitFinanceAccountSchema>;
+export type CreateCircuitReceiptInput = z.infer<typeof CreateCircuitReceiptSchema>;
+export type CreateCircuitExpenditureInput = z.infer<typeof CreateCircuitExpenditureSchema>;
+export type ApproveCircuitExpenditureInput = z.infer<typeof ApproveCircuitExpenditureSchema>;
