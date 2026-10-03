@@ -1,0 +1,41 @@
+// This file will be updated by the member dashboard feature.
+model Notification {
+  id            String    @id @default(cuid())
+  recipientId   String?
+  audienceType  String?   // CHURCH, SECTION, ORGANIZATION, MEMBER
+  audienceId    String?
+  type          String    // PAYMENT_RECEIPT, BROADCAST, SYSTEM, APPROVAL
+  title         String
+  body          String    @db.Text
+  entityType    String?
+  entityId      String?
+  metadata      Json?
+  read          Boolean   @default(false)
+  readAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([recipientId])
+  @@index([audienceType, audienceId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model MemberBroadcast {
+  id            String    @id @default(cuid())
+  churchId      String
+  sectionId     String?
+  organizationId String?
+  createdBy     String
+  title         String
+  body          String    @db.Text
+  audienceType  String    // CHURCH, SECTION, ORGANIZATION
+  status        String    @default("DRAFT") // DRAFT, SENT, ARCHIVED
+  sentAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([churchId])
+  @@index([sectionId])
+  @@index([organizationId])
+}
