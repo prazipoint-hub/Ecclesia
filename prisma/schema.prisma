@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core ecclesia schema (UMC organizational framework)
+
+model Church {
+  id        String    @id @default(cuid())
+  name      String
+  code      String?   @unique
+  sections  Section[]
+  families  Family[]
+  members   Member[]
+  organizations Organization[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?  @unique
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id])
+  members   Member[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Member {
+  id                 String   @id @default(cuid())
+  firstName          String
+  middleName         String?
+  lastName           String
+  dateOfBirth        DateTime?
+  isDependent        Boolean  @default(false)
+  parentMemberId     String?  
+  parentMember       Member?  @relation("ParentChild", fields: [parentMemberId], references: [id])
+  children           Member[] @relation("ParentChild")
+  phone              String?  @unique
+  email              String?  @unique
+  address            String?
+  membershipNumber   String?  @unique
+  churchId           String
+  church             Church   @relation(fields: [churchId], references: [id])
+  sectionId          String?
+  section            Section? @relation(fields: [sectionId], references: [id])
+  membershipStatusId String
+  membershipStatus   MembershipStatus @relation(fields: [membershipStatusId], references: [id])
+  membershipEvents   MembershipEvent[]
+  leadershipAssignments LeadershipAssignment[]
+  organizationMemberships OrganizationMembership[]
+  familyRelationships FamilyRelationship[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model MembershipStatus {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String?
+  members         Member[]
+  previousChanges MembershipStatusChange[] @relation("previous")
+  proposedChanges MembershipStatusChange[] @relation("proposed")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model MembershipStatusChange {
+  id                String   @id @default(cuid())
+  memberId          String
+  member            Member   @relation(fields: [memberId], references: [id])
+  previousStatusId  String
+  previousStatus    MembershipStatus @relation("previous", fields: [previousStatusId], references: [id])
+  proposedStatusId  String
+  proposedStatus    MembershipStatus @relation("proposed", fields: [proposedStatusId], references: [id])
+  reason            String?
+  effectiveDate     DateTime
+  supportingInfo    String?
+  requestedById     String
+  requestedByUser   User     @relation("requestedBy", fields: [requestedById], references: [id])
+  requestedAt       DateTime @default(now())
+  approvedById      String?
+  approvedByUser    User?    @relation("approvedBy", fields: [approvedById], references: [id])
+  approvedAt        DateTime?
+  status            String   @default("PENDING")
+  comments          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  events            MembershipEvent[]
+}
+
+model MembershipEvent {
+  id                        String   @id @default(cuid())
+  memberId                  String
+  member                    Member   @relation(fields: [memberId], references: [id])
+  type                      String
+  details                   Json?
+  membershipStatusChangeId  String?
+  membershipStatusChange    MembershipStatusChange? @relation(fields: [membershipStatusChangeId], references: [id])
+  createdAt                 DateTime @default(now())
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  role         String   // ADMIN, STATISTICIAN, VICE_STATISTICIAN, PASTOR, MEMBER, PARENT
+  memberId     String?  
+  member       Member?  @relation(fields: [memberId], references: [id])
+  permissions  Json?
+  churchId     String?
+  church       Church?  @relation(fields: [churchId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Family {
+  id        String   @id @default(cuid())
+  name      String
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id])
+  members   FamilyRelationship[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FamilyRelationship {
+  id               String   @id @default(cuid())
+  familyId         String
+  family           Family   @relation(fields: [familyId], references: [id])
+  memberId         String
+  member           Member   @relation(fields: [memberId], references: [id])
+  relationshipType String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model LeadershipAssignment {
+  id            String   @id @default(cuid())
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+  sectionId     String?
+  section       Section? @relation(fields: [sectionId], references: [id])
+  organizationId String?
+  position      String
+  startDate     DateTime
+  endDate       DateTime?
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  description String?
+  churchId  String
+  church    Church   @relation(fields: [churchId], references: [id])
+  memberships OrganizationMembership[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrganizationMembership {
+  id             String   @id @default(cuid())
+  memberId       String
+  member         Member   @relation(fields: [memberId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  status         String   @default("ACTIVE")
+  joinedAt       DateTime @default(now())
+  leftAt         DateTime?
+  position       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
