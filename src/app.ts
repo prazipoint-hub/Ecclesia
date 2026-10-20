@@ -32,7 +32,7 @@ export function createApp(): Application {
   app.use('/api/v2/sections', sectionFinanceRoutes);
   app.use('/api/v2/churches', mainChurchFinanceRoutes);
   app.use('/api/v2/circuits', circuitFinanceRoutes);
-  app.use('/api/v2/circuits', districtFinanceRoutes);
+  app.use('/api/v2/districts', districtFinanceRoutes);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);

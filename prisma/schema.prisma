@@ -182,3 +182,44 @@ model OrganizationMembership {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model Notification {
+  id           String   @id @default(cuid())
+  recipientId  String?
+  audienceType String?
+  audienceId   String?
+  type         String
+  title        String
+  body         String   @db.Text
+  entityType   String?
+  entityId     String?
+  metadata     Json?
+  read         Boolean  @default(false)
+  readAt       DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([recipientId])
+  @@index([audienceType, audienceId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model MemberBroadcast {
+  id             String   @id @default(cuid())
+  churchId       String
+  sectionId      String?
+  organizationId String?
+  createdBy      String
+  title          String
+  body           String   @db.Text
+  audienceType   String
+  status         String   @default("DRAFT")
+  sentAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([sectionId])
+  @@index([organizationId])
+}
