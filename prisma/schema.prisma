@@ -17,6 +17,7 @@ model Church {
   families  Family[]
   members   Member[]
   organizations Organization[]
+  users     User[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -28,6 +29,7 @@ model Section {
   churchId  String
   church    Church   @relation(fields: [churchId], references: [id])
   members   Member[]
+  leadershipAssignments LeadershipAssignment[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -56,6 +58,8 @@ model Member {
   leadershipAssignments LeadershipAssignment[]
   organizationMemberships OrganizationMembership[]
   familyRelationships FamilyRelationship[]
+  membershipStatusChanges MembershipStatusChange[]
+  user User? @relation("UserMember")
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
@@ -113,11 +117,13 @@ model User {
   firstName    String?
   lastName     String?
   role         String   // ADMIN, STATISTICIAN, VICE_STATISTICIAN, PASTOR, MEMBER, PARENT
-  memberId     String?  
-  member       Member?  @relation(fields: [memberId], references: [id])
+  memberId     String?  @unique
+  member       Member?  @relation("UserMember", fields: [memberId], references: [id])
   permissions  Json?
   churchId     String?
   church       Church?  @relation(fields: [churchId], references: [id])
+  requestedMembershipStatusChanges MembershipStatusChange[] @relation("requestedBy")
+  approvedMembershipStatusChanges MembershipStatusChange[] @relation("approvedBy")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
