@@ -98,9 +98,10 @@ export class AdministrativeReportRepository {
       include: {
         family: true,
         section: true,
-        user: { select: { email: true, phone: true } },
+        user: { select: { email: true } },
+        organizationMemberships: true,
       },
-      orderBy: { surname: 'asc' },
+      orderBy: { lastName: 'asc' },
     });
 
     if (organizationId) {
@@ -191,7 +192,7 @@ export class AdministrativeReportRepository {
         event: true,
         member: true,
       },
-      orderBy: [{ event: { startDateTime: 'desc' } }, { member: { surname: 'asc' } }],
+      orderBy: [{ event: { startDateTime: 'desc' } }, { member: { lastName: 'asc' } }],
     });
 
     return attendances;
@@ -245,10 +246,7 @@ export class AdministrativeReportRepository {
       prisma.member.count({ where }),
       prisma.member.count({ where: { ...where, gender: 'MALE' } }),
       prisma.member.count({ where: { ...where, gender: 'FEMALE' } }),
-      prisma.member.aggregate({
-        where,
-        _avg: { dateOfBirth: true },
-      }),
+      Promise.resolve(null),
     ]);
 
     return {

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, BookOpen, Building2, Calendar, FileText, FolderKanban, Home, Layers3, Settings, ShieldCheck, Users, X } from 'lucide-react';
+import { BarChart3, Building2, Calendar, FileText, Home, Layers3, Settings, Users, X } from 'lucide-react';
 import { useOrganizationStore } from '@stores/organizationStore';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }

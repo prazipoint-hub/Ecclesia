@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, ArrowRight } from 'lucide-react';
+import { Briefcase, ArrowRight } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { ScopeBadge } from '@/components/hierarchy/ScopeBadge';
 
@@ -27,7 +27,7 @@ export const DistrictCommittees = () => (
           <div key={name} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">{name}</h2>
-              <BriefcaseBusiness className="h-5 w-5 text-primary-600" />
+              <Briefcase className="h-5 w-5 text-primary-600" />
             </div>
             <p className="mt-5 text-3xl font-bold text-gray-900">{reports}</p>
             <p className="mt-1 text-sm text-gray-500">Reports submitted</p>

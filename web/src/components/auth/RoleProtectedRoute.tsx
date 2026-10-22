@@ -17,7 +17,7 @@ export const RoleProtectedRoute = ({
   requireMultiRole = false,
 }: RoleProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const { getCurrentContext, hasRole, hasRoleAtLevel, isMultiRoleUser } = useRoleAware();
+  const { getCurrentContext, hasRole, isMultiRoleUser } = useRoleAware();
 
   if (isLoading) {
     return (

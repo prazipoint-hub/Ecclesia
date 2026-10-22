@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Building2, Landmark, ShieldCheck } from 'lucide-react';
+import { Building2, Landmark, ShieldCheck, Users } from 'lucide-react';
 import type { OrganizationUnit } from '@/types/organization';
 
 export const ScopeBadge = ({ type }: { type: OrganizationUnit['type'] }) => {
@@ -18,6 +18,11 @@ export const ScopeBadge = ({ type }: { type: OrganizationUnit['type'] }) => {
       label: 'Circuit',
       className: 'bg-sky-100 text-sky-700',
       icon: <ShieldCheck className="h-3.5 w-3.5" />,
+    },
+    SECTION: {
+      label: 'Section',
+      className: 'bg-amber-100 text-amber-700',
+      icon: <Users className="h-3.5 w-3.5" />,
     },
   };
 

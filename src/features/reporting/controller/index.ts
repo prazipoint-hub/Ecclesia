@@ -11,15 +11,11 @@ export class ReportingController {
    */
   async generateFinancialReport(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const validated = GenerateFinancialReportSchema.parse({
-        ...req.body,
-        startDate: new Date(req.body.startDate),
-        endDate: new Date(req.body.endDate),
-      });
+      const validated = GenerateFinancialReportSchema.parse(req.body);
 
       const report = await reportingService.generateFinancialReport(
         {
-          ...validated,
+          ...validated, startDate: new Date(validated.startDate), endDate: new Date(validated.endDate),
         },
         req.user!
       );
@@ -36,15 +32,13 @@ export class ReportingController {
    */
   async generateAdministrativeReport(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const validated = GenerateAdministrativeReportSchema.parse({
-        ...req.body,
-        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
-        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
-      });
+      const validated = GenerateAdministrativeReportSchema.parse(req.body);
 
       const report = await reportingService.generateAdministrativeReport(
         {
           ...validated,
+          startDate: validated.startDate ? new Date(validated.startDate) : undefined,
+          endDate: validated.endDate ? new Date(validated.endDate) : undefined,
         },
         req.user!
       );
@@ -61,15 +55,11 @@ export class ReportingController {
    */
   async generateAuditReport(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const validated = GenerateAuditReportSchema.parse({
-        ...req.body,
-        startDate: new Date(req.body.startDate),
-        endDate: new Date(req.body.endDate),
-      });
+      const validated = GenerateAuditReportSchema.parse(req.body);
 
       const report = await reportingService.generateAuditReport(
         {
-          ...validated,
+          ...validated, startDate: new Date(validated.startDate), endDate: new Date(validated.endDate),
         },
         req.user!
       );

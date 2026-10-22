@@ -32,7 +32,6 @@ export class AuditReportRepository {
 
     return prisma.auditLog.findMany({
       where,
-      include: { actor: { select: { email: true, member: { select: { surname: true } } } } },
       orderBy: { timestamp: 'desc' },
       take: 1000,
     });

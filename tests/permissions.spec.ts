@@ -2,6 +2,7 @@
 
 import { canReceiveMoney, canConfirmIncome, canRunPOS, canHandToTreasurer } from "../src/models/church-finance-model";
 import { RoleAssignment, Role, EntityScope } from "../src/models/church-finance-model";
+import { describe, expect, test } from "vitest";
 
 describe("permission helpers - clarified scopes", () => {
   const churchScope: EntityScope = { type: "church", id: "main" };

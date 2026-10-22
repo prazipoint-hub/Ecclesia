@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, BriefcaseBusiness, Building2, CalendarRange, Plus } from 'lucide-react';
+import { ArrowRight, Briefcase, Building2, CalendarRange, Plus } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { Button } from '@/components/common/Button';
 import { Card, CardContent, CardHeader } from '@/components/common/Card';
@@ -97,7 +97,7 @@ export const DistrictManagement = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {[
-                { title: 'Committee oversight', route: '/district/committees/manage', icon: BriefcaseBusiness },
+                { title: 'Committee oversight', route: '/district/committees/manage', icon: Briefcase },
                 { title: 'Program planning', route: '/district/programs', icon: CalendarRange },
                 { title: 'Reports and analytics', route: '/district/reports', icon: ArrowRight },
               ].map(({ title, route, icon: Icon }) => (

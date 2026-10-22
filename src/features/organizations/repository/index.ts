@@ -156,8 +156,10 @@ export class OrganizationRepository {
       where: { memberId },
       include: {
         organization: true,
-        roles: {
+        member: {
+          include: { organizationRoles: {
           where: { endDate: null },
+          } },
         },
       },
     });

@@ -92,6 +92,13 @@ export class SectionService {
       throw new Error('Member not found in this church');
     }
 
+    const roleName = `Section ${data.position}`;
+    const role = await prisma.role.upsert({
+      where: { churchId_name: { churchId: section.churchId, name: roleName } },
+      update: {},
+      create: { id: uuidv4(), churchId: section.churchId, name: roleName },
+    });
+
     // End any existing assignment with this position in this section
     await prisma.leadershipAssignment.updateMany({
       where: {
@@ -110,6 +117,7 @@ export class SectionService {
         id: uuidv4(),
         churchId: section.churchId,
         memberId: data.memberId,
+        roleId: role.id,
         sectionId: data.sectionId,
         position: data.position,
         startDate: data.effectiveDate || new Date(),

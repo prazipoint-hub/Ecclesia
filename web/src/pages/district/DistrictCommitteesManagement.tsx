@@ -11,7 +11,7 @@ import { useOrganization } from '@/hooks/useOrganization';
 import { usePermissions } from '@/hooks/usePermissions';
 import { organizationService } from '@/services/organizationService';
 import type { Committee } from '@/types/committee';
-import { BriefcaseBusiness } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 export const DistrictCommitteesManagement = () => {
   const { selectedUnitId, getCommitteesForScope } = useOrganization();
@@ -21,34 +21,27 @@ export const DistrictCommitteesManagement = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null);
   const [committees, setCommittees] = useState<Committee[]>(getCommitteesForScope());
-  const [isLoading, setIsLoading] = useState(false);
 
   const canCreateCommittee = hasPermission('committee', 'CREATE');
   const canEditCommittee = hasPermission('committee', 'UPDATE');
   const canDeleteCommittee = hasPermission('committee', 'DELETE');
 
   const handleCreateCommittee = async (data: Partial<Committee>) => {
-    setIsLoading(true);
     try {
       const newCommittee = await organizationService.createCommittee(data);
       setCommittees([...committees, newCommittee]);
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleEditCommittee = async (data: Partial<Committee>) => {
     if (!selectedCommittee) return;
-    setIsLoading(true);
     try {
       await organizationService.createCommittee(data);
       setCommittees(committees.map((c) => (c.id === selectedCommittee.id ? { ...c, ...data } : c)));
     } catch (error) {
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -80,7 +73,7 @@ export const DistrictCommitteesManagement = () => {
 
         {committees.length === 0 ? (
           <EmptyState
-            icon={BriefcaseBusiness}
+            icon={Briefcase}
             title="No committees yet"
             description="Create your first district committee to get started."
             action={

@@ -135,6 +135,7 @@ model Section {
   church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
 
   name        String
+  code        String?
   description String?
 
   members  Member[]
@@ -307,8 +308,11 @@ model Organization {
   churchId String
   church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
 
-  name        String // MUMC, RRW, UMYF, Children's Ministries, etc.
-  description String?
+  name             String // MUMC, RRW, UMYF, Children's Ministries, etc.
+  shortName        String
+  organizationType String
+  status           String  @default("ACTIVE")
+  description      String?
 
   members          OrganizationMembership[]
   roles            OrganizationRoleAssignment[]
@@ -330,8 +334,10 @@ model OrganizationMembership {
   memberId String
   member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
-  joinedAt         DateTime @default(now())
-  membershipStatus String   @default("ACTIVE") // ACTIVE, INACTIVE, TRANSFERRED
+  joinedAt         DateTime  @default(now())
+  endedAt          DateTime?
+  membershipStatus String    @default("ACTIVE") // ACTIVE, INACTIVE, TRANSFERRED
+  notes            String?   @db.Text
 
   @@unique([organizationId, memberId])
   @@index([organizationId])
@@ -407,9 +413,9 @@ model Permission {
 }
 
 model RolePermission {
-  id     String  @id @default(cuid())
-  roleId String?
-  role   Role?   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -530,6 +536,7 @@ model FinancialAccount {
 
   openingBalance Decimal @default(0)
   currentBalance Decimal @default(0)
+  type           String  @default("OPERATING")
   status         String  @default("ACTIVE") // ACTIVE, INACTIVE
 
   funds        Fund[]
@@ -572,8 +579,9 @@ model Receipt {
   fundId String
   fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
 
-  memberId String?
-  member   Member? @relation(fields: [memberId], references: [id])
+  memberId       String?
+  member         Member? @relation(fields: [memberId], references: [id])
+  organizationId String?
 
   amount        Decimal
   currency      String  @default("USD")
@@ -584,6 +592,7 @@ model Receipt {
   status        String @default("ISSUED") // ISSUED, VOIDED, REVERSED
 
   recordedAt DateTime @default(now())
+  issuedAt   DateTime @default(now())
   recordedBy String? // Member ID of recorder
 
   createdAt          DateTime          @default(now())
@@ -605,6 +614,7 @@ model Expenditure {
 
   requestedBy       String
   requestedByMember Member? @relation(fields: [requestedBy], references: [id])
+  organizationId    String?
 
   amount   Decimal
   purpose  String
@@ -614,7 +624,8 @@ model Expenditure {
   approvedBy String?
   approvedAt DateTime?
 
-  paidAt DateTime?
+  paidAt      DateTime?
+  requestedAt DateTime  @default(now())
 
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
@@ -1276,9 +1287,12 @@ model OrganizationFinancialAccount {
   id             String       @id @default(cuid())
   organizationId String       @unique
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  churchId       String
 
-  balance Decimal @default(0)
-  status  String  @default("ACTIVE")
+  openingBalance Decimal @default(0)
+  currentBalance Decimal @default(0)
+  currency       String  @default("USD")
+  status         String  @default("ACTIVE")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

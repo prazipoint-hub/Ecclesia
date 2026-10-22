@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, FileText, ListChecks, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Building2, ListChecks } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { ScopeBadge } from '@/components/hierarchy/ScopeBadge';
 

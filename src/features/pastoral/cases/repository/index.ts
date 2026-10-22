@@ -5,7 +5,7 @@ import {
   CreatePastoralCaseDTO,
   UpdatePastoralCaseDTO,
   PastoralCaseResponse,
-} from '../types';
+} from '../../types';
 
 const prisma = new PrismaClient();
 

@@ -4,6 +4,7 @@ CREATE TABLE `User` (
     `email` VARCHAR(191) NOT NULL,
     `passwordHash` VARCHAR(191) NOT NULL,
     `memberId` VARCHAR(191) NULL,
+    `churchId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -69,6 +70,7 @@ CREATE TABLE `Section` (
     `id` VARCHAR(191) NOT NULL,
     `churchId` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NULL,
     `description` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -85,6 +87,7 @@ CREATE TABLE `Family` (
     `sectionId` VARCHAR(191) NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NULL,
+    `headOfFamilyId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -100,6 +103,7 @@ CREATE TABLE `Member` (
     `sectionId` VARCHAR(191) NULL,
     `familyId` VARCHAR(191) NULL,
     `firstName` VARCHAR(191) NOT NULL,
+    `middleName` VARCHAR(191) NULL,
     `lastName` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NULL,
     `phone` VARCHAR(191) NULL,
@@ -108,8 +112,11 @@ CREATE TABLE `Member` (
     `membershipNumber` VARCHAR(191) NOT NULL,
     `membershipStatus` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
     `joinDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `membershipDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `address` VARCHAR(191) NULL,
     `isDependent` BOOLEAN NOT NULL DEFAULT false,
     `parentId` VARCHAR(191) NULL,
+    `parentMemberId` VARCHAR(191) NULL,
     `maritalStatus` VARCHAR(191) NULL,
     `lastPastoralContactAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -132,6 +139,7 @@ CREATE TABLE `FamilyRelationship` (
     `parentId` VARCHAR(191) NULL,
     `childId` VARCHAR(191) NULL,
     `relationshipType` VARCHAR(191) NOT NULL,
+    `memberId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `familyId` VARCHAR(191) NULL,
 
@@ -143,6 +151,9 @@ CREATE TABLE `Organization` (
     `id` VARCHAR(191) NOT NULL,
     `churchId` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
+    `shortName` VARCHAR(191) NOT NULL,
+    `organizationType` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
     `description` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -158,7 +169,9 @@ CREATE TABLE `OrganizationMembership` (
     `organizationId` VARCHAR(191) NOT NULL,
     `memberId` VARCHAR(191) NOT NULL,
     `joinedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `endedAt` DATETIME(3) NULL,
     `membershipStatus` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
+    `notes` TEXT NULL,
 
     INDEX `OrganizationMembership_organizationId_idx`(`organizationId`),
     INDEX `OrganizationMembership_memberId_idx`(`memberId`),
@@ -239,6 +252,7 @@ CREATE TABLE `LeadershipAssignment` (
     `memberId` VARCHAR(191) NOT NULL,
     `roleId` VARCHAR(191) NOT NULL,
     `committeeId` VARCHAR(191) NULL,
+    `sectionId` VARCHAR(191) NULL,
     `position` VARCHAR(191) NULL,
     `startDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `endDate` DATETIME(3) NULL,
@@ -310,6 +324,7 @@ CREATE TABLE `FinancialAccount` (
     `churchId` VARCHAR(191) NOT NULL,
     `openingBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
     `currentBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `type` VARCHAR(191) NOT NULL DEFAULT 'OPERATING',
     `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -341,6 +356,7 @@ CREATE TABLE `Receipt` (
     `churchId` VARCHAR(191) NOT NULL,
     `fundId` VARCHAR(191) NOT NULL,
     `memberId` VARCHAR(191) NULL,
+    `organizationId` VARCHAR(191) NULL,
     `amount` DECIMAL(65, 30) NOT NULL,
     `currency` VARCHAR(191) NOT NULL DEFAULT 'USD',
     `incomeType` VARCHAR(191) NOT NULL,
@@ -348,6 +364,7 @@ CREATE TABLE `Receipt` (
     `receiptNumber` VARCHAR(191) NOT NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT 'ISSUED',
     `recordedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `issuedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `recordedBy` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `financialAccountId` VARCHAR(191) NULL,
@@ -365,6 +382,7 @@ CREATE TABLE `Expenditure` (
     `churchId` VARCHAR(191) NOT NULL,
     `fundId` VARCHAR(191) NOT NULL,
     `requestedBy` VARCHAR(191) NOT NULL,
+    `organizationId` VARCHAR(191) NULL,
     `amount` DECIMAL(65, 30) NOT NULL,
     `purpose` VARCHAR(191) NOT NULL,
     `category` VARCHAR(191) NOT NULL,
@@ -372,6 +390,7 @@ CREATE TABLE `Expenditure` (
     `approvedBy` VARCHAR(191) NULL,
     `approvedAt` DATETIME(3) NULL,
     `paidAt` DATETIME(3) NULL,
+    `requestedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `financialAccountId` VARCHAR(191) NULL,
@@ -401,6 +420,8 @@ CREATE TABLE `CashSession` (
 CREATE TABLE `SectionFinancialAccount` (
     `id` VARCHAR(191) NOT NULL,
     `sectionId` VARCHAR(191) NOT NULL,
+    `churchId` VARCHAR(191) NULL,
+    `currency` VARCHAR(191) NOT NULL DEFAULT 'USD',
     `openingBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
     `currentBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
     `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
@@ -415,14 +436,21 @@ CREATE TABLE `SectionFinancialAccount` (
 CREATE TABLE `SectionReceipt` (
     `id` VARCHAR(191) NOT NULL,
     `sectionId` VARCHAR(191) NOT NULL,
-    `accountId` VARCHAR(191) NOT NULL,
+    `accountId` VARCHAR(191) NULL,
     `memberId` VARCHAR(191) NULL,
     `amount` DECIMAL(65, 30) NOT NULL,
     `incomeType` VARCHAR(191) NOT NULL,
     `paymentMethod` VARCHAR(191) NOT NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT 'ISSUED',
+    `receiptNumber` VARCHAR(191) NOT NULL,
+    `currency` VARCHAR(191) NOT NULL DEFAULT 'USD',
+    `issuedBy` VARCHAR(191) NULL,
+    `fundId` VARCHAR(191) NULL,
+    `reference` VARCHAR(191) NULL,
+    `issuedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `recordedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    UNIQUE INDEX `SectionReceipt_receiptNumber_key`(`receiptNumber`),
     INDEX `SectionReceipt_sectionId_idx`(`sectionId`),
     INDEX `SectionReceipt_accountId_idx`(`accountId`),
     PRIMARY KEY (`id`)
@@ -432,9 +460,18 @@ CREATE TABLE `SectionReceipt` (
 CREATE TABLE `SectionExpenditure` (
     `id` VARCHAR(191) NOT NULL,
     `sectionId` VARCHAR(191) NOT NULL,
-    `accountId` VARCHAR(191) NOT NULL,
+    `accountId` VARCHAR(191) NULL,
     `amount` DECIMAL(65, 30) NOT NULL,
     `purpose` VARCHAR(191) NOT NULL,
+    `expenseCategory` VARCHAR(191) NULL,
+    `description` TEXT NULL,
+    `attachments` JSON NULL,
+    `requestedBy` VARCHAR(191) NULL,
+    `requestedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `approvedBy` VARCHAR(191) NULL,
+    `approverNotes` TEXT NULL,
+    `paymentMethod` VARCHAR(191) NULL,
+    `paidAt` DATETIME(3) NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT 'DRAFT',
     `approvedAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -793,18 +830,25 @@ CREATE TABLE `PastoralNotification` (
 -- CreateTable
 CREATE TABLE `MembershipStatusChange` (
     `id` VARCHAR(191) NOT NULL,
-    `churchId` VARCHAR(191) NOT NULL,
+    `churchId` VARCHAR(191) NULL,
     `memberId` VARCHAR(191) NOT NULL,
-    `previousStatus` VARCHAR(191) NOT NULL,
-    `requestedStatus` VARCHAR(191) NOT NULL,
+    `previousStatus` VARCHAR(191) NULL,
+    `requestedStatus` VARCHAR(191) NULL,
+    `currentStatus` VARCHAR(191) NOT NULL,
+    `proposedStatus` VARCHAR(191) NULL,
     `changeType` VARCHAR(191) NOT NULL,
     `reason` TEXT NULL,
     `requestedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `requestedBy` VARCHAR(191) NOT NULL,
+    `requestedBy` VARCHAR(191) NULL,
+    `requestedById` VARCHAR(191) NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT 'PENDING',
     `approvedAt` DATETIME(3) NULL,
     `approvedBy` VARCHAR(191) NULL,
+    `approvedById` VARCHAR(191) NULL,
     `approvalReason` VARCHAR(191) NULL,
+    `rejectionReason` VARCHAR(191) NULL,
+    `evidence` TEXT NULL,
+    `additionalInfo` TEXT NULL,
     `effectiveDate` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
@@ -838,6 +882,7 @@ CREATE TABLE `AuditLog` (
     `actorId` VARCHAR(191) NOT NULL,
     `previousState` TEXT NULL,
     `newState` TEXT NULL,
+    `changes` TEXT NULL,
     `reason` VARCHAR(191) NULL,
     `reference` VARCHAR(191) NULL,
     `timestamp` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -855,12 +900,158 @@ CREATE TABLE `AuditLog` (
 CREATE TABLE `OrganizationFinancialAccount` (
     `id` VARCHAR(191) NOT NULL,
     `organizationId` VARCHAR(191) NOT NULL,
-    `balance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `churchId` VARCHAR(191) NOT NULL,
+    `openingBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `currentBalance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `currency` VARCHAR(191) NOT NULL DEFAULT 'USD',
     `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `OrganizationFinancialAccount_organizationId_key`(`organizationId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Notification` (
+    `id` VARCHAR(191) NOT NULL,
+    `recipientId` VARCHAR(191) NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `body` TEXT NOT NULL,
+    `entityType` VARCHAR(191) NULL,
+    `entityId` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `SectionJournalEntry` (
+    `id` VARCHAR(191) NOT NULL,
+    `sectionId` VARCHAR(191) NOT NULL,
+    `receiptId` VARCHAR(191) NULL,
+    `expenditureId` VARCHAR(191) NULL,
+    `debitAmount` DOUBLE NOT NULL,
+    `creditAmount` DOUBLE NOT NULL,
+    `description` TEXT NOT NULL,
+    `postedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `SectionJournalEntry_sectionId_idx`(`sectionId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CircuitFinancialAccount` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `openingBalance` DOUBLE NOT NULL DEFAULT 0,
+    `currentBalance` DOUBLE NOT NULL DEFAULT 0,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `CircuitFinancialAccount_circuitId_key`(`circuitId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CircuitReceipt` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `memberId` VARCHAR(191) NULL,
+    `amount` DOUBLE NOT NULL,
+    `currency` VARCHAR(191) NOT NULL,
+    `incomeType` VARCHAR(191) NOT NULL,
+    `paymentMethod` VARCHAR(191) NOT NULL,
+    `receiptNumber` VARCHAR(191) NOT NULL,
+    `reference` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `issuedBy` VARCHAR(191) NOT NULL,
+    `issuedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `CircuitReceipt_receiptNumber_key`(`receiptNumber`),
+    INDEX `CircuitReceipt_circuitId_idx`(`circuitId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CircuitExpenditure` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `amount` DOUBLE NOT NULL,
+    `purpose` VARCHAR(191) NOT NULL,
+    `expenseCategory` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `attachments` JSON NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `requestedBy` VARCHAR(191) NOT NULL,
+    `requestedAt` DATETIME(3) NOT NULL,
+    `approvedBy` VARCHAR(191) NULL,
+    `approvedAt` DATETIME(3) NULL,
+    `approverNotes` TEXT NULL,
+    `paymentMethod` VARCHAR(191) NULL,
+    `paidAt` DATETIME(3) NULL,
+
+    INDEX `CircuitExpenditure_circuitId_idx`(`circuitId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DistrictFinancialAccount` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `openingBalance` DOUBLE NOT NULL DEFAULT 0,
+    `currentBalance` DOUBLE NOT NULL DEFAULT 0,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `DistrictFinancialAccount_circuitId_key`(`circuitId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DistrictReceipt` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `memberId` VARCHAR(191) NULL,
+    `amount` DOUBLE NOT NULL,
+    `currency` VARCHAR(191) NOT NULL,
+    `incomeType` VARCHAR(191) NOT NULL,
+    `paymentMethod` VARCHAR(191) NOT NULL,
+    `receiptNumber` VARCHAR(191) NOT NULL,
+    `reference` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `issuedBy` VARCHAR(191) NOT NULL,
+    `issuedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `DistrictReceipt_receiptNumber_key`(`receiptNumber`),
+    INDEX `DistrictReceipt_circuitId_idx`(`circuitId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DistrictExpenditure` (
+    `id` VARCHAR(191) NOT NULL,
+    `circuitId` VARCHAR(191) NOT NULL,
+    `amount` DOUBLE NOT NULL,
+    `purpose` VARCHAR(191) NOT NULL,
+    `expenseCategory` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `attachments` JSON NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `requestedBy` VARCHAR(191) NOT NULL,
+    `requestedAt` DATETIME(3) NOT NULL,
+    `approvedBy` VARCHAR(191) NULL,
+    `approvedAt` DATETIME(3) NULL,
+    `approverNotes` TEXT NULL,
+    `paymentMethod` VARCHAR(191) NULL,
+    `paidAt` DATETIME(3) NULL,
+
+    INDEX `DistrictExpenditure_circuitId_idx`(`circuitId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -898,6 +1089,9 @@ ALTER TABLE `Member` ADD CONSTRAINT `Member_familyId_fkey` FOREIGN KEY (`familyI
 ALTER TABLE `Member` ADD CONSTRAINT `Member_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `Member` ADD CONSTRAINT `Member_parentMemberId_fkey` FOREIGN KEY (`parentMemberId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `FamilyRelationship` ADD CONSTRAINT `FamilyRelationship_partner1Id_fkey` FOREIGN KEY (`partner1Id`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -908,6 +1102,9 @@ ALTER TABLE `FamilyRelationship` ADD CONSTRAINT `FamilyRelationship_parentId_fke
 
 -- AddForeignKey
 ALTER TABLE `FamilyRelationship` ADD CONSTRAINT `FamilyRelationship_childId_fkey` FOREIGN KEY (`childId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `FamilyRelationship` ADD CONSTRAINT `FamilyRelationship_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `FamilyRelationship` ADD CONSTRAINT `FamilyRelationship_familyId_fkey` FOREIGN KEY (`familyId`) REFERENCES `Family`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1018,7 +1215,7 @@ ALTER TABLE `SectionFinancialAccount` ADD CONSTRAINT `SectionFinancialAccount_se
 ALTER TABLE `SectionReceipt` ADD CONSTRAINT `SectionReceipt_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `Section`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SectionReceipt` ADD CONSTRAINT `SectionReceipt_accountId_fkey` FOREIGN KEY (`accountId`) REFERENCES `SectionFinancialAccount`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SectionReceipt` ADD CONSTRAINT `SectionReceipt_accountId_fkey` FOREIGN KEY (`accountId`) REFERENCES `SectionFinancialAccount`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SectionReceipt` ADD CONSTRAINT `SectionReceipt_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1027,7 +1224,7 @@ ALTER TABLE `SectionReceipt` ADD CONSTRAINT `SectionReceipt_memberId_fkey` FOREI
 ALTER TABLE `SectionExpenditure` ADD CONSTRAINT `SectionExpenditure_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `Section`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SectionExpenditure` ADD CONSTRAINT `SectionExpenditure_accountId_fkey` FOREIGN KEY (`accountId`) REFERENCES `SectionFinancialAccount`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SectionExpenditure` ADD CONSTRAINT `SectionExpenditure_accountId_fkey` FOREIGN KEY (`accountId`) REFERENCES `SectionFinancialAccount`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SectionTransaction` ADD CONSTRAINT `SectionTransaction_sectionId_fkey` FOREIGN KEY (`sectionId`) REFERENCES `Section`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1136,6 +1333,15 @@ ALTER TABLE `FuneralRecord` ADD CONSTRAINT `FuneralRecord_deceasedId_fkey` FOREI
 
 -- AddForeignKey
 ALTER TABLE `PastoralNotification` ADD CONSTRAINT `PastoralNotification_churchId_fkey` FOREIGN KEY (`churchId`) REFERENCES `Church`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `MembershipStatusChange` ADD CONSTRAINT `MembershipStatusChange_memberId_fkey` FOREIGN KEY (`memberId`) REFERENCES `Member`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `MembershipStatusChange` ADD CONSTRAINT `MembershipStatusChange_requestedById_fkey` FOREIGN KEY (`requestedById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `MembershipStatusChange` ADD CONSTRAINT `MembershipStatusChange_approvedById_fkey` FOREIGN KEY (`approvedById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AuditLog` ADD CONSTRAINT `AuditLog_churchId_fkey` FOREIGN KEY (`churchId`) REFERENCES `Church`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

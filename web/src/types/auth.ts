@@ -23,6 +23,16 @@ export interface UserSbuMembership {
   dashboardAccess: boolean;
 }
 
+export type OrganizationLevel = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT' | 'SECTION';
+
+export interface UserOrganizationContext {
+  roleId: string;
+  role: string;
+  organizationId: string;
+  organizationName: string;
+  organizationLevel: OrganizationLevel;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -33,6 +43,8 @@ export interface User {
   avatar?: string;
   committees: UserCommitteeMembership[];
   sbus: UserSbuMembership[];
+  organizationContexts: UserOrganizationContext[];
+  defaultContextId?: string;
 }
 
 export interface AuthState {
@@ -43,6 +55,7 @@ export interface AuthState {
   error: string | null;
   activeCommitteeId?: string;
   activeSbuId?: string;
+  currentContextId?: string;
 }
 
 export interface LoginRequest { email: string; password: string; }

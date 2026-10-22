@@ -9,6 +9,7 @@ export const PERMISSION_HIERARCHY: Record<Permission, number> = {
   'REVIEW': 6,
   'APPROVE': 7,
   'EXPORT': 8,
+  'CONFIRM': 9,
 };
 
 export const canPerformAction = (

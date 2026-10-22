@@ -20,6 +20,7 @@ export class FinancialReportRepository {
     sectionId?: string
   ) {
     const where: any = {
+      churchId,
       issuedAt: {
         gte: startDate,
         lte: endDate,
@@ -40,8 +41,8 @@ export class FinancialReportRepository {
         _sum: { amount: true },
       });
 
-      const totalIncome = receipts._sum.amount || 0;
-      const totalExpense = expenditures._sum.amount || 0;
+      const totalIncome = Number(receipts._sum.amount || 0);
+      const totalExpense = Number(expenditures._sum.amount || 0);
 
       return {
         totalIncome,
@@ -69,8 +70,8 @@ export class FinancialReportRepository {
       _sum: { amount: true },
     });
 
-    const totalIncome = receipts._sum.amount || 0;
-    const totalExpense = expenditures._sum.amount || 0;
+    const totalIncome = Number(receipts._sum.amount || 0);
+    const totalExpense = Number(expenditures._sum.amount || 0);
 
     return {
       totalIncome,
@@ -84,7 +85,7 @@ export class FinancialReportRepository {
    * Get trial balance (journal entries by account)
    */
   async getTrialBalanceData(churchId: string, date: Date, organizationId?: string, sectionId?: string) {
-    const where: any = { postedAt: { lte: date } };
+    const where: any = { churchId, issuedAt: { lte: date } };
 
     if (organizationId) {
       where.organizationId = organizationId;
@@ -95,22 +96,23 @@ export class FinancialReportRepository {
 
       return entries.map((e) => ({
         account: e.description,
-        debit: e.debitAmount || 0,
-        credit: e.creditAmount || 0,
+        debit: Number(e.debitAmount || 0),
+        credit: Number(e.creditAmount || 0),
       }));
     }
 
-    const entries = await prisma.journalEntry.findMany({
-      where,
-      include: { journal: true },
-      orderBy: { postedAt: 'asc' },
-    });
+    const [receipts, expenditures] = await Promise.all([
+      prisma.receipt.findMany({ where, select: { incomeType: true, amount: true } }),
+      prisma.expenditure.findMany({
+        where: { churchId, paidAt: { lte: date }, status: 'PAID', ...(organizationId ? { organizationId } : {}) },
+        select: { category: true, amount: true },
+      }),
+    ]);
 
-    return entries.map((e) => ({
-      account: e.journal.accountName,
-      debit: e.debitAmount || 0,
-      credit: e.creditAmount || 0,
-    }));
+    return [
+      ...receipts.map((receipt) => ({ account: receipt.incomeType, debit: Number(receipt.amount), credit: 0 })),
+      ...expenditures.map((expenditure) => ({ account: expenditure.category, debit: 0, credit: Number(expenditure.amount) })),
+    ];
   }
 
   /**
@@ -118,6 +120,7 @@ export class FinancialReportRepository {
    */
   async getReceiptDetails(churchId: string, startDate: Date, endDate: Date, organizationId?: string, sectionId?: string) {
     const where: any = {
+      churchId,
       issuedAt: {
         gte: startDate,
         lte: endDate,
@@ -156,6 +159,7 @@ export class FinancialReportRepository {
     sectionId?: string
   ) {
     const where: any = {
+      churchId,
       requestedAt: {
         gte: startDate,
         lte: endDate,
@@ -190,14 +194,14 @@ export class FinancialReportRepository {
       const account = await prisma.sectionFinancialAccount.findUnique({
         where: { sectionId },
       });
-      return account?.currentBalance || 0;
+      return Number(account?.currentBalance || 0);
     }
 
     if (organizationId) {
       const account = await prisma.organizationFinancialAccount.findUnique({
         where: { organizationId },
       });
-      return account?.currentBalance || 0;
+      return Number(account?.currentBalance || 0);
     }
 
     // Main church account
@@ -205,7 +209,7 @@ export class FinancialReportRepository {
       where: { churchId, type: 'OPERATING' },
     });
 
-    return account?.currentBalance || 0;
+    return Number(account?.currentBalance || 0);
   }
 }
 

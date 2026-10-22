@@ -2,7 +2,7 @@ import { ChevronDown, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@stores/authStore';
 import { useRoleAware } from '@stores/roleAwareStore';
-import type { UserOrganizationContext, OrganizationLevel } from '@/types/auth';
+import type { OrganizationLevel } from '@/types/auth';
 
 const levelLabels: Record<OrganizationLevel, string> = {
   'CONFERENCE': 'Conference',
