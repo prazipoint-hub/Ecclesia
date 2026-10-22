@@ -60,7 +60,11 @@ export class MemberController {
   async createMember(req: AuthRequest, res: Response): Promise<void> {
     try {
       const validated = CreateMemberSchema.parse(req.body);
-      const member = await memberService.createMember(validated, req.user!);
+      const member = await memberService.createMember({
+        ...validated,
+        dateOfBirth: validated.dateOfBirth ? new Date(validated.dateOfBirth) : undefined,
+        membershipDate: validated.membershipDate ? new Date(validated.membershipDate) : undefined,
+      }, req.user!);
 
       res.status(201).json(member);
     } catch (error) {

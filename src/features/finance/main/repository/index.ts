@@ -8,15 +8,15 @@ export class MainChurchFinanceRepository {
     });
   }
 
-  async createFinanceAccount(data: Prisma.FinancialAccountCreateInput) {
+  async createFinanceAccount(data: Prisma.FinancialAccountUncheckedCreateInput) {
     return prisma.financialAccount.create({ data });
   }
 
-  async createReceipt(data: Prisma.ReceiptCreateInput) {
+  async createReceipt(data: Prisma.ReceiptUncheckedCreateInput) {
     return prisma.receipt.create({ data });
   }
 
-  async createExpenditure(data: Prisma.ExpenditureCreateInput) {
+  async createExpenditure(data: Prisma.ExpenditureUncheckedCreateInput) {
     return prisma.expenditure.create({ data });
   }
 

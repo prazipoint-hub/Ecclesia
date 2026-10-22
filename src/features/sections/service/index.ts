@@ -108,6 +108,7 @@ export class SectionService {
     const assignment = await prisma.leadershipAssignment.create({
       data: {
         id: uuidv4(),
+        churchId: section.churchId,
         memberId: data.memberId,
         sectionId: data.sectionId,
         position: data.position,

@@ -49,7 +49,7 @@ export class OrganizationRepository {
   /**
    * Create organization
    */
-  async create(data: Prisma.OrganizationCreateInput): Promise<Organization> {
+  async create(data: Prisma.OrganizationUncheckedCreateInput): Promise<Organization> {
     return prisma.organization.create({ data });
   }
 
@@ -69,7 +69,7 @@ export class OrganizationRepository {
    * Create organization membership
    */
   async createMembership(
-    data: Prisma.OrganizationMembershipCreateInput
+    data: Prisma.OrganizationMembershipUncheckedCreateInput
   ): Promise<OrganizationMembership> {
     return prisma.organizationMembership.create({ data });
   }
@@ -120,7 +120,7 @@ export class OrganizationRepository {
   /**
    * Assign organization role
    */
-  async assignRole(data: Prisma.OrganizationRoleAssignmentCreateInput) {
+  async assignRole(data: Prisma.OrganizationRoleAssignmentUncheckedCreateInput) {
     // End any existing assignment with this position
     await prisma.organizationRoleAssignment.updateMany({
       where: {

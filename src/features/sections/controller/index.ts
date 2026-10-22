@@ -72,7 +72,7 @@ export class SectionController {
     try {
       const validated = AssignSectionLeadershipSchema.parse(req.body);
       const assignment = await sectionService.assignLeadership(
-        validated,
+        { ...validated, effectiveDate: validated.effectiveDate ? new Date(validated.effectiveDate) : undefined },
         req.user!
       );
 

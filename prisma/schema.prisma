@@ -19,8 +19,11 @@ model User {
   email        String @unique
   passwordHash String
 
-  memberId String? @unique
-  member   Member? @relation("UserMember", fields: [memberId], references: [id])
+  memberId                         String?                  @unique
+  member                           Member?                  @relation("UserMember", fields: [memberId], references: [id])
+  churchId                         String?
+  requestedMembershipStatusChanges MembershipStatusChange[] @relation("MembershipRequestedBy")
+  approvedMembershipStatusChanges  MembershipStatusChange[] @relation("MembershipApprovedBy")
 
   sessions Session[]
   devices  Device[]
@@ -159,8 +162,9 @@ model Family {
   sectionId String?
   section   Section? @relation(fields: [sectionId], references: [id])
 
-  name        String
-  description String?
+  name           String
+  description    String?
+  headOfFamilyId String?
 
   members       Member[]
   relationships FamilyRelationship[]
@@ -185,6 +189,7 @@ model Member {
 
   // Identity
   firstName   String
+  middleName  String?
   lastName    String
   email       String?
   phone       String?
@@ -195,18 +200,25 @@ model Member {
   membershipNumber String   @unique
   membershipStatus String   @default("ACTIVE") // ACTIVE, INACTIVE, TRANSFERRED, DECEASED
   joinDate         DateTime @default(now())
+  membershipDate   DateTime @default(now())
+  address          String?
 
   // Family relationships
-  isDependent Boolean  @default(false)
-  parentId    String?
-  parent      Member?  @relation("DependentRelationships", fields: [parentId], references: [id])
-  dependents  Member[] @relation("DependentRelationships")
+  isDependent    Boolean  @default(false)
+  parentId       String?
+  parent         Member?  @relation("DependentRelationships", fields: [parentId], references: [id])
+  dependents     Member[] @relation("DependentRelationships")
+  parentMemberId String?
+  parentMember   Member?  @relation("MemberParent", fields: [parentMemberId], references: [id])
+  childMembers   Member[] @relation("MemberParent")
 
   // Personal info
   maritalStatus String? // SINGLE, MARRIED, DIVORCED, WIDOWED
 
   // Authentication
-  user User? @relation("UserMember")
+  user                    User?                    @relation("UserMember")
+  familyRelationships     FamilyRelationship[]     @relation("FamilyMember")
+  membershipStatusChanges MembershipStatusChange[]
 
   // Leadership & Permissions
   leadershipAssignments LeadershipAssignment[]
@@ -277,6 +289,9 @@ model FamilyRelationship {
   child   Member? @relation("Child", fields: [childId], references: [id])
 
   relationshipType String // SPOUSE, CHILD, PARENT, SIBLING
+
+  memberId String?
+  member   Member? @relation("FamilyMember", fields: [memberId], references: [id])
 
   createdAt DateTime @default(now())
   Family    Family?  @relation(fields: [familyId], references: [id])
@@ -392,9 +407,9 @@ model Permission {
 }
 
 model RolePermission {
-  id     String @id @default(cuid())
-  roleId String
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id     String  @id @default(cuid())
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -417,6 +432,7 @@ model LeadershipAssignment {
 
   committeeId String?
   committee   Committee? @relation(fields: [committeeId], references: [id])
+  sectionId   String?
 
   position  String? // Specific title within role
   startDate DateTime  @default(now())
@@ -637,6 +653,8 @@ model SectionFinancialAccount {
   id        String  @id @default(cuid())
   sectionId String  @unique
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  churchId  String?
+  currency  String  @default("USD")
 
   openingBalance Decimal @default(0)
   currentBalance Decimal @default(0)
@@ -655,8 +673,8 @@ model SectionReceipt {
   sectionId String
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
-  accountId String
-  account   SectionFinancialAccount @relation(fields: [accountId], references: [id])
+  accountId String?
+  account   SectionFinancialAccount? @relation(fields: [accountId], references: [id])
 
   memberId String?
   member   Member? @relation(fields: [memberId], references: [id])
@@ -666,7 +684,13 @@ model SectionReceipt {
   paymentMethod String
   status        String  @default("ISSUED")
 
-  recordedAt DateTime @default(now())
+  receiptNumber String   @unique
+  currency      String   @default("USD")
+  issuedBy      String?
+  fundId        String?
+  reference     String?
+  issuedAt      DateTime @default(now())
+  recordedAt    DateTime @default(now())
 
   @@index([sectionId])
   @@index([accountId])
@@ -677,13 +701,22 @@ model SectionExpenditure {
   sectionId String
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
-  accountId String
-  account   SectionFinancialAccount @relation(fields: [accountId], references: [id])
+  accountId String?
+  account   SectionFinancialAccount? @relation(fields: [accountId], references: [id])
 
-  amount     Decimal
-  purpose    String
-  status     String    @default("DRAFT")
-  approvedAt DateTime?
+  amount          Decimal
+  purpose         String
+  expenseCategory String?
+  description     String?   @db.Text
+  attachments     Json?
+  requestedBy     String?
+  requestedAt     DateTime  @default(now())
+  approvedBy      String?
+  approverNotes   String?   @db.Text
+  paymentMethod   String?
+  paidAt          DateTime?
+  status          String    @default("DRAFT")
+  approvedAt      DateTime?
 
   createdAt DateTime @default(now())
 
@@ -1152,23 +1185,33 @@ model PastoralNotification {
 // ============================================================================
 
 model MembershipStatusChange {
-  id       String @id @default(cuid())
-  churchId String
+  id       String  @id @default(cuid())
+  churchId String?
 
   memberId        String
-  previousStatus  String
-  requestedStatus String
+  member          Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  previousStatus  String?
+  requestedStatus String?
+  currentStatus   String
+  proposedStatus  String?
 
   changeType String // MARRIAGE, DEATH, TRANSFER, REJOINING, etc.
   reason     String? @db.Text
 
-  requestedAt DateTime @default(now())
-  requestedBy String // Member ID (statistician)
+  requestedAt     DateTime @default(now())
+  requestedBy     String? // Member ID (statistician)
+  requestedById   String?
+  requestedByUser User?    @relation("MembershipRequestedBy", fields: [requestedById], references: [id])
 
-  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedAt     DateTime?
-  approvedBy     String? // Member ID (pastor)
-  approvalReason String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedAt      DateTime?
+  approvedBy      String? // Member ID (pastor)
+  approvedById    String?
+  approvedByUser  User?     @relation("MembershipApprovedBy", fields: [approvedById], references: [id])
+  approvalReason  String?
+  rejectionReason String?
+  evidence        String?   @db.Text
+  additionalInfo  String?   @db.Text
 
   effectiveDate DateTime?
 
@@ -1209,6 +1252,7 @@ model AuditLog {
 
   previousState String? @db.Text // JSON
   newState      String? @db.Text // JSON
+  changes       String? @db.Text
 
   reason    String?
   reference String? // External reference (e.g., approval ID)
@@ -1238,4 +1282,126 @@ model OrganizationFinancialAccount {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id
+  recipientId String?
+  type        String
+  title       String
+  body        String   @db.Text
+  entityType  String?
+  entityId    String?
+  createdAt   DateTime @default(now())
+}
+
+model SectionJournalEntry {
+  id            String   @id
+  sectionId     String
+  receiptId     String?
+  expenditureId String?
+  debitAmount   Float
+  creditAmount  Float
+  description   String   @db.Text
+  postedAt      DateTime @default(now())
+
+  @@index([sectionId])
+}
+
+// Isolated ledgers for circuit and district scopes. These deliberately use
+// explicit scope IDs so each ledger can be queried without crossing scopes.
+model CircuitFinancialAccount {
+  id             String   @id @default(cuid())
+  circuitId      String   @unique
+  openingBalance Float    @default(0)
+  currentBalance Float    @default(0)
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CircuitReceipt {
+  id            String   @id
+  circuitId     String
+  memberId      String?
+  amount        Float
+  currency      String
+  incomeType    String
+  paymentMethod String
+  receiptNumber String   @unique
+  reference     String?
+  description   String?
+  status        String
+  issuedBy      String
+  issuedAt      DateTime
+
+  @@index([circuitId])
+}
+
+model CircuitExpenditure {
+  id              String    @id
+  circuitId       String
+  amount          Float
+  purpose         String
+  expenseCategory String
+  description     String?
+  attachments     Json?
+  status          String
+  requestedBy     String
+  requestedAt     DateTime
+  approvedBy      String?
+  approvedAt      DateTime?
+  approverNotes   String?   @db.Text
+  paymentMethod   String?
+  paidAt          DateTime?
+
+  @@index([circuitId])
+}
+
+model DistrictFinancialAccount {
+  id             String   @id @default(cuid())
+  circuitId      String   @unique
+  openingBalance Float    @default(0)
+  currentBalance Float    @default(0)
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DistrictReceipt {
+  id            String   @id
+  circuitId     String
+  memberId      String?
+  amount        Float
+  currency      String
+  incomeType    String
+  paymentMethod String
+  receiptNumber String   @unique
+  reference     String?
+  description   String?
+  status        String
+  issuedBy      String
+  issuedAt      DateTime
+
+  @@index([circuitId])
+}
+
+model DistrictExpenditure {
+  id              String    @id
+  circuitId       String
+  amount          Float
+  purpose         String
+  expenseCategory String
+  description     String?
+  attachments     Json?
+  status          String
+  requestedBy     String
+  requestedAt     DateTime
+  approvedBy      String?
+  approvedAt      DateTime?
+  approverNotes   String?   @db.Text
+  paymentMethod   String?
+  paidAt          DateTime?
+
+  @@index([circuitId])
 }

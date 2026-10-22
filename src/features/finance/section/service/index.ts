@@ -313,7 +313,9 @@ export class SectionFinanceService {
     });
 
     // Notify requester
-    await this.notifyExpenditureDecision(expenditure.requestedBy, approved, expenditure.amount);
+    if (expenditure.requestedBy) {
+      await this.notifyExpenditureDecision(expenditure.requestedBy, approved, Number(expenditure.amount));
+    }
 
     return updated;
   }
@@ -362,8 +364,8 @@ export class SectionFinanceService {
     await this.createSectionJournalEntry({
       sectionId: expenditure.sectionId,
       expenditureId: expenditure.id,
-      debitAmount: expenditure.amount,
-      creditAmount: expenditure.amount,
+      debitAmount: Number(expenditure.amount),
+      creditAmount: Number(expenditure.amount),
       description: `Payment: ${expenditure.purpose}`,
     });
 

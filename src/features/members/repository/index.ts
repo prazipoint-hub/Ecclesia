@@ -57,7 +57,7 @@ export class MemberRepository {
   /**
    * Create new member
    */
-  async create(data: Prisma.MemberCreateInput): Promise<Member> {
+  async create(data: Prisma.MemberUncheckedCreateInput): Promise<Member> {
     return prisma.member.create({ data });
   }
 

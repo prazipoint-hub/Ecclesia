@@ -7,8 +7,8 @@ export class MembershipRepository {
    * Create membership status change request
    */
   async createStatusChangeRequest(
-    data: Prisma.MembershipStatusChangeCreateInput
-  ): Promise<MembershipStatusChange> {
+    data: Prisma.MembershipStatusChangeUncheckedCreateInput
+  ) {
     return prisma.membershipStatusChange.create({
       data,
       include: { member: true },
@@ -18,7 +18,7 @@ export class MembershipRepository {
   /**
    * Get status change request by ID
    */
-  async getStatusChangeRequest(id: string): Promise<MembershipStatusChange | null> {
+  async getStatusChangeRequest(id: string) {
     return prisma.membershipStatusChange.findUnique({
       where: { id },
       include: { member: true, requestedByUser: true, approvedByUser: true },
@@ -80,8 +80,8 @@ export class MembershipRepository {
    */
   async updateStatusChangeRequest(
     id: string,
-    data: Prisma.MembershipStatusChangeUpdateInput
-  ): Promise<MembershipStatusChange> {
+    data: Prisma.MembershipStatusChangeUncheckedUpdateInput
+  ) {
     return prisma.membershipStatusChange.update({
       where: { id },
       data,
@@ -104,7 +104,7 @@ export class MembershipRepository {
   /**
    * Get approval history for member
    */
-  async getApprovalHistory(memberId: string): Promise<MembershipStatusChange[]> {
+  async getApprovalHistory(memberId: string) {
     return prisma.membershipStatusChange.findMany({
       where: {
         memberId,

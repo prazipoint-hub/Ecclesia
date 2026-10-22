@@ -56,7 +56,7 @@ export class FamilyRepository {
   /**
    * Create family
    */
-  async create(data: Prisma.FamilyCreateInput): Promise<Family> {
+  async create(data: Prisma.FamilyUncheckedCreateInput): Promise<Family> {
     return prisma.family.create({ data });
   }
 
@@ -98,10 +98,10 @@ export class FamilyRepository {
   async getForMember(memberId: string): Promise<Family[]> {
     const relationships = await prisma.familyRelationship.findMany({
       where: { memberId },
-      include: { family: true },
+      include: { Family: true },
     });
 
-    return relationships.map((r) => r.family);
+    return relationships.flatMap((r) => r.Family ? [r.Family] : []);
   }
 
   /**

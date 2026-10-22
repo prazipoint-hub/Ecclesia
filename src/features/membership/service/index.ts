@@ -294,15 +294,6 @@ export class MembershipStatusChangeService {
     const pastors = await prisma.user.findMany({
       where: {
         churchId,
-        roles: {
-          some: {
-            permissions: {
-              some: {
-                name: 'membership:status:approve',
-              },
-            },
-          },
-        },
       },
     });
 
@@ -332,10 +323,10 @@ export class MembershipStatusChangeService {
   ): Promise<void> {
     const member = await prisma.member.findUnique({
       where: { id: memberId },
-      select: { userId: true },
+      include: { user: true },
     });
 
-    if (!member?.userId) return;
+    if (!member?.user) return;
 
     const title = approved ? 'Your membership request was approved' : 'Your membership request was not approved';
     const body = approved
@@ -345,7 +336,7 @@ export class MembershipStatusChangeService {
     await prisma.notification.create({
       data: {
         id: uuidv4(),
-        recipientId: member.userId,
+        recipientId: member.user.id,
         type: approved ? 'MEMBERSHIP_APPROVED' : 'MEMBERSHIP_REJECTED',
         title,
         body,

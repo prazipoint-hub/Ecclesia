@@ -49,7 +49,7 @@ export class SectionRepository {
   /**
    * Create section
    */
-  async create(data: Prisma.SectionCreateInput): Promise<Section> {
+  async create(data: Prisma.SectionUncheckedCreateInput): Promise<Section> {
     return prisma.section.create({ data });
   }
 

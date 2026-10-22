@@ -32,7 +32,7 @@ export class SectionFinanceRepository {
    * Create section financial account (one per section)
    */
   async createFinanceAccount(
-    data: Prisma.SectionFinancialAccountCreateInput
+    data: Prisma.SectionFinancialAccountUncheckedCreateInput
   ) {
     return prisma.sectionFinancialAccount.create({ data });
   }
@@ -42,7 +42,7 @@ export class SectionFinanceRepository {
    * CRITICAL: Every receipt must have sectionId
    */
   async createReceipt(
-    data: Prisma.SectionReceiptCreateInput
+    data: Prisma.SectionReceiptUncheckedCreateInput
   ) {
     return prisma.sectionReceipt.create({ data });
   }
@@ -72,7 +72,7 @@ export class SectionFinanceRepository {
    * Record section expenditure request
    */
   async createExpenditure(
-    data: Prisma.SectionExpenditureCreateInput
+    data: Prisma.SectionExpenditureUncheckedCreateInput
   ) {
     return prisma.sectionExpenditure.create({ data });
   }
@@ -147,12 +147,13 @@ export class SectionFinanceRepository {
       }),
     ]);
 
-    const totalIncome = incomeResult._sum.amount || 0;
-    const totalExpense = expenseResult._sum.amount || 0;
-    const currentBalance = account.openingBalance + totalIncome - totalExpense;
+    const openingBalance = Number(account.openingBalance);
+    const totalIncome = Number(incomeResult._sum.amount || 0);
+    const totalExpense = Number(expenseResult._sum.amount || 0);
+    const currentBalance = openingBalance + totalIncome - totalExpense;
 
     return {
-      openingBalance: account.openingBalance,
+      openingBalance,
       totalIncome,
       totalExpense,
       currentBalance,
