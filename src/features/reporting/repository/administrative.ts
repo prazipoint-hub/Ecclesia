@@ -242,11 +242,10 @@ export class AdministrativeReportRepository {
   async getDemographicSummary(churchId: string, sectionId?: string) {
     const where: any = sectionId ? { sectionId } : { churchId };
 
-    const [totalMembers, maleCount, femaleCount, averageAge] = await Promise.all([
+    const [totalMembers, maleCount, femaleCount] = await Promise.all([
       prisma.member.count({ where }),
       prisma.member.count({ where: { ...where, gender: 'MALE' } }),
       prisma.member.count({ where: { ...where, gender: 'FEMALE' } }),
-      Promise.resolve(null),
     ]);
 
     return {

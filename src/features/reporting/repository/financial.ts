@@ -1,5 +1,4 @@
 import { prisma } from '@/database';
-import { AuthorizedUser } from '@/types';
 
 /**
  * FINANCIAL REPORTING REPOSITORY

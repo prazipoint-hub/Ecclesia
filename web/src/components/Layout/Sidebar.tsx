@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, Building2, Calendar, FileText, Home, Layers3, Settings, Users, X } from 'lucide-react';
+import { BarChart3, Building2, CalendarDays, FileText, HeartHandshake, Home, Layers3, Settings, Users, X } from 'lucide-react';
 import { useOrganizationStore } from '@stores/organizationStore';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
@@ -15,11 +15,12 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ...(scope === 'CONFERENCE' ? [item('Districts', '/conference/districts', Building2)] : []),
     ...(scope === 'DISTRICT' ? [item('Circuits', '/district/circuits', Building2)] : []),
     item('Members', '/members', Users),
+    item('Pastoral care', '/pastoral', HeartHandshake),
+    item('Events', '/events', CalendarDays),
     item('Committees', `/${scopePrefix}/committees`, Layers3),
     ...getSbusForScope(selectedUnitId).map((sbu) => item(sbu.name, `/${scopePrefix}/sbus/${sbu.id}`, Building2)),
     item('Reports', `/${scopePrefix}/reports`, FileText),
     item('Finance', '/finance', BarChart3),
-    item('Events', '/events', Calendar),
     item('Settings', '/settings', Settings),
   ];
 

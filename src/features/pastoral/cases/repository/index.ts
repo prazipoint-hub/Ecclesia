@@ -1,13 +1,11 @@
 // Pastoral Cases Repository - Database access layer
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/database';
 import {
   CreatePastoralCaseDTO,
   UpdatePastoralCaseDTO,
   PastoralCaseResponse,
 } from '../../types';
-
-const prisma = new PrismaClient();
 
 export class PastoralCaseRepository {
   /**
@@ -32,6 +30,7 @@ export class PastoralCaseRepository {
         targetFollowUpAt: data.targetFollowUpAt,
         status: 'OPEN',
       },
+      include: { member: true, assignedPastor: true, _count: { select: { activities: true } } },
     });
 
     return this.formatResponse(caseRecord);
@@ -50,6 +49,7 @@ export class PastoralCaseRepository {
         member: true,
         assignedPastor: true,
         activities: true,
+        _count: { select: { activities: true } },
         followUps: true,
         referrals: true,
         visits: true,
@@ -93,6 +93,7 @@ export class PastoralCaseRepository {
           member: true,
           assignedPastor: true,
           activities: { take: 5, orderBy: { createdAt: 'desc' } },
+          _count: { select: { activities: true } },
           followUps: { where: { status: 'PENDING' } },
         },
         orderBy: [{ priority: 'desc' }, { openedAt: 'desc' }],
@@ -137,6 +138,7 @@ export class PastoralCaseRepository {
       include: {
         member: true,
         assignedPastor: true,
+        _count: { select: { activities: true } },
       },
     });
 
@@ -170,6 +172,7 @@ export class PastoralCaseRepository {
       },
       include: {
         member: true,
+        _count: { select: { activities: true } },
       },
     });
 
@@ -376,18 +379,24 @@ export class PastoralCaseRepository {
       id: caseRecord.id,
       churchId: caseRecord.churchId,
       memberId: caseRecord.memberId,
+      memberName: caseRecord.member
+        ? `${caseRecord.member.firstName} ${caseRecord.member.lastName}`
+        : undefined,
       category: caseRecord.category,
       concern: caseRecord.concern,
       priority: caseRecord.priority,
       status: caseRecord.status,
       assignedPastorId: caseRecord.assignedPastorId || undefined,
+      assignedPastorName: caseRecord.assignedPastor
+        ? `${caseRecord.assignedPastor.firstName} ${caseRecord.assignedPastor.lastName}`
+        : undefined,
       openedAt: caseRecord.openedAt,
       openedBy: caseRecord.openedBy,
       targetFollowUpAt: caseRecord.targetFollowUpAt || undefined,
       resolvedAt: caseRecord.resolvedAt || undefined,
       resolvedReason: caseRecord.resolvedReason || undefined,
       closedAt: caseRecord.closedAt || undefined,
-      activityCount: caseRecord.activities?.length || 0,
+      activityCount: caseRecord._count?.activities ?? caseRecord.activities?.length ?? 0,
       createdAt: caseRecord.createdAt,
       updatedAt: caseRecord.updatedAt,
     };

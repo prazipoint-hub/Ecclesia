@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { membershipStatusChangeService } from '../service';
-import { RequestMembershipStatusChangeSchema, ApproveStatusChangeSchema } from '../types';
+import { RequestMembershipStatusChangeSchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 

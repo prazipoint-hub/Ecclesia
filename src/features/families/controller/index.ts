@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { familyService } from '../service';
 import { CreateFamilySchema, AddFamilyMemberSchema } from '../types';
 import { AuthRequest } from '@/types';

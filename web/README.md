@@ -114,7 +114,7 @@ The app uses Zustand for state management:
 ## Environment Variables
 
 ```env
-VITE_API_URL=http://localhost:3000    # Backend API URL
+VITE_API_URL=http://localhost:4000    # Backend API URL
 VITE_APP_NAME=Ecclesia                # Application name
 ```
 

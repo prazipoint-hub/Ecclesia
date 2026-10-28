@@ -32,20 +32,20 @@ export const RoleProtectedRoute = ({
   }
 
   if (requireMultiRole && !isMultiRoleUser()) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requiredRoles) {
     const hasRequiredRole = requiredRoles.some((role) => hasRole(role));
     if (!hasRequiredRole) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/" replace />;
     }
   }
 
   if (requiredLevel) {
     const context = getCurrentContext();
     if (!context || context.organizationLevel !== requiredLevel) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/" replace />;
     }
   }
 

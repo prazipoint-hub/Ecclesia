@@ -5,7 +5,7 @@ import type { AuthState, LoginRequest, RegisterRequest, User, UserOrganizationCo
 interface AuthStore extends AuthState {
   login: (credentials: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   clearError: () => void;
   setUser: (user: User | null) => void;
   checkAuth: () => Promise<void>;
@@ -16,6 +16,7 @@ interface AuthStore extends AuthState {
 export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   token: localStorage.getItem('token'),
+  refreshToken: localStorage.getItem('refreshToken'),
   isAuthenticated: Boolean(localStorage.getItem('token')),
   isLoading: false,
   error: null,
@@ -26,7 +27,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const { data } = await apiClient.post('/api/v1/auth/login', credentials);
       localStorage.setItem('token', data.token);
-      set({ user: data.user, isAuthenticated: true, currentContextId: data.user.defaultContextId });
+      localStorage.setItem('refreshToken', data.refreshToken);
+      set({ user: data.user, token: data.token, refreshToken: data.refreshToken, isAuthenticated: true, currentContextId: data.user.defaultContextId });
       if (data.user.defaultContextId) {
         localStorage.setItem('currentContextId', data.user.defaultContextId);
       }
@@ -43,7 +45,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       const response = await apiClient.post('/api/v1/auth/register', data);
       localStorage.setItem('token', response.data.token);
-      set({ user: response.data.user, isAuthenticated: true, currentContextId: response.data.user.defaultContextId });
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+      set({ user: response.data.user, token: response.data.token, refreshToken: response.data.refreshToken, isAuthenticated: true, currentContextId: response.data.user.defaultContextId });
       if (response.data.user.defaultContextId) {
         localStorage.setItem('currentContextId', response.data.user.defaultContextId);
       }
@@ -55,10 +58,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentContextId');
-    set({ user: null, token: null, isAuthenticated: false, currentContextId: undefined });
+  logout: async () => {
+    try {
+      await apiClient.post('/api/v1/auth/logout');
+    } catch {
+      // The local session must still be cleared if the server is unreachable.
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('currentContextId');
+      set({ user: null, token: null, refreshToken: null, isAuthenticated: false, currentContextId: undefined });
+    }
   },
 
   clearError: () => set({ error: null }),
@@ -67,7 +77,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   checkAuth: async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!token && !refreshToken) {
       set({ isLoading: false, isAuthenticated: false });
       return;
     }
@@ -76,10 +87,21 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const { data } = await apiClient.get('/api/v1/auth/me');
       const contextId = localStorage.getItem('currentContextId') || data.defaultContextId;
       set({ user: data, isAuthenticated: true, currentContextId: contextId });
-    } catch (error) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentContextId');
-      set({ isAuthenticated: false, user: null, currentContextId: undefined });
+    } catch {
+      try {
+        if (!refreshToken) throw new Error('No refresh token available');
+        const { data: refreshed } = await apiClient.post('/api/v1/auth/refresh', { refreshToken });
+        localStorage.setItem('token', refreshed.token);
+        localStorage.setItem('refreshToken', refreshed.refreshToken);
+        const { data: user } = await apiClient.get('/api/v1/auth/me');
+        const contextId = localStorage.getItem('currentContextId') || user.defaultContextId;
+        set({ user, token: refreshed.token, refreshToken: refreshed.refreshToken, isAuthenticated: true, currentContextId: contextId });
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('currentContextId');
+        set({ isAuthenticated: false, user: null, token: null, refreshToken: null, currentContextId: undefined });
+      }
     } finally {
       set({ isLoading: false });
     }

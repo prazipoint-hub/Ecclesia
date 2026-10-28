@@ -354,11 +354,13 @@ export interface PastoralCaseResponse {
   id: string;
   churchId: string;
   memberId: string;
+  memberName?: string;
   category: string;
   concern: string;
   priority: string;
   status: string;
   assignedPastorId?: string;
+  assignedPastorName?: string;
   openedAt: Date;
   openedBy: string;
   targetFollowUpAt?: Date;

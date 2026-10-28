@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { sectionService } from '../service';
 import { CreateSectionSchema, AssignSectionLeadershipSchema } from '../types';
 import { AuthRequest } from '@/types';

@@ -348,6 +348,14 @@ export class SectionFinanceService {
       throw new Error('Expenditure does not belong to the provided section');
     }
 
+    const section = await prisma.section.findUnique({
+      where: { id: expenditure.sectionId },
+    });
+
+    if (!section || section.churchId !== user.churchId) {
+      throw new Error('Unauthorized: section not found');
+    }
+
     // Verify it's approved
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');
@@ -374,7 +382,7 @@ export class SectionFinanceService {
       sectionId: expenditure.sectionId,
       action: 'SECTION_EXPENDITURE_PAID',
       actorId: user.id,
-      churchId: (await prisma.section.findUnique({ where: { id: expenditure.sectionId } }))?.churchId!,
+      churchId: section.churchId,
       changes: { expenditureId, paymentMethod },
     });
 

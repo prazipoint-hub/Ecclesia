@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { organizationService } from '../service';
 import { CreateOrganizationSchema, CreateOrganizationMembershipSchema, AssignOrganizationRoleSchema } from '../types';
 import { AuthRequest } from '@/types';

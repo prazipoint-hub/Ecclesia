@@ -1,5 +1,4 @@
 import { prisma } from '@/database';
-import { AuthorizedUser } from '@/types';
 
 /**
  * AUDIT REPORTING REPOSITORY
@@ -41,17 +40,18 @@ export class AuditReportRepository {
    * Get exception report
    * Identifies data quality issues and anomalies
    */
-  async getExceptionReport(churchId: string, startDate: Date, endDate: Date) {
+  async getExceptionReport(churchId: string, _startDate: Date, _endDate: Date) {
     const exceptions: any[] = [];
 
-    // Find duplicate organization memberships
-    const duplicates = await prisma.$queryRaw`
-      SELECT member_id, organization_id, COUNT(*) as count
-      FROM organization_membership
-      WHERE membership_status = 'ACTIVE'
-      GROUP BY member_id, organization_id
-      HAVING COUNT(*) > 1
-    `;
+    // The unique database constraint should prevent these. Keeping the check
+    // makes the report useful for legacy/imported data without reading other
+    // churches' records.
+    const duplicates = await prisma.organizationMembership.groupBy({
+      by: ['memberId', 'organizationId'],
+      where: { membershipStatus: 'ACTIVE', member: { churchId } },
+      _count: { _all: true },
+      having: { id: { _count: { gt: 1 } } },
+    });
 
     if ((duplicates as any[]).length > 0) {
       exceptions.push({
@@ -81,16 +81,22 @@ export class AuditReportRepository {
       });
     }
 
-    // Find aged-out organization members
-    const agedOutMembers = await prisma.$queryRaw`
-      SELECT m.id, m.surname, m.given_names, m.date_of_birth
-      FROM member m
-      JOIN organization_membership om ON m.id = om.member_id
-      WHERE YEAR(FROM_DAYS(DATEDIFF(CURDATE(), m.date_of_birth)/365.25)) >= 18
-      AND om.organization_id = (SELECT id FROM organization WHERE organization_type = 'UMYF')
-      AND om.membership_status = 'ACTIVE'
-      LIMIT 50
-    `;
+    // Find youth members aged 18 or more. Prisma queries keep this scoped to
+    // the requesting church and resilient to generated table-name changes.
+    const ageLimit = new Date();
+    ageLimit.setFullYear(ageLimit.getFullYear() - 18);
+    const agedOutMembers = await prisma.organizationMembership.findMany({
+      where: {
+        membershipStatus: 'ACTIVE',
+        organization: { churchId, organizationType: 'UMYF' },
+        member: { churchId, dateOfBirth: { lte: ageLimit } },
+      },
+      select: {
+        member: { select: { id: true, firstName: true, lastName: true, dateOfBirth: true } },
+        organization: { select: { id: true, name: true } },
+      },
+      take: 50,
+    });
 
     if ((agedOutMembers as any[]).length > 0) {
       exceptions.push({
@@ -102,18 +108,14 @@ export class AuditReportRepository {
       });
     }
 
-    // Find missing treasurers
-    const orgsWithoutTreasurer = await prisma.$queryRaw`
-      SELECT o.id, o.name
-      FROM organization o
-      WHERE o.status = 'ACTIVE'
-      AND NOT EXISTS (
-        SELECT 1 FROM organization_role_assignment ora
-        WHERE ora.organization_id = o.id
-        AND ora.position = 'Treasurer'
-        AND ora.end_date IS NULL
-      )
-    `;
+    const orgsWithoutTreasurer = await prisma.organization.findMany({
+      where: {
+        churchId,
+        status: 'ACTIVE',
+        roles: { none: { position: 'Treasurer', endDate: null } },
+      },
+      select: { id: true, name: true },
+    });
 
     if ((orgsWithoutTreasurer as any[]).length > 0) {
       exceptions.push({

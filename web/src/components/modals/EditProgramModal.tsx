@@ -4,6 +4,8 @@ import type { Program } from '@/types/program';
 import type { Committee } from '@/types/committee';
 import { Button } from '@/components/common/Button';
 
+type ProgramStatus = Program['status'];
+
 interface EditProgramModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,10 +21,10 @@ export const EditProgramModal = ({
   program,
   committees,
 }: EditProgramModalProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{ name: string; ownerCommitteeId: string; status: ProgramStatus }>({
     name: program?.name ?? '',
     ownerCommitteeId: program?.ownerCommitteeId ?? '',
-    status: program?.status ?? ('ACTIVE' as const),
+    status: program?.status ?? 'ACTIVE',
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,7 +107,7 @@ export const EditProgramModal = ({
             </label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as ProgramStatus })}
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none"
             >
               <option value="PLANNED">Planned</option>

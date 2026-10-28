@@ -5,10 +5,10 @@ A comprehensive, permission-driven church management and administration platform
 ## Architecture
 
 - **Backend**: Node.js 22+, TypeScript, Express 5
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: MySQL with Prisma ORM
 - **Validation**: Zod
 - **Authentication**: Token/session-based with role/permission enforcement
-- **API**: Versioned REST API (`/api/v1`)
+- **API**: Versioned REST API (`/api/v2`, with authentication also available at `/api/v1/auth` for compatibility)
 - **Architecture**: Modular feature-based Clean Architecture
 
 ## Core Principles
@@ -60,7 +60,7 @@ src/
 ### Prerequisites
 
 - Node.js 22+
-- PostgreSQL 13+
+- MySQL 8+
 - npm or yarn
 
 ### Installation
@@ -102,10 +102,10 @@ npm run db:studio
 
 ## API Documentation
 
-API endpoints follow the structure:
+Most application endpoints follow the structure:
 
 ```
-/api/v1/{feature}/{resource}
+/api/v2/{feature}/{resource}
 ```
 
 ### Authentication
@@ -121,11 +121,10 @@ GET    /api/v1/auth/me
 ### Members
 
 ```
-GET    /api/v1/members
-GET    /api/v1/members/:id
-POST   /api/v1/members
-PUT    /api/v1/members/:id
-DELETE /api/v1/members/:id
+GET    /api/v2/members
+GET    /api/v2/members/:id
+POST   /api/v2/members
+PUT    /api/v2/members/:id
 ```
 
 ## Database Schema
@@ -162,14 +161,9 @@ Example permissions:
 
 ## Development Phases
 
-**Phase 1** (Current): Authentication, Organization, Members, RBAC
-**Phase 2**: Membership management, Statistician workflows, Sections, Leadership
-**Phase 3**: Events, Attendance, Notifications
-**Phase 4**: Main finance, POS, Cash sessions, Double-entry accounting
-**Phase 5**: Section finance, Section POS, Section expenditure, Audit
-**Phase 6**: Committees, Pastoral care, Counseling
-**Phase 7**: Projects, Fundraising, Tickets, QR validation
-**Phase 8**: Assets, SPPR, Audit, Advanced reporting
+See [the implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md) for the
+current, tracked completion status. It distinguishes working vertical slices
+from planned domains and from migrations that must be applied by an operator.
 
 ## Testing
 

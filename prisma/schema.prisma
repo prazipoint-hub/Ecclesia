@@ -66,13 +66,44 @@ model Device {
 // ORGANIZATION STRUCTURE
 // ============================================================================
 
-model Circuit {
-  id       String   @id @default(cuid())
-  name     String
-  churches Church[]
+model Conference {
+  id        String     @id @default(cuid())
+  name      String
+  code      String?    @unique
+  districts District[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([name])
+}
+
+model District {
+  id           String      @id @default(cuid())
+  conferenceId String?
+  conference   Conference? @relation(fields: [conferenceId], references: [id], onDelete: SetNull)
+  name         String
+  code         String?
+  circuits     Circuit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([conferenceId, name])
+  @@index([conferenceId])
+}
+
+model Circuit {
+  id         String    @id @default(cuid())
+  districtId String?
+  district   District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  name       String
+  churches   Church[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([districtId])
 }
 
 model Church {

@@ -27,22 +27,14 @@ export const DistrictCommitteesManagement = () => {
   const canDeleteCommittee = hasPermission('committee', 'DELETE');
 
   const handleCreateCommittee = async (data: Partial<Committee>) => {
-    try {
-      const newCommittee = await organizationService.createCommittee(data);
-      setCommittees([...committees, newCommittee]);
-    } catch (error) {
-      throw error;
-    }
+    const newCommittee = await organizationService.createCommittee(data);
+    setCommittees([...committees, newCommittee]);
   };
 
   const handleEditCommittee = async (data: Partial<Committee>) => {
     if (!selectedCommittee) return;
-    try {
-      await organizationService.createCommittee(data);
-      setCommittees(committees.map((c) => (c.id === selectedCommittee.id ? { ...c, ...data } : c)));
-    } catch (error) {
-      throw error;
-    }
+    await organizationService.createCommittee(data);
+    setCommittees(committees.map((c) => (c.id === selectedCommittee.id ? { ...c, ...data } : c)));
   };
 
   const handleDeleteCommittee = async () => {

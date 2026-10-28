@@ -14,7 +14,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="min-h-screen bg-gray-50">
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="lg:ml-64">
+      <main className="lg:ml-72">
         <div className="px-4 py-8 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>

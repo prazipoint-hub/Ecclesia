@@ -106,7 +106,6 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { membershipStatusChangeService } from '../service';
 
 describe('Membership Status Change Approval Workflow', () => {
   // These are placeholder tests showing the structure

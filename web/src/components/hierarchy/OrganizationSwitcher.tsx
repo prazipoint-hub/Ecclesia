@@ -1,29 +1,54 @@
 import { ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useOrganizationStore } from '@/stores/organizationStore';
 import type { OrganizationUnit } from '@/types/organization';
 
 export const OrganizationSwitcher = () => {
-  const { scope, selectedUnitId, units, setScope, setSelectedUnitId } = useOrganizationStore();
+  const { scope, selectedUnitId, units, setScope, setSelectedUnitId, loadWorkspace } = useOrganizationStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const selectedUnit = units.find((unit) => unit.id === selectedUnitId) ?? units[0];
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, []);
+
+  useEffect(() => {
+    void loadWorkspace();
+  }, [loadWorkspace]);
 
   const handleSelect = (unit: OrganizationUnit) => {
     setSelectedUnitId(unit.id);
     if (unit.type === 'DISTRICT' || unit.type === 'CIRCUIT') {
       setScope(unit.type === 'DISTRICT' ? 'DISTRICT' : 'CIRCUIT');
     }
+    setIsOpen(false);
   };
 
   return (
-    <div className="relative">
-      <button className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm hover:bg-gray-100">
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm hover:bg-gray-100"
+      >
         <span className="font-semibold text-gray-900">{scope}</span>
-        <span className="text-gray-500">{selectedUnit?.displayName}</span>
+        <span className="text-gray-500">{selectedUnit?.displayName ?? 'Loading workspace…'}</span>
         <ChevronDown className="h-4 w-4 text-gray-500" />
       </button>
 
-      <div className="absolute left-0 top-full z-50 mt-2 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+      {isOpen && <div role="listbox" className="absolute left-0 top-full z-50 mt-2 w-64 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
         {units.map((unit) => (
           <button
+            type="button"
+            role="option"
+            aria-selected={selectedUnitId === unit.id}
             key={unit.id}
             onClick={() => handleSelect(unit)}
             className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm ${
@@ -34,7 +59,7 @@ export const OrganizationSwitcher = () => {
             <span className="text-xs uppercase tracking-wide text-gray-500">{unit.type}</span>
           </button>
         ))}
-      </div>
+      </div>}
     </div>
   );
 };

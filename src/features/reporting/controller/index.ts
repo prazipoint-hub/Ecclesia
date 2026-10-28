@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { reportingService } from '../service';
 import { GenerateFinancialReportSchema, GenerateAdministrativeReportSchema, GenerateAuditReportSchema } from '../types';
 import { AuthRequest } from '@/types';
@@ -20,7 +20,7 @@ export class ReportingController {
         req.user!
       );
 
-      res.json(report);
+      this.sendReport(res, report);
     } catch (error) {
       handleError(error, res);
     }
@@ -43,7 +43,7 @@ export class ReportingController {
         req.user!
       );
 
-      res.json(report);
+      this.sendReport(res, report);
     } catch (error) {
       handleError(error, res);
     }
@@ -64,10 +64,20 @@ export class ReportingController {
         req.user!
       );
 
-      res.json(report);
+      this.sendReport(res, report);
     } catch (error) {
       handleError(error, res);
     }
+  }
+
+  private sendReport(res: Response, report: { format: string; filename: string; mimeType: string; content: string | Buffer; [key: string]: unknown }): void {
+    if (report.format === 'JSON') {
+      res.json(report);
+      return;
+    }
+    res.setHeader('Content-Type', report.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${report.filename}"`);
+    res.send(report.content);
   }
 }
 

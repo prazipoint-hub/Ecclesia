@@ -11,4 +11,5 @@ export type AuthorizedUser = {
 
 export interface AuthRequest extends Request {
   user?: AuthorizedUser;
+  sessionId?: string;
 }

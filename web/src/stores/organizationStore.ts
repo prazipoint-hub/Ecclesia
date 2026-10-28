@@ -1,10 +1,20 @@
 import { create } from 'zustand';
+import { apiClient } from '@/utils/api';
 import type { Committee } from '@/types/committee';
 import type { OrganizationUnit } from '@/types/organization';
 import type { Program } from '@/types/program';
 import type { Sbu, SbuOversight } from '@/types/sbu';
 
-export type OrganizationScope = 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT' | 'SECTION';
+export type OrganizationScope = OrganizationUnit['type'];
+
+type WorkspaceResponse = {
+  conference: { id: string; name: string; code: string | null } | null;
+  district: { id: string; name: string; code: string | null } | null;
+  circuit: { id: string; name: string } | null;
+  church: { id: string; name: string; location: string | null };
+  sections: Array<{ id: string; name: string; code: string | null }>;
+  organizations: Array<{ id: string; name: string; shortName: string; type: string }>;
+};
 
 interface OrganizationStore {
   scope: OrganizationScope;
@@ -14,6 +24,9 @@ interface OrganizationStore {
   programs: Program[];
   sbus: Sbu[];
   oversight: SbuOversight[];
+  isLoading: boolean;
+  error: string | null;
+  loadWorkspace: () => Promise<void>;
   setScope: (scope: OrganizationScope) => void;
   setSelectedUnitId: (unitId: string) => void;
   getCurrentScopeLabel: () => string;
@@ -21,54 +34,70 @@ interface OrganizationStore {
   getOversightForSbu: (sbuId: string) => SbuOversight | undefined;
 }
 
-const conference: OrganizationUnit = { id: 'conference-harare', name: 'Harare Conference', displayName: 'HARARE CONFERENCE', type: 'CONFERENCE', status: 'ACTIVE' };
-const district: OrganizationUnit = { id: 'district-harare', name: 'Harare District', displayName: 'HARARE DISTRICT', type: 'DISTRICT', parentId: conference.id, status: 'ACTIVE' };
-const circuits: OrganizationUnit[] = [
-  { id: 'circuit-cranborne', name: 'Cranborne', displayName: 'Cranborne', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
-  { id: 'circuit-borrowdale', name: 'Borrowdale', displayName: 'Borrowdale', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
-  { id: 'circuit-mbare', name: 'Mbare', displayName: 'Mbare', type: 'CIRCUIT', parentId: district.id, status: 'ACTIVE' },
-];
-
-const sbuDefinitions = [
-  { key: 'RRW' as const, name: 'Rural and Urban Women (RRW)' },
-  { key: 'UMYF' as const, name: 'United Methodist Youth Fellowship (UMYF)' },
-  { key: 'MUMC' as const, name: 'Men of the United Methodist Church (MUMC)' },
-  { key: 'CHILDRENS_MINISTRY' as const, name: "Children's Ministry" },
-];
-
-const sbus: Sbu[] = [
-  ...[conference, district, ...circuits].flatMap((unit) => sbuDefinitions.map((definition) => ({
-    id: `${unit.id}-${definition.key.toLowerCase()}`,
-    ...definition,
-    displayName: definition.name,
-    scopeId: unit.id,
-    scopeType: unit.type as 'CONFERENCE' | 'DISTRICT' | 'CIRCUIT',
+const workspaceUnits = (workspace: WorkspaceResponse): OrganizationUnit[] => {
+  const units: OrganizationUnit[] = [];
+  if (workspace.conference) units.push({
+    id: workspace.conference.id,
+    name: workspace.conference.name,
+    displayName: workspace.conference.name,
+    type: 'CONFERENCE',
+    status: 'ACTIVE',
+  });
+  if (workspace.district) units.push({
+    id: workspace.district.id,
+    name: workspace.district.name,
+    displayName: workspace.district.name,
+    type: 'DISTRICT',
+    parentId: workspace.conference?.id,
+    status: 'ACTIVE',
+  });
+  if (workspace.circuit) units.push({
+    id: workspace.circuit.id,
+    name: workspace.circuit.name,
+    displayName: workspace.circuit.name,
+    type: 'CIRCUIT',
+    parentId: workspace.district?.id,
+    status: 'ACTIVE',
+  });
+  units.push(...workspace.sections.map((section) => ({
+    id: section.id,
+    name: section.name,
+    displayName: section.name,
+    type: 'SECTION' as const,
+    parentId: workspace.circuit?.id,
     status: 'ACTIVE' as const,
-  }))),
-];
-
-const oversight: SbuOversight[] = sbus.map((sbu) => ({
-  sbuId: sbu.id,
-  scopeId: sbu.scopeId,
-  overseerRole: sbu.scopeType === 'CIRCUIT' ? 'PASTOR' : sbu.scopeType === 'DISTRICT' ? 'DISTRICT_SUPERINTENDENT' : 'BISHOP',
-  canReview: true,
-  canApprove: false,
-}));
+  })));
+  return units;
+};
 
 export const useOrganizationStore = create<OrganizationStore>((set, get) => ({
-  scope: 'DISTRICT',
-  selectedUnitId: district.id,
-  units: [conference, district, ...circuits],
+  scope: 'CIRCUIT',
+  selectedUnitId: '',
+  units: [],
   committees: [],
   programs: [],
-  sbus,
-  oversight,
+  sbus: [],
+  oversight: [],
+  isLoading: false,
+  error: null,
+  loadWorkspace: async () => {
+    if (get().isLoading) return;
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await apiClient.get<WorkspaceResponse>('/api/v2/hierarchy/me');
+      const units = workspaceUnits(data);
+      const selected = units.find((unit) => unit.type === 'CIRCUIT') ?? units.find((unit) => unit.type === 'SECTION') ?? units[0];
+      set({ units, selectedUnitId: selected?.id ?? '', scope: selected?.type ?? 'CIRCUIT', isLoading: false });
+    } catch {
+      set({ isLoading: false, error: 'Church workspace could not be loaded.' });
+    }
+  },
   setScope: (scope) => set({ scope }),
   setSelectedUnitId: (unitId) => {
     const unit = get().units.find((item) => item.id === unitId);
     if (unit) set({ selectedUnitId: unitId, scope: unit.type });
   },
-  getCurrentScopeLabel: () => get().units.find((unit) => unit.id === get().selectedUnitId)?.displayName ?? district.displayName,
+  getCurrentScopeLabel: () => get().units.find((unit) => unit.id === get().selectedUnitId)?.displayName ?? 'Church workspace',
   getSbusForScope: (scopeId = get().selectedUnitId) => get().sbus.filter((sbu) => sbu.scopeId === scopeId),
-  getOversightForSbu: (sbuId) => get().oversight.find((item) => item.sbuId === sbuId),
+  getOversightForSbu: (sbuId) => get().oversight.find((sbu) => sbu.sbuId === sbuId),
 }));

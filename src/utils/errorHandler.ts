@@ -1,6 +1,15 @@
 import { Response } from 'express';
+import { ZodError } from 'zod';
 
 export function handleError(error: unknown, res: Response): void {
+  if (error instanceof ZodError) {
+    res.status(400).json({
+      error: 'Invalid request data',
+      details: error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message })),
+    });
+    return;
+  }
+
   if (error instanceof Error) {
     const message = error.message || 'Unknown error';
 

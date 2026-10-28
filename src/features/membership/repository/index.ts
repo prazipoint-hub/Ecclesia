@@ -1,6 +1,5 @@
 import { prisma } from '@/database';
 import { MembershipStatusChange, Prisma } from '@prisma/client';
-import { AuthorizedUser } from '@/types';
 
 export class MembershipRepository {
   /**
