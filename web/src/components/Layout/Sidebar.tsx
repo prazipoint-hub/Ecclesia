@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Mail, Megaphone, Settings, UserCircle, Users, X } from 'lucide-react';
+import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Mail, Megaphone, Search, Settings, Upload, UserCircle, UserPlus, Users, UsersRound, X } from 'lucide-react';
 import { useAuthStore } from '@stores/authStore';
 import { useOrganizationStore } from '@stores/organizationStore';
 
@@ -19,6 +19,10 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ...(scope === 'CONFERENCE' ? [item('Districts', '/conference/districts', Building2)] : []),
     ...(scope === 'DISTRICT' ? [item('Circuits', '/district/circuits', Building2)] : []),
     item('Members', '/members', Users),
+    ...(permissions.includes('member:view') ? [item('Directory', '/members/search', Search)] : []),
+    ...(permissions.includes('member:import') ? [item('Import members', '/members/import', Upload)] : []),
+    ...(permissions.includes('visitor:view') ? [item('Visitors', '/visitors', UserPlus)] : []),
+    ...(permissions.includes('leadership:term:manage') ? [item('Leadership', '/leadership', UsersRound)] : []),
     item('Pastoral care', '/pastoral', HeartHandshake),
     item('Events', '/events', CalendarDays),
     item('Committees', `/${scopePrefix}/committees`, Layers3),

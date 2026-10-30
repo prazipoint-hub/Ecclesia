@@ -30,6 +30,8 @@ async function main() {
     'report:view:financial', 'report:view:administrative', 'report:view:audit', 'report:view:all_churches',
     'report:view:section_finance', 'report:view:organization_finance',
     'auth:invite:create', 'auth:invite:revoke',
+    'member:import', 'member:export', 'member:archive', 'visitor:view', 'visitor:create', 'visitor:manage',
+    'committee:meeting:create', 'committee:meeting:manage', 'leadership:term:manage',
     'notification:broadcast:create', 'notification:broadcast:send', 'notification:template:manage',
     'payment:view:all', 'pledge:view:all', 'recurring:manage',
   ];

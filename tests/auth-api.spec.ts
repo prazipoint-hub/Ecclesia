@@ -44,6 +44,14 @@ beforeEach(() => {
 });
 
 describe('POST /api/v1/auth/login', () => {
+  test('archived members cannot sign in even with the right password', async () => {
+    const user = userRecord(false);
+    prisma.user.findUnique.mockResolvedValue({ ...user, member: { ...user.member, archivedAt: new Date() } });
+    const res = await request(app).post('/api/v1/auth/login').send({ email: 'a@example.com', password: PASSWORD });
+    expect(res.status).toBe(403);
+    expect(prisma.session.create).not.toHaveBeenCalled();
+  });
+
   test('rejects wrong password with 401', async () => {
     prisma.user.findUnique.mockResolvedValue(userRecord(false));
     const res = await request(app).post('/api/v1/auth/login').send({ email: 'a@example.com', password: 'wrong-password' });

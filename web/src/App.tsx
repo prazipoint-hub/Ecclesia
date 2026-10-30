@@ -30,6 +30,14 @@ import { BroadcastsPage } from '@/pages/admin/BroadcastsPage';
 import { TemplatesPage } from '@/pages/admin/TemplatesPage';
 import { GivePage } from '@/pages/give/GivePage';
 import { GiveConfirmPage } from '@/pages/give/GiveConfirmPage';
+import { MemberDirectoryPage } from '@/pages/members/MemberDirectoryPage';
+import { MemberImportPage } from '@/pages/members/MemberImportPage';
+import { MemberDetailPage } from '@/pages/members/MemberDetailPage';
+import { VisitorsPage } from '@/pages/visitors/VisitorsPage';
+import { VisitorDetailPage } from '@/pages/visitors/VisitorDetailPage';
+import { CommitteeMeetingsPage } from '@/pages/committees/CommitteeMeetingsPage';
+import { MeetingDetailPage } from '@/pages/committees/MeetingDetailPage';
+import { LeadershipPage } from '@/pages/leadership/LeadershipPage';
 import { useAuthStore } from '@/stores/authStore';
 
 const HomeRedirect = () => {
@@ -69,6 +77,14 @@ function App() {
     <Route path="/section/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
     <Route path="/section/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
     <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
+    <Route path="/members/search" element={<ProtectedRoute><MemberDirectoryPage /></ProtectedRoute>} />
+    <Route path="/members/import" element={<ProtectedRoute><MemberImportPage /></ProtectedRoute>} />
+    <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
+    <Route path="/visitors" element={<ProtectedRoute><VisitorsPage /></ProtectedRoute>} />
+    <Route path="/visitors/:id" element={<ProtectedRoute><VisitorDetailPage /></ProtectedRoute>} />
+    <Route path="/committees/:committeeId/meetings" element={<ProtectedRoute><CommitteeMeetingsPage /></ProtectedRoute>} />
+    <Route path="/committees/:committeeId/meetings/:meetingId" element={<ProtectedRoute><MeetingDetailPage /></ProtectedRoute>} />
+    <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
     <Route path="/pastoral" element={<ProtectedRoute><PastoralCasesPage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />

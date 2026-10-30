@@ -61,7 +61,7 @@ export class NotificationRepository {
   }
 
   audienceWhere(churchId: string, audience: Audience): Prisma.MemberWhereInput {
-    const base: Prisma.MemberWhereInput = { churchId, membershipStatus: 'ACTIVE' };
+    const base: Prisma.MemberWhereInput = { churchId, membershipStatus: 'ACTIVE', archivedAt: null };
     if (audience.type === 'SECTIONS') return { ...base, sectionId: { in: audience.ids } };
     if (audience.type === 'ORGANIZATIONS') {
       return { ...base, organizationMemberships: { some: { organizationId: { in: audience.ids }, membershipStatus: 'ACTIVE' } } };

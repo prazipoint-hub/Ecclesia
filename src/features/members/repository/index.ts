@@ -36,7 +36,7 @@ export class MemberRepository {
       return { members: [], total: 0 };
     }
 
-    const where: Prisma.MemberWhereInput = { churchId };
+    const where: Prisma.MemberWhereInput = { churchId, archivedAt: null };
     if (options?.sectionId) {
       where.sectionId = options.sectionId;
     }

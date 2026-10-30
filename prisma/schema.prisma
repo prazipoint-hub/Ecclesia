@@ -229,6 +229,12 @@ model Church {
   auditLogs   AuditLog[]
   invitations Invitation[]
 
+  // People & governance
+  visitors          Visitor[]
+  memberImports     MemberImport[]
+  committeeMeetings CommitteeMeeting[]
+  leadershipTerms   LeadershipTerm[]
+
   // Notifications
   broadcastMessages      BroadcastMessage[]
   communicationTemplates CommunicationTemplate[]
@@ -332,6 +338,10 @@ model Member {
   // Personal info
   maritalStatus String? // SINGLE, MARRIED, DIVORCED, WIDOWED
 
+  // Archiving hides a member from directories and mailings without deleting history
+  archivedAt DateTime?
+  archivedBy String?
+
   // Authentication
   user                    User?                    @relation("UserMember")
   familyRelationships     FamilyRelationship[]     @relation("FamilyMember")
@@ -394,6 +404,7 @@ model Member {
   @@index([sectionId])
   @@index([familyId])
   @@index([membershipStatus])
+  @@index([archivedAt])
   @@index([parentId])
   @@index([parentMemberId])
 }
@@ -507,7 +518,8 @@ model Committee {
   name        String
   description String?
 
-  members LeadershipAssignment[]
+  members  LeadershipAssignment[]
+  meetings CommitteeMeeting[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -579,6 +591,7 @@ model LeadershipAssignment {
   position  String? // Specific title within role
   startDate DateTime  @default(now())
   endDate   DateTime?
+  terms     LeadershipTerm[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1814,4 +1827,140 @@ model NotificationDelivery {
   @@index([churchId])
   @@index([broadcastId])
   @@index([memberId])
+}
+
+
+model MemberImport {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  fileName  String
+  createdBy String // user id
+  status    String // COMPLETED, PARTIAL, FAILED
+  totalRows Int
+  imported  Int
+  skipped   Int
+  errorLog  String? @db.Text // JSON: [{row, message}]
+
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+}
+
+model Visitor {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  visitDate DateTime @default(now())
+  source    String? // how they heard of the church
+  notes     String?  @db.Text
+
+  followUpStatus    String  @default("NEW") // NEW, CONTACTED, SCHEDULED, JOINED, NOT_INTERESTED
+  assignedToId      String? // member id of the person following up
+  convertedMemberId String? @unique
+
+  followUps VisitorFollowUp[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([churchId, followUpStatus])
+  @@index([assignedToId])
+}
+
+model VisitorFollowUp {
+  id        String  @id @default(cuid())
+  visitorId String
+  visitor   Visitor @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  churchId  String
+
+  actorId String // user id
+  method  String // CALL, VISIT, MESSAGE, OTHER
+  notes   String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([visitorId])
+  @@index([churchId])
+}
+
+model CommitteeMeeting {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  committeeId String
+  committee   Committee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  title       String
+  scheduledAt DateTime
+  location    String?
+  agenda      String?  @db.Text
+  minutes     String?  @db.Text
+  status      String   @default("SCHEDULED") // SCHEDULED, HELD, CANCELLED
+
+  // Once set, the minutes are the permanent record and can no longer be edited
+  minutesLockedAt DateTime?
+  createdBy       String
+
+  decisions CommitteeDecision[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([committeeId])
+  @@index([scheduledAt])
+}
+
+model CommitteeDecision {
+  id        String           @id @default(cuid())
+  meetingId String
+  meeting   CommitteeMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  churchId  String
+
+  description  String   @db.Text
+  status       String   @default("PROPOSED") // PROPOSED, APPROVED, REJECTED, DEFERRED
+  votesFor     Int      @default(0)
+  votesAgainst Int      @default(0)
+  abstentions  Int      @default(0)
+  ownerMemberId String?
+  dueDate      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([meetingId])
+  @@index([churchId])
+}
+
+model LeadershipTerm {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  assignmentId String
+  assignment   LeadershipAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  termNumber     Int
+  startDate      DateTime
+  plannedEndDate DateTime?
+  endDate        DateTime?
+  status         String    @default("ACTIVE") // ACTIVE, COMPLETED, TERMINATED
+  successorId    String? // member id
+  notes          String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([assignmentId, termNumber])
+  @@index([churchId])
+  @@index([status, plannedEndDate])
 }

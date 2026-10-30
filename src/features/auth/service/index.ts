@@ -137,6 +137,8 @@ async function resolveDeviceId(userId: string, context: SessionContext): Promise
 }
 
 async function issueSession(user: AuthUser, context: SessionContext = {}): Promise<AuthResponse> {
+  // Archived members keep their history but can no longer sign in or refresh a session.
+  if ((user.member as { archivedAt?: Date | null } | null)?.archivedAt) throw new AppError(403, 'This account has been deactivated', 'ACCOUNT_ARCHIVED');
   const userPayload = clientUser(user);
   const tokenId = randomUUID();
   const refreshToken = randomUUID();

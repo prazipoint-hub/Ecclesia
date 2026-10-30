@@ -13,6 +13,7 @@ const model = () => ({
   deleteMany: vi.fn(),
   count: vi.fn(),
   aggregate: vi.fn(),
+  groupBy: vi.fn(),
 });
 
 export function createMockPrisma() {
@@ -44,6 +45,14 @@ export function createMockPrisma() {
     broadcastMessage: model(),
     section: model(),
     organization: model(),
+    memberImport: model(),
+    visitor: model(),
+    visitorFollowUp: model(),
+    committee: model(),
+    committeeMeeting: model(),
+    committeeDecision: model(),
+    leadershipAssignment: model(),
+    leadershipTerm: model(),
     $transaction: vi.fn(),
   };
   // Supports both transaction styles: an array of operations and an interactive callback.

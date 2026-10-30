@@ -187,7 +187,7 @@ describe('broadcasts', () => {
     prisma.member.count.mockResolvedValue(42);
     const res = await request(app).post('/api/v2/notifications/broadcasts/audience-preview').set(create).send({ audience: { type: 'SECTIONS', ids: ['s1'] } });
     expect(res.body).toEqual({ recipients: 42 });
-    expect(prisma.member.count.mock.calls[0][0].where).toEqual({ churchId: 'church-1', membershipStatus: 'ACTIVE', sectionId: { in: ['s1'] } });
+    expect(prisma.member.count.mock.calls[0][0].where).toEqual({ churchId: 'church-1', membershipStatus: 'ACTIVE', archivedAt: null, sectionId: { in: ['s1'] } });
   });
 
   test('sending claims the broadcast atomically, answers 202 and delivers in the background', async () => {
@@ -212,7 +212,7 @@ describe('broadcasts', () => {
     expect(prisma.broadcastMessage.update.mock.calls[0][0].data).toMatchObject({ status: 'SENT', recipientCount: 2, deliveredCount: 3, skippedCount: 1, failedCount: 0 });
     expect(prisma.notification.createMany.mock.calls[0][0].data).toHaveLength(2);
     expect(prisma.notification.createMany.mock.calls[0][0].data[0]).toMatchObject({ broadcastId: 'b1', category: 'ANNOUNCEMENTS' });
-    expect(prisma.member.findMany.mock.calls[0][0].where).toEqual({ churchId: 'church-1', membershipStatus: 'ACTIVE' });
+    expect(prisma.member.findMany.mock.calls[0][0].where).toEqual({ churchId: 'church-1', membershipStatus: 'ACTIVE', archivedAt: null });
   });
 
   test('a second send loses the race and conflicts without delivering', async () => {
