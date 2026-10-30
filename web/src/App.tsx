@@ -19,6 +19,15 @@ import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { ScopeWorkspacePage } from '@/pages/ScopeWorkspacePage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { PastoralDashboardPage } from '@/pages/pastoral/PastoralDashboardPage';
+import { VisitsPage } from '@/pages/pastoral/VisitsPage';
+import { CounselingPage } from '@/pages/pastoral/CounselingPage';
+import { PrayerPage } from '@/pages/pastoral/PrayerPage';
+import { ReferralsPage } from '@/pages/pastoral/ReferralsPage';
+import { FollowUpsPage } from '@/pages/pastoral/FollowUpsPage';
+import { AssessmentsPage } from '@/pages/pastoral/AssessmentsPage';
+import { SacramentsPage } from '@/pages/pastoral/SacramentsPage';
+import { MemberCareProfilePage } from '@/pages/pastoral/MemberCareProfilePage';
 import { PastoralCasesPage } from '@/pages/PastoralCasesPage';
 import { EventsPage } from '@/pages/EventsPage';
 import { CommitteesPage } from '@/pages/CommitteesPage';
@@ -95,6 +104,15 @@ function App() {
     <Route path="/committees/:committeeId/meetings/:meetingId" element={<ProtectedRoute><MeetingDetailPage /></ProtectedRoute>} />
     <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
     <Route path="/pastoral" element={<ProtectedRoute><PastoralCasesPage /></ProtectedRoute>} />
+    <Route path="/pastoral/dashboard" element={<ProtectedRoute><PastoralDashboardPage /></ProtectedRoute>} />
+    <Route path="/pastoral/visits" element={<ProtectedRoute><VisitsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/counseling" element={<ProtectedRoute><CounselingPage /></ProtectedRoute>} />
+    <Route path="/pastoral/prayer" element={<ProtectedRoute><PrayerPage /></ProtectedRoute>} />
+    <Route path="/pastoral/referrals" element={<ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/followups" element={<ProtectedRoute><FollowUpsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/assessments" element={<ProtectedRoute><AssessmentsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/sacraments" element={<ProtectedRoute><SacramentsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/members/:memberId" element={<ProtectedRoute><MemberCareProfilePage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
     <Route path="/finance/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />

@@ -3,6 +3,7 @@ import { HeartHandshake, Plus, RefreshCw, X } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/utils/api';
+import { PastoralNav } from '@/pages/pastoral/pastoralShared';
 
 type CasePriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
 type CaseCategory =
@@ -142,6 +143,7 @@ export const PastoralCasesPage = () => {
 
   return (
     <MainLayout>
+      <div className="mb-6"><PastoralNav /></div>
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

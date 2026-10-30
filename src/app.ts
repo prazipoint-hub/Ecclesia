@@ -25,6 +25,7 @@ import districtFinanceRoutes from '@/features/finance/district/routes';
 import authRoutes from '@/features/auth/routes';
 import hierarchyRoutes from '@/features/hierarchy/routes';
 import pastoralCaseRoutes from '@/features/pastoral/cases/routes';
+import pastoralCareRoutes from '@/features/pastoral/care/routes';
 import eventRoutes from '@/features/events/routes';
 import committeeRoutes from '@/features/committees/routes';
 
@@ -51,6 +52,7 @@ export function createApp(): Application {
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v2/hierarchy', hierarchyRoutes);
   app.use('/api/v2/pastoral/cases', pastoralCaseRoutes);
+  app.use('/api/v2/pastoral', pastoralCareRoutes);
   app.use('/api/v2/events', eventRoutes);
   app.use('/api/v2/committees', committeeMeetingRoutes);
   app.use('/api/v2/committees', committeeRoutes);
