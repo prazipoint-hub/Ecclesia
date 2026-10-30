@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { DistrictCircuits } from '@/pages/district/DistrictCircuits';
 import { DistrictPrograms } from '@/pages/district/DistrictPrograms';
 import { SbuDashboard } from '@/pages/sbu/SbuDashboard';

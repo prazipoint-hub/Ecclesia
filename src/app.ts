@@ -1,6 +1,8 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import pinoHttp from 'pino-http';
+import { logger } from '@/config/logger';
 
 import memberRoutes from '@/features/members/routes';
 import familyRoutes from '@/features/families/routes';
@@ -25,6 +27,7 @@ export function createApp(): Application {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  app.use(pinoHttp({ logger }));
   app.use(helmet());
   app.use(cors({ origin: allowedOrigins, credentials: true }));
   app.use(express.json({ limit: '1mb' }));
@@ -53,7 +56,7 @@ export function createApp(): Application {
   app.use('/api/v2/districts/:districtId', districtFinanceRoutes);
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    console.error(err);
+    logger.error({ err }, 'Unhandled application error');
     res.status(500).json({ error: 'Internal server error' });
   });
 

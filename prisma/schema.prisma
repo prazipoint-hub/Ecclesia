@@ -45,6 +45,7 @@ model Session {
 
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([userId])
 }
 
@@ -303,6 +304,8 @@ model Member {
   @@index([sectionId])
   @@index([familyId])
   @@index([membershipStatus])
+  @@index([parentId])
+  @@index([parentMemberId])
 }
 
 model FamilyRelationship {
@@ -328,6 +331,13 @@ model FamilyRelationship {
   createdAt DateTime @default(now())
   Family    Family?  @relation(fields: [familyId], references: [id])
   familyId  String?
+  updatedAt DateTime @default(now()) @updatedAt
+  @@index([partner1Id])
+  @@index([partner2Id])
+  @@index([parentId])
+  @@index([childId])
+  @@index([memberId])
+  @@index([familyId])
 }
 
 // ============================================================================
@@ -370,6 +380,7 @@ model OrganizationMembership {
   membershipStatus String    @default("ACTIVE") // ACTIVE, INACTIVE, TRANSFERRED
   notes            String?   @db.Text
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@unique([organizationId, memberId])
   @@index([organizationId])
   @@index([memberId])
@@ -389,6 +400,7 @@ model OrganizationRoleAssignment {
 
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@unique([organizationId, memberId, position])
   @@index([organizationId])
   @@index([memberId])
@@ -552,8 +564,10 @@ model EventParticipant {
 
   role String? // Preacher, Usher, Musician, etc.
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@unique([eventId, memberId])
   @@index([eventId])
+  @@index([memberId])
 }
 
 // ============================================================================
@@ -630,9 +644,11 @@ model Receipt {
   FinancialAccount   FinancialAccount? @relation(fields: [financialAccountId], references: [id])
   financialAccountId String?
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([churchId])
   @@index([fundId])
   @@index([memberId])
+  @@index([financialAccountId])
 }
 
 model Expenditure {
@@ -665,6 +681,8 @@ model Expenditure {
 
   @@index([churchId])
   @@index([fundId])
+  @@index([requestedBy])
+  @@index([financialAccountId])
 }
 
 model CashSession {
@@ -683,6 +701,7 @@ model CashSession {
 
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([churchId])
   @@index([accountId])
 }
@@ -734,8 +753,10 @@ model SectionReceipt {
   issuedAt      DateTime @default(now())
   recordedAt    DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([sectionId])
   @@index([accountId])
+  @@index([memberId])
 }
 
 model SectionExpenditure {
@@ -762,6 +783,7 @@ model SectionExpenditure {
 
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([sectionId])
   @@index([accountId])
 }
@@ -780,6 +802,7 @@ model SectionTransaction {
 
   postedAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([sectionId])
   @@index([accountId])
 }
@@ -826,6 +849,7 @@ model PastoralCase {
   @@index([memberId])
   @@index([status])
   @@index([priority])
+  @@index([assignedPastorId])
 }
 
 model PastoralCaseActivity {
@@ -971,6 +995,7 @@ model PastoralFollowUp {
   @@index([memberId])
   @@index([dueDate])
   @@index([status])
+  @@index([caseId])
 }
 
 model PastoralAssessment {
@@ -1259,9 +1284,12 @@ model MembershipStatusChange {
 
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([churchId])
   @@index([memberId])
   @@index([status])
+  @@index([requestedById])
+  @@index([approvedById])
 }
 
 model StatusChangeApproval {
@@ -1275,6 +1303,7 @@ model StatusChangeApproval {
   effectiveDate DateTime?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ============================================================================
@@ -1380,6 +1409,7 @@ model CircuitReceipt {
   issuedBy      String
   issuedAt      DateTime
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([circuitId])
 }
 
@@ -1400,6 +1430,7 @@ model CircuitExpenditure {
   paymentMethod   String?
   paidAt          DateTime?
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([circuitId])
 }
 
@@ -1428,6 +1459,7 @@ model DistrictReceipt {
   issuedBy      String
   issuedAt      DateTime
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([circuitId])
 }
 
@@ -1448,5 +1480,6 @@ model DistrictExpenditure {
   paymentMethod   String?
   paidAt          DateTime?
 
+  updatedAt DateTime @default(now()) @updatedAt
   @@index([circuitId])
 }

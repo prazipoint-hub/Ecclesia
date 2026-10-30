@@ -1,5 +1,7 @@
 import { Response } from 'express';
 import { ZodError } from 'zod';
+import { AppError } from '@/types/errors';
+import { logger } from '@/config/logger';
 
 export function handleError(error: unknown, res: Response): void {
   if (error instanceof ZodError) {
@@ -10,9 +12,15 @@ export function handleError(error: unknown, res: Response): void {
     return;
   }
 
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({ error: error.message, code: error.code });
+    return;
+  }
+
   if (error instanceof Error) {
     const message = error.message || 'Unknown error';
 
+    // Legacy services still throw plain Errors with keyword messages.
     if (message.includes('Unauthorized')) {
       res.status(401).json({ error: message });
       return;
@@ -33,9 +41,11 @@ export function handleError(error: unknown, res: Response): void {
       return;
     }
 
+    logger.error({ err: error }, 'Unhandled service error');
     res.status(500).json({ error: message });
     return;
   }
 
+  logger.error({ err: error }, 'Unknown thrown value');
   res.status(500).json({ error: 'Internal server error' });
 }

@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Landmark, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { OrganizationUnit } from '@/types/organization';
 
@@ -22,38 +22,4 @@ export const HierarchyBreadcrumb = ({ units }: HierarchyBreadcrumbProps) => {
   });
 
   return <div className="flex flex-wrap items-center gap-2">{items}</div>;
-};
-
-export const ScopeBadge = ({ type }: { type: OrganizationUnit['type'] }) => {
-  const config: Record<OrganizationUnit['type'], { label: string; className: string; icon: ReactNode }> = {
-    CONFERENCE: {
-      label: 'Conference',
-      className: 'bg-violet-100 text-violet-700',
-      icon: <Landmark className="h-3.5 w-3.5" />,
-    },
-    DISTRICT: {
-      label: 'District',
-      className: 'bg-emerald-100 text-emerald-700',
-      icon: <Building2 className="h-3.5 w-3.5" />,
-    },
-    CIRCUIT: {
-      label: 'Circuit',
-      className: 'bg-sky-100 text-sky-700',
-      icon: <ShieldCheck className="h-3.5 w-3.5" />,
-    },
-    SECTION: {
-      label: 'Section',
-      className: 'bg-amber-100 text-amber-700',
-      icon: <Users className="h-3.5 w-3.5" />,
-    },
-  };
-
-  const { label, className, icon } = config[type];
-
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}>
-      {icon}
-      {label}
-    </span>
-  );
 };
