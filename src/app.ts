@@ -27,6 +27,10 @@ export function createApp(): Application {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  if (process.env.TRUST_PROXY) {
+    const hops = Number(process.env.TRUST_PROXY);
+    app.set('trust proxy', Number.isNaN(hops) ? process.env.TRUST_PROXY : hops);
+  }
   app.use(pinoHttp({ logger }));
   app.use(helmet());
   app.use(cors({ origin: allowedOrigins, credentials: true }));

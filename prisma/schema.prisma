@@ -25,8 +25,13 @@ model User {
   requestedMembershipStatusChanges MembershipStatusChange[] @relation("MembershipRequestedBy")
   approvedMembershipStatusChanges  MembershipStatusChange[] @relation("MembershipApprovedBy")
 
-  sessions Session[]
-  devices  Device[]
+  emailVerified Boolean @default(false)
+
+  sessions           Session[]
+  devices            Device[]
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+  twoFactorSecret    TwoFactorSecret?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -34,10 +39,74 @@ model User {
   @@index([email])
 }
 
+model PasswordReset {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model EmailVerification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Invitation {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  email     String
+  memberId  String?
+  invitedBy String
+
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([email])
+}
+
+model TwoFactorSecret {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  secretEncrypted  String
+  isEnabled        Boolean @default(false)
+  backupCodeHashes String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Session {
   id     String @id @default(cuid())
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deviceId String?
+  device   Device? @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
   token        String   @unique
   refreshToken String?  @unique
@@ -46,7 +115,9 @@ model Session {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([userId])
+  @@index([deviceId])
 }
 
 model Device {
@@ -57,6 +128,8 @@ model Device {
   userAgent  String?
   ipAddress  String?
   lastSeenAt DateTime @default(now())
+
+  sessions Session[]
 
   createdAt DateTime @default(now())
 
@@ -153,7 +226,8 @@ model Church {
   pastoralNotifications       PastoralNotification[]
 
   // Audit
-  auditLogs AuditLog[]
+  auditLogs   AuditLog[]
+  invitations Invitation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -332,6 +406,7 @@ model FamilyRelationship {
   Family    Family?  @relation(fields: [familyId], references: [id])
   familyId  String?
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([partner1Id])
   @@index([partner2Id])
   @@index([parentId])
@@ -381,6 +456,7 @@ model OrganizationMembership {
   notes            String?   @db.Text
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@unique([organizationId, memberId])
   @@index([organizationId])
   @@index([memberId])
@@ -401,6 +477,7 @@ model OrganizationRoleAssignment {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@unique([organizationId, memberId, position])
   @@index([organizationId])
   @@index([memberId])
@@ -565,6 +642,7 @@ model EventParticipant {
   role String? // Preacher, Usher, Musician, etc.
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@unique([eventId, memberId])
   @@index([eventId])
   @@index([memberId])
@@ -645,6 +723,7 @@ model Receipt {
   financialAccountId String?
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([churchId])
   @@index([fundId])
   @@index([memberId])
@@ -702,6 +781,7 @@ model CashSession {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([churchId])
   @@index([accountId])
 }
@@ -754,6 +834,7 @@ model SectionReceipt {
   recordedAt    DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([sectionId])
   @@index([accountId])
   @@index([memberId])
@@ -784,6 +865,7 @@ model SectionExpenditure {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([sectionId])
   @@index([accountId])
 }
@@ -803,6 +885,7 @@ model SectionTransaction {
   postedAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([sectionId])
   @@index([accountId])
 }
@@ -1285,6 +1368,7 @@ model MembershipStatusChange {
   createdAt DateTime @default(now())
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([churchId])
   @@index([memberId])
   @@index([status])
@@ -1410,6 +1494,7 @@ model CircuitReceipt {
   issuedAt      DateTime
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([circuitId])
 }
 
@@ -1431,6 +1516,7 @@ model CircuitExpenditure {
   paidAt          DateTime?
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([circuitId])
 }
 
@@ -1460,6 +1546,7 @@ model DistrictReceipt {
   issuedAt      DateTime
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([circuitId])
 }
 
@@ -1481,5 +1568,6 @@ model DistrictExpenditure {
   paidAt          DateTime?
 
   updatedAt DateTime @default(now()) @updatedAt
+
   @@index([circuitId])
 }

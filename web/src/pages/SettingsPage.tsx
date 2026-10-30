@@ -1,5 +1,5 @@
-import { LogOut, Mail, ShieldCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ChevronRight, KeyRound, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -49,6 +49,19 @@ export const SettingsPage = () => {
             </div>
           </dl>
         </section>
+        <Link
+          to="/settings/security"
+          className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:border-primary-300"
+        >
+          <span className="flex items-center gap-3">
+            <KeyRound className="h-5 w-5 text-gray-500" />
+            <span>
+              <span className="block font-semibold text-gray-900">Security</span>
+              <span className="block text-sm text-gray-500">Password, devices and two-factor authentication</span>
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 text-gray-400" />
+        </Link>
         <button
           type="button"
           onClick={signOut}

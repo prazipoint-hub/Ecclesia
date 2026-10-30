@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 import { apiClient } from '@/utils/api';
-import type { AuthState, LoginRequest, RegisterRequest, User, UserOrganizationContext } from '@/types/auth';
+import { getApiErrorCode, getApiErrorMessage } from '@/utils/apiError';
+import type { AuthResponse, AuthState, LoginRequest, RegisterRequest, User, UserOrganizationContext } from '@/types/auth';
 
 interface AuthStore extends AuthState {
+  requiresTwoFactor: boolean;
+  acceptSession: (data: AuthResponse) => void;
+  cancelTwoFactor: () => void;
   login: (credentials: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -20,20 +24,31 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   isAuthenticated: Boolean(localStorage.getItem('token')),
   isLoading: false,
   error: null,
+  requiresTwoFactor: false,
   currentContextId: localStorage.getItem('currentContextId') || undefined,
+
+  acceptSession: (data) => {
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    set({ user: data.user, token: data.token, refreshToken: data.refreshToken, isAuthenticated: true, requiresTwoFactor: false, currentContextId: data.user.defaultContextId });
+    if (data.user.defaultContextId) {
+      localStorage.setItem('currentContextId', data.user.defaultContextId);
+    }
+  },
+
+  cancelTwoFactor: () => set({ requiresTwoFactor: false, error: null }),
 
   login: async (credentials) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await apiClient.post('/api/v1/auth/login', credentials);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      set({ user: data.user, token: data.token, refreshToken: data.refreshToken, isAuthenticated: true, currentContextId: data.user.defaultContextId });
-      if (data.user.defaultContextId) {
-        localStorage.setItem('currentContextId', data.user.defaultContextId);
-      }
+      const { data } = await apiClient.post<AuthResponse>('/api/v1/auth/login', credentials);
+      get().acceptSession(data);
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Login failed' });
+      if (getApiErrorCode(error) === 'TWO_FACTOR_REQUIRED') {
+        set({ requiresTwoFactor: true, error: null });
+      } else {
+        set({ error: getApiErrorMessage(error, 'Login failed') });
+      }
       throw error;
     } finally {
       set({ isLoading: false });

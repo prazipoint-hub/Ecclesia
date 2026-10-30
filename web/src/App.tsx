@@ -13,6 +13,11 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { PastoralCasesPage } from '@/pages/PastoralCasesPage';
 import { EventsPage } from '@/pages/EventsPage';
 import { CommitteesPage } from '@/pages/CommitteesPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { AcceptInvitationPage } from '@/pages/auth/AcceptInvitationPage';
+import { SecuritySettingsPage } from '@/pages/settings/SecuritySettingsPage';
 import { useAuthStore } from '@/stores/authStore';
 
 const HomeRedirect = () => {
@@ -25,6 +30,10 @@ const HomeRedirect = () => {
 function App() {
   return <BrowserRouter><Routes>
     <Route path="/auth/login" element={<LoginPage />} />
+    <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+    <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+    <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+    <Route path="/auth/invite" element={<AcceptInvitationPage />} />
     <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
     <Route path="/conference" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" /></ProtectedRoute>} />
     <Route path="/conference/districts" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" view="structure" /></ProtectedRoute>} />
@@ -52,6 +61,7 @@ function App() {
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+    <Route path="/settings/security" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
     <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />
   </Routes></BrowserRouter>;
 }

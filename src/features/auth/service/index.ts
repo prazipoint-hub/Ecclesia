@@ -3,9 +3,11 @@ import jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { prisma } from '@/database';
+import { jwtSecret } from '@/config/secrets';
+import { AppError, ConflictError, ValidationError } from '@/types/errors';
 import { activeAssignments, resolvePermissionNames, type RoleAssignment } from '@/features/auth/permissions';
-
-const jwtSecret = process.env.JWT_SECRET || 'ecclesia-dev-secret';
+import { acceptTwoFactorCode } from '@/features/auth/service/twoFactor';
+import { sendVerificationEmail } from '@/features/auth/service/verification';
 const accessTokenExpiry = (process.env.ACCESS_TOKEN_EXPIRY || process.env.JWT_EXPIRY || '15m') as SignOptions['expiresIn'];
 const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 const refreshTokenTtlMs = (() => {
@@ -15,9 +17,20 @@ const refreshTokenTtlMs = (() => {
   return value * ({ m: 60_000, h: 3_600_000, d: 86_400_000 } as const)[match[2] as 'm' | 'h' | 'd'];
 })();
 
+export type SessionContext = {
+  userAgent?: string;
+  ipAddress?: string;
+  deviceId?: string | null;
+};
+
+// Real bcrypt hash of a random string, built lazily; keeps unknown-email logins as slow as real ones.
+let dummyPasswordHash: string | undefined;
+const getDummyPasswordHash = () => (dummyPasswordHash ??= bcrypt.hashSync(randomUUID(), 12));
+
 type AuthUser = {
   id: string;
   email: string;
+  emailVerified: boolean;
   churchId: string | null;
   memberId: string | null;
   member: {
@@ -31,6 +44,7 @@ export type AuthResponse = {
   user: {
     id: string;
     email: string;
+    emailVerified: boolean;
     churchId?: string;
     firstName: string;
     lastName: string;
@@ -73,6 +87,7 @@ const clientUser = (user: AuthUser) => {
   return {
     id: user.id,
     email: user.email,
+    emailVerified: user.emailVerified,
     churchId: user.churchId ?? undefined,
     firstName: user.member?.firstName ?? 'Ecclesia',
     lastName: user.member?.lastName ?? 'Member',
@@ -104,13 +119,32 @@ async function getAuthUser(userId: string): Promise<AuthUser | null> {
   });
 }
 
-async function issueSession(user: AuthUser): Promise<AuthResponse> {
+async function resolveDeviceId(userId: string, context: SessionContext): Promise<string | null> {
+  const now = new Date();
+  if (context.deviceId) {
+    const touched = await prisma.device.updateMany({ where: { id: context.deviceId, userId }, data: { lastSeenAt: now } });
+    if (touched.count > 0) return context.deviceId;
+  }
+  const userAgent = context.userAgent?.slice(0, 190) ?? null;
+  const ipAddress = context.ipAddress?.slice(0, 190) ?? null;
+  const existing = await prisma.device.findFirst({ where: { userId, userAgent, ipAddress } });
+  if (existing) {
+    await prisma.device.update({ where: { id: existing.id }, data: { lastSeenAt: now } });
+    return existing.id;
+  }
+  const created = await prisma.device.create({ data: { userId, userAgent, ipAddress } });
+  return created.id;
+}
+
+async function issueSession(user: AuthUser, context: SessionContext = {}): Promise<AuthResponse> {
   const userPayload = clientUser(user);
   const tokenId = randomUUID();
   const refreshToken = randomUUID();
+  const deviceId = await resolveDeviceId(user.id, context);
   const session = await prisma.session.create({
     data: {
       userId: user.id,
+      deviceId,
       token: tokenId,
       refreshToken,
       expiresAt: new Date(Date.now() + refreshTokenTtlMs),
@@ -131,17 +165,45 @@ async function issueSession(user: AuthUser): Promise<AuthResponse> {
   return { user: userPayload, token, refreshToken };
 }
 
-export async function login(email: string, password: string): Promise<AuthResponse | null> {
-  const user = await getAuthUserByEmail(email);
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return null;
-  return issueSession(user);
+export async function startSessionForUser(userId: string, context: SessionContext = {}): Promise<AuthResponse> {
+  const user = await getAuthUser(userId);
+  if (!user) throw new Error('User not found');
+  return issueSession(user, context);
 }
 
-async function getAuthUserByEmail(email: string): Promise<(AuthUser & { passwordHash: string }) | null> {
+export async function login(
+  email: string,
+  password: string,
+  context: SessionContext & { totpCode?: string } = {}
+): Promise<AuthResponse | null> {
+  const user = await getAuthUserByEmail(email);
+  const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? getDummyPasswordHash());
+  if (!user || !passwordOk) return null;
+
+  if (user.twoFactorSecret?.isEnabled) {
+    const code = context.totpCode?.trim();
+    if (!code) throw new AppError(401, 'Two-factor code required', 'TWO_FACTOR_REQUIRED');
+    if (!(await acceptTwoFactorCode(user.id, user.twoFactorSecret, code))) {
+      throw new AppError(401, 'Invalid two-factor code', 'INVALID_TWO_FACTOR_CODE');
+    }
+  }
+  return issueSession(user, context);
+}
+
+async function getAuthUserByEmail(
+  email: string
+): Promise<
+  | (AuthUser & {
+      passwordHash: string;
+      twoFactorSecret: { isEnabled: boolean; secretEncrypted: string; backupCodeHashes: string | null } | null;
+    })
+  | null
+> {
   const now = new Date();
   return prisma.user.findUnique({
     where: { email },
     include: {
+      twoFactorSecret: true,
       member: {
         include: {
           leadershipAssignments: {
@@ -157,12 +219,17 @@ async function getAuthUserByEmail(email: string): Promise<(AuthUser & { password
   });
 }
 
-export async function register(email: string, password: string, churchId: string): Promise<AuthResponse> {
+export async function register(
+  email: string,
+  password: string,
+  churchId: string,
+  context: SessionContext = {}
+): Promise<AuthResponse> {
   const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) throw new Error('A user account already exists for this email');
+  if (existingUser) throw new ConflictError('A user account already exists for this email');
 
   const member = await prisma.member.findFirst({ where: { email, churchId, user: null } });
-  if (!member) throw new Error('A matching member record was not found in this church');
+  if (!member) throw new ValidationError('A matching member record was not found in this church');
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
@@ -170,10 +237,11 @@ export async function register(email: string, password: string, churchId: string
   });
   const authUser = await getAuthUser(user.id);
   if (!authUser) throw new Error('Unable to create an authenticated user');
-  return issueSession(authUser);
+  await sendVerificationEmail(user.id, user.email);
+  return issueSession(authUser, context);
 }
 
-export async function refresh(refreshToken: string): Promise<AuthResponse | null> {
+export async function refresh(refreshToken: string, context: SessionContext = {}): Promise<AuthResponse | null> {
   const session = await prisma.session.findUnique({ where: { refreshToken } });
   if (!session || session.expiresAt <= new Date()) {
     if (session) await prisma.session.delete({ where: { id: session.id } });
@@ -182,7 +250,7 @@ export async function refresh(refreshToken: string): Promise<AuthResponse | null
 
   await prisma.session.delete({ where: { id: session.id } });
   const user = await getAuthUser(session.userId);
-  return user ? issueSession(user) : null;
+  return user ? issueSession(user, { ...context, deviceId: session.deviceId }) : null;
 }
 
 export async function getCurrentUser(userId: string) {
