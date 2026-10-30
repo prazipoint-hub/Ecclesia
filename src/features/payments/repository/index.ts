@@ -10,11 +10,11 @@ export type PaymentRecord = Prisma.PaymentGetPayload<{ include: typeof paymentIn
 
 export class PaymentRepository {
   findFund(churchId: string, fundId: string) {
-    return prisma.fund.findFirst({ where: { id: fundId, churchId }, select: { id: true, name: true } });
+    return prisma.fund.findFirst({ where: { id: fundId, churchId }, select: { id: true, name: true, isActive: true } });
   }
 
   listFunds(churchId: string) {
-    return prisma.fund.findMany({ where: { churchId }, orderBy: { name: 'asc' }, select: { id: true, name: true, description: true } });
+    return prisma.fund.findMany({ where: { churchId, isActive: true }, orderBy: { name: 'asc' }, select: { id: true, name: true, description: true } });
   }
 
   findMember(memberId: string) {

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Mail, Megaphone, Search, Settings, Upload, UserCircle, UserPlus, Users, UsersRound, X } from 'lucide-react';
+import { BarChart3, BookOpen, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Mail, Megaphone, Search, Settings, Upload, UserCircle, UserPlus, Users, UsersRound, X } from 'lucide-react';
 import { useAuthStore } from '@stores/authStore';
 import { useOrganizationStore } from '@stores/organizationStore';
 
@@ -29,6 +29,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ...getSbusForScope(selectedUnitId).map((sbu) => item(sbu.name, `/${scopePrefix}/sbus/${sbu.id}`, Building2)),
     item('Reports', `/${scopePrefix}/reports`, FileText),
     item('Finance', '/finance', BarChart3),
+    ...(permissions.includes('finance:view') ? [item('Accounts', '/finance/accounts', BookOpen), item('Journals', '/finance/journals', FileText), item('Budgets', '/finance/budgets', BarChart3), item('Reports', '/finance/reports', FileText)] : []),
     ...(permissions.includes('notification:broadcast:create') ? [item('Broadcasts', '/admin/broadcasts', Megaphone)] : []),
     ...(permissions.includes('notification:template:manage') ? [item('Templates', '/admin/templates', Mail)] : []),
     item('Settings', '/settings', Settings),

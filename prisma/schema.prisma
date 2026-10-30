@@ -229,6 +229,12 @@ model Church {
   auditLogs   AuditLog[]
   invitations Invitation[]
 
+  // Accounting
+  ledgerAccounts   LedgerAccount[]
+  financialPeriods FinancialPeriod[]
+  journalEntries   JournalEntry[]
+  budgets          Budget[]
+
   // People & governance
   visitors          Visitor[]
   memberImports     MemberImport[]
@@ -711,6 +717,9 @@ model Fund {
   name        String // Building Fund, Missions, General, etc.
   description String?
   balance     Decimal @default(0)
+  isActive    Boolean @default(true)
+  // Restricted funds may only be spent on their stated purpose
+  isRestricted Boolean @default(false)
 
   receipts     Receipt[]
   expenditures Expenditure[]
@@ -806,7 +815,14 @@ model CashSession {
   account   FinancialAccount @relation(fields: [accountId], references: [id])
 
   openingBalance Decimal
-  closingBalance Decimal
+  closingBalance Decimal?
+  status         String   @default("OPEN") // OPEN, CLOSED
+  closedAt       DateTime?
+  closedBy       String? // user id
+  cashPaidOut    Decimal?
+  expectedClosing Decimal?
+  variance       Decimal?
+  notes          String?  @db.Text
 
   handledBy   String // Member ID
   sessionDate DateTime @default(now())
@@ -1963,4 +1979,138 @@ model LeadershipTerm {
   @@unique([assignmentId, termNumber])
   @@index([churchId])
   @@index([status, plannedEndDate])
+}
+
+
+model LedgerAccount {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  code        String
+  name        String
+  type        String // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  description String?
+  parentId    String?
+  parent      LedgerAccount?  @relation("LedgerAccountTree", fields: [parentId], references: [id])
+  children    LedgerAccount[] @relation("LedgerAccountTree")
+  isActive    Boolean         @default(true)
+  isSystem    Boolean         @default(false)
+
+  lines       JournalLine[]
+  budgetItems BudgetItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, code])
+  @@index([churchId])
+  @@index([parentId])
+}
+
+model FinancialPeriod {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    String    @default("OPEN") // OPEN, CLOSED
+  closedAt  DateTime?
+  closedBy  String?
+
+  entries JournalEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, name])
+  @@index([churchId, startDate, endDate])
+}
+
+model JournalEntry {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  reference   String
+  description String
+  postDate    DateTime
+  periodId    String?
+  period      FinancialPeriod? @relation(fields: [periodId], references: [id])
+
+  status         String  @default("DRAFT") // DRAFT, POSTED, REVERSED
+  source         String  @default("MANUAL") // MANUAL, RECEIPT, EXPENDITURE, OPENING, REVERSAL
+  sourceId       String?
+  reversesEntryId String? @unique
+  reversalReason String?
+
+  createdBy String // user id
+  postedBy  String? // user id
+  postedAt  DateTime?
+
+  lines JournalLine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, reference])
+  @@unique([churchId, source, sourceId])
+  @@index([churchId, status])
+  @@index([periodId])
+  @@index([postDate])
+}
+
+model JournalLine {
+  id      String       @id @default(cuid())
+  entryId String
+  entry   JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  accountId String
+  account   LedgerAccount @relation(fields: [accountId], references: [id])
+
+  debit  Decimal @default(0) @db.Decimal(14, 2)
+  credit Decimal @default(0) @db.Decimal(14, 2)
+  memo   String?
+  fundId String?
+
+  @@index([entryId])
+  @@index([accountId])
+  @@index([fundId])
+}
+
+model Budget {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name       String
+  fiscalYear Int
+  status     String    @default("DRAFT") // DRAFT, APPROVED, CLOSED
+  createdBy  String
+  approvedBy String?
+  approvedAt DateTime?
+
+  items BudgetItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, name, fiscalYear])
+  @@index([churchId, fiscalYear])
+}
+
+model BudgetItem {
+  id       String @id @default(cuid())
+  budgetId String
+  budget   Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  accountId String
+  account   LedgerAccount @relation(fields: [accountId], references: [id])
+  fundId    String?
+  amount    Decimal       @db.Decimal(14, 2)
+
+  @@index([budgetId])
+  @@index([accountId])
 }

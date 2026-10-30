@@ -104,6 +104,7 @@ export class PaymentService {
   private async start(params: StartPayment): Promise<PaymentRecord> {
     const [fund, member] = await Promise.all([repository.findFund(params.churchId, params.fundId), repository.findMember(params.memberId)]);
     if (!fund) throw new NotFoundError('Fund');
+    if (fund.isActive === false) throw new ConflictError('This fund is not accepting gifts');
     if (!member) throw new NotFoundError('Member profile');
 
     const amount = new Prisma.Decimal(params.amount);

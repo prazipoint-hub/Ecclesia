@@ -11,6 +11,7 @@ import memberDirectoryRoutes from '@/features/members/routes/directory';
 import visitorRoutes from '@/features/visitors/routes';
 import committeeMeetingRoutes from '@/features/committees/routes/meetings';
 import leadershipRoutes from '@/features/leadership/routes';
+import accountingRoutes from '@/features/accounting/routes';
 import myAccountRoutes from '@/features/members/routes/me';
 import familyRoutes from '@/features/families/routes';
 import sectionRoutes from '@/features/sections/routes';
@@ -58,6 +59,7 @@ export function createApp(): Application {
   app.use('/api/v2/notifications', notificationRoutes);
   app.use('/api/v2/visitors', visitorRoutes);
   app.use('/api/v2/leadership', leadershipRoutes);
+  app.use('/api/v2/accounting', accountingRoutes);
   app.use('/api/v2/payments', paymentRoutes);
   app.use('/api/v2/pledges', pledgeRoutes);
   app.use('/api/v2/recurring-giving', recurringGivingRoutes);

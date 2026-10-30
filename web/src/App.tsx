@@ -7,6 +7,15 @@ import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { MembersPage } from '@/pages/MembersPage';
 import { FinancePage } from '@/pages/FinancePage';
+import { AccountsPage } from '@/pages/finance/AccountsPage';
+import { PeriodsPage } from '@/pages/finance/PeriodsPage';
+import { JournalsPage } from '@/pages/finance/JournalsPage';
+import { JournalEditorPage } from '@/pages/finance/JournalEditorPage';
+import { BudgetsPage } from '@/pages/finance/BudgetsPage';
+import { BudgetDetailPage } from '@/pages/finance/BudgetDetailPage';
+import { FundsPage } from '@/pages/finance/FundsPage';
+import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
+import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { ScopeWorkspacePage } from '@/pages/ScopeWorkspacePage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -88,6 +97,16 @@ function App() {
     <Route path="/pastoral" element={<ProtectedRoute><PastoralCasesPage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
+    <Route path="/finance/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+    <Route path="/finance/periods" element={<ProtectedRoute><PeriodsPage /></ProtectedRoute>} />
+    <Route path="/finance/journals" element={<ProtectedRoute><JournalsPage /></ProtectedRoute>} />
+    <Route path="/finance/journals/new" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
+    <Route path="/finance/journals/:journalId" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
+    <Route path="/finance/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
+    <Route path="/finance/budgets/:budgetId" element={<ProtectedRoute><BudgetDetailPage /></ProtectedRoute>} />
+    <Route path="/finance/funds" element={<ProtectedRoute><FundsPage /></ProtectedRoute>} />
+    <Route path="/finance/cash-sessions" element={<ProtectedRoute><CashSessionsPage /></ProtectedRoute>} />
+    <Route path="/finance/reports" element={<ProtectedRoute><FinanceReportsPage /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
     <Route path="/settings/security" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
     <Route path="/my-account" element={<ProtectedRoute><MyAccountPage /></ProtectedRoute>} />

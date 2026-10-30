@@ -53,6 +53,15 @@ export function createMockPrisma() {
     committeeDecision: model(),
     leadershipAssignment: model(),
     leadershipTerm: model(),
+    ledgerAccount: model(),
+    financialPeriod: model(),
+    journalEntry: model(),
+    journalLine: model(),
+    budget: model(),
+    budgetItem: model(),
+    financialAccount: model(),
+    cashSession: model(),
+    expenditure: model(),
     $transaction: vi.fn(),
   };
   // Supports both transaction styles: an array of operations and an interactive callback.

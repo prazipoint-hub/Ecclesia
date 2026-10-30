@@ -31,6 +31,8 @@ async function main() {
     'report:view:section_finance', 'report:view:organization_finance',
     'auth:invite:create', 'auth:invite:revoke',
     'member:import', 'member:export', 'member:archive', 'visitor:view', 'visitor:create', 'visitor:manage',
+    'finance:coa:manage', 'finance:journal:create', 'finance:journal:approve', 'finance:journal:reverse', 'finance:budget:create', 'finance:budget:approve',
+    'finance:period:manage', 'finance:fund:manage', 'finance:opening:set', 'finance:cash_session:manage',
     'committee:meeting:create', 'committee:meeting:manage', 'leadership:term:manage',
     'notification:broadcast:create', 'notification:broadcast:send', 'notification:template:manage',
     'payment:view:all', 'pledge:view:all', 'recurring:manage',

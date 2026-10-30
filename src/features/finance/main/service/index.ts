@@ -51,6 +51,10 @@ export class MainChurchFinanceService {
       throw new Error('Unauthorized: church not found or user not in same church');
     }
 
+    const fund = await prisma.fund.findFirst({ where: { id: data.fundId, churchId: data.churchId } });
+    if (!fund) throw new Error('Fund not found');
+    if (fund.isActive === false) throw new Error('Invalid: this fund is inactive and cannot receive money');
+
     let account = await mainChurchFinanceRepository.getFinanceAccount(data.churchId);
     if (!account) {
       account = await mainChurchFinanceRepository.createFinanceAccount({
