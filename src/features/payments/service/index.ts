@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/database';
 import { logger } from '@/config/logger';
+import { notificationDispatcher } from '@/services/notifications';
 import { paymentGateway, type PaymentGateway } from '@/services/payments';
 import type { StatusResult } from '@/services/payments/gateways/types';
 import type { AuthorizedUser } from '@/types';
@@ -261,21 +262,16 @@ export class PaymentService {
   }
 
   private async notifyReceived(payment: PaymentRecord): Promise<void> {
-    try {
-      await prisma.notification.create({
-        data: {
-          id: randomUUID(),
-          recipientId: payment.memberId,
-          type: 'PAYMENT_RECEIVED',
-          title: 'Thank you for your gift',
-          body: `We received your ${payment.currency} ${amountString(payment.amount)} to ${payment.fund.name}. Receipt ON-${payment.reference}.`,
-          entityType: 'PAYMENT',
-          entityId: payment.id,
-        },
-      });
-    } catch (error) {
-      logger.error({ err: error, paymentId: payment.id }, 'Failed to create payment notification');
-    }
+    await notificationDispatcher.notify(payment.memberId, {
+      churchId: payment.churchId,
+      category: 'GIVING',
+      type: 'PAYMENT_RECEIVED',
+      title: 'Thank you for your gift',
+      body: `We received your ${payment.currency} ${amountString(payment.amount)} to ${payment.fund.name}. Receipt ON-${payment.reference}.`,
+      channels: ['IN_APP', 'EMAIL'],
+      entityType: 'PAYMENT',
+      entityId: payment.id,
+    });
   }
 
   // ----------------------------------------------------------------- pledges

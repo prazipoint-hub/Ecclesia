@@ -25,6 +25,9 @@ import { MyFamilyPage } from '@/pages/account/MyFamilyPage';
 import { NotificationsPage } from '@/pages/account/NotificationsPage';
 import { PledgesPage } from '@/pages/account/PledgesPage';
 import { RecurringGivingPage } from '@/pages/account/RecurringGivingPage';
+import { NotificationPreferencesPage } from '@/pages/account/NotificationPreferencesPage';
+import { BroadcastsPage } from '@/pages/admin/BroadcastsPage';
+import { TemplatesPage } from '@/pages/admin/TemplatesPage';
 import { GivePage } from '@/pages/give/GivePage';
 import { GiveConfirmPage } from '@/pages/give/GiveConfirmPage';
 import { useAuthStore } from '@/stores/authStore';
@@ -78,6 +81,9 @@ function App() {
     <Route path="/my-account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
     <Route path="/my-account/pledges" element={<ProtectedRoute><PledgesPage /></ProtectedRoute>} />
     <Route path="/my-account/recurring" element={<ProtectedRoute><RecurringGivingPage /></ProtectedRoute>} />
+    <Route path="/my-account/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+    <Route path="/admin/broadcasts" element={<ProtectedRoute><BroadcastsPage /></ProtectedRoute>} />
+    <Route path="/admin/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
     <Route path="/give" element={<ProtectedRoute><GivePage /></ProtectedRoute>} />
     <Route path="/give/confirm" element={<ProtectedRoute><GiveConfirmPage /></ProtectedRoute>} />
     <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />

@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Settings, UserCircle, Users, X } from 'lucide-react';
+import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Mail, Megaphone, Settings, UserCircle, Users, X } from 'lucide-react';
+import { useAuthStore } from '@stores/authStore';
 import { useOrganizationStore } from '@stores/organizationStore';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
@@ -9,6 +10,7 @@ const item = (name: string, href: string, icon: LucideIcon) => ({ name, href, ic
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const location = useLocation();
   const { scope, selectedUnitId, getSbusForScope } = useOrganizationStore();
+  const permissions = useAuthStore((state) => state.user?.permissions) ?? [];
   const scopePrefix = scope.toLowerCase();
   const navigation = [
     item('My Account', '/my-account', UserCircle),
@@ -23,6 +25,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ...getSbusForScope(selectedUnitId).map((sbu) => item(sbu.name, `/${scopePrefix}/sbus/${sbu.id}`, Building2)),
     item('Reports', `/${scopePrefix}/reports`, FileText),
     item('Finance', '/finance', BarChart3),
+    ...(permissions.includes('notification:broadcast:create') ? [item('Broadcasts', '/admin/broadcasts', Megaphone)] : []),
+    ...(permissions.includes('notification:template:manage') ? [item('Templates', '/admin/templates', Mail)] : []),
     item('Settings', '/settings', Settings),
   ];
 

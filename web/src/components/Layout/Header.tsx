@@ -2,6 +2,7 @@ import { LogOut, Menu, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@stores/authStore';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OrganizationSwitcher } from '@/components/hierarchy/OrganizationSwitcher';
 
 interface HeaderProps {
@@ -37,6 +38,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </div>
 
           <div className="flex items-center gap-4">
+            <NotificationBell />
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu((prev) => !prev)}

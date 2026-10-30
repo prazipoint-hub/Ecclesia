@@ -82,6 +82,10 @@ export const NotificationsPage = () => {
           title="Notifications"
           subtitle={data ? `${data.unreadCount} unread` : 'Messages from your church.'}
           action={
+            <div className="flex items-center gap-3">
+            <Link to="/my-account/notification-preferences" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+              Preferences
+            </Link>
             <button
               type="button"
               className={secondaryBtn}
@@ -90,6 +94,7 @@ export const NotificationsPage = () => {
             >
               {markAllRead.isPending ? 'Marking…' : 'Mark all as read'}
             </button>
+            </div>
           }
         />
 

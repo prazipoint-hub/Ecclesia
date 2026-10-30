@@ -5,6 +5,7 @@ const model = () => ({
   findFirst: vi.fn(),
   findMany: vi.fn(),
   create: vi.fn(),
+  createMany: vi.fn(),
   update: vi.fn(),
   updateMany: vi.fn(),
   upsert: vi.fn(),
@@ -36,6 +37,13 @@ export function createMockPrisma() {
     pledge: model(),
     recurringGiving: model(),
     savedPaymentMethod: model(),
+    notificationPreference: model(),
+    notificationDelivery: model(),
+    pushSubscription: model(),
+    communicationTemplate: model(),
+    broadcastMessage: model(),
+    section: model(),
+    organization: model(),
     $transaction: vi.fn(),
   };
   // Supports both transaction styles: an array of operations and an interactive callback.

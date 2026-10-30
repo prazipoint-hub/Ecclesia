@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Bell, Heart, Repeat, Target, Wallet, UserRound, Users } from 'lucide-react';
+import { Bell, BellRing, Heart, Repeat, Target, Wallet, UserRound, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout/MainLayout';
@@ -16,6 +16,7 @@ const links: Array<{ to: string; label: string; description: string; icon: Lucid
   { to: '/my-account/recurring', label: 'Recurring giving', description: 'Gifts on a schedule', icon: Repeat },
   { to: '/my-account/family', label: 'Family', description: 'Your household and relationships', icon: Users },
   { to: '/my-account/notifications', label: 'Notifications', description: 'Messages from your church', icon: Bell },
+  { to: '/my-account/notification-preferences', label: 'Notification preferences', description: 'Choose how we contact you', icon: BellRing },
 ];
 
 export const MyAccountPage = () => {

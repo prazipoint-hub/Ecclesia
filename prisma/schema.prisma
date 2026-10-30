@@ -229,6 +229,11 @@ model Church {
   auditLogs   AuditLog[]
   invitations Invitation[]
 
+  // Notifications
+  broadcastMessages      BroadcastMessage[]
+  communicationTemplates CommunicationTemplate[]
+  notificationDeliveries NotificationDelivery[]
+
   // Payments
   payments        Payment[]
   pledges         Pledge[]
@@ -354,6 +359,8 @@ model Member {
 
   // Section Finance
   sectionReceipts SectionReceipt[]
+  notificationPreferences NotificationPreference[]
+  pushSubscriptions       PushSubscription[]
   payments            Payment[]
   pledges             Pledge[]
   recurringGiving     RecurringGiving[]
@@ -1464,9 +1471,12 @@ model Notification {
   entityType  String?
   entityId    String?
   readAt      DateTime?
+  category    String    @default("GENERAL")
+  broadcastId String?
   createdAt   DateTime  @default(now())
 
   @@index([recipientId])
+  @@index([broadcastId])
 }
 
 model SectionJournalEntry {
@@ -1710,4 +1720,98 @@ model RecurringGiving {
   @@index([memberId])
   @@index([fundId])
   @@index([isActive, nextChargeDate])
+}
+
+
+model NotificationPreference {
+  id       String @id @default(cuid())
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  channel  String // IN_APP, EMAIL, SMS, PUSH
+  category String // GIVING, EVENTS, ANNOUNCEMENTS, PASTORAL
+  enabled  Boolean
+
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([memberId, channel, category])
+  @@index([memberId])
+}
+
+model PushSubscription {
+  id       String @id @default(cuid())
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  endpoint  String  @unique @db.VarChar(500)
+  p256dh    String  @db.VarChar(255)
+  authKey   String  @db.VarChar(255)
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([memberId])
+}
+
+model CommunicationTemplate {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name    String
+  subject String
+  body    String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, name])
+  @@index([churchId])
+}
+
+model BroadcastMessage {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  senderId String // user id
+  title    String
+  body     String @db.Text
+  category String @default("ANNOUNCEMENTS")
+  audience String @db.Text // JSON: {"type":"ALL"|"SECTIONS"|"ORGANIZATIONS","ids":[...]}
+  channels String // comma separated: IN_APP,EMAIL,SMS
+
+  status      String    @default("DRAFT") // DRAFT, SCHEDULED, SENDING, SENT, FAILED, CANCELLED
+  scheduledAt DateTime?
+  sentAt      DateTime?
+
+  recipientCount Int @default(0)
+  deliveredCount Int @default(0)
+  failedCount    Int @default(0)
+  skippedCount   Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([status, scheduledAt])
+}
+
+model NotificationDelivery {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  broadcastId String?
+  memberId    String
+  channel     String // EMAIL, SMS, PUSH
+  category    String
+  status      String // SENT, FAILED, SKIPPED
+  reason      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([broadcastId])
+  @@index([memberId])
 }

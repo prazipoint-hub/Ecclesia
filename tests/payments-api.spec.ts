@@ -148,7 +148,10 @@ describe('gateway webhook', () => {
     prisma.payment.updateMany.mockResolvedValue({ count: 1 });
     prisma.receipt.create.mockResolvedValue({ id: 'rc-1' });
     prisma.payment.update.mockResolvedValue({});
-    prisma.notification.create.mockResolvedValue({});
+    prisma.notification.createMany.mockResolvedValue({ count: 1 });
+    prisma.member.findFirst.mockResolvedValue({ id: 'member-1', firstName: 'Ada', lastName: 'Moyo', email: null, phone: null });
+    prisma.church.findUnique.mockResolvedValue({ name: 'Grace UMC' });
+    prisma.notificationPreference.findMany.mockResolvedValue([]);
   };
   const post = (b: Record<string, string>) => request(app).post('/api/v2/payments/webhook/paynow').type('form').send(b);
 
@@ -169,7 +172,7 @@ describe('gateway webhook', () => {
       paymentMethod: 'MOBILE_MONEY', receiptNumber: 'ON-ECC-ABC', status: 'ISSUED',
     });
     expect(prisma.payment.update.mock.calls[0][0]).toMatchObject({ where: { id: 'pay-1' }, data: { receiptId: 'rc-1' } });
-    expect(prisma.notification.create.mock.calls[0][0].data).toMatchObject({ recipientId: 'member-1', type: 'PAYMENT_RECEIVED' });
+    expect(prisma.notification.createMany.mock.calls[0][0].data[0]).toMatchObject({ recipientId: 'member-1', type: 'PAYMENT_RECEIVED', category: 'GIVING' });
   });
 
   test('replaying the callback does not issue a second receipt', async () => {
@@ -184,7 +187,7 @@ describe('gateway webhook', () => {
     prisma.payment.updateMany.mockResolvedValue({ count: 0 });
     await post(paidHook());
     expect(prisma.receipt.create).not.toHaveBeenCalled();
-    expect(prisma.notification.create).not.toHaveBeenCalled();
+    expect(prisma.notification.createMany).not.toHaveBeenCalled();
   });
 
   test('an amount that differs from what was requested is failed, not receipted', async () => {
@@ -249,7 +252,10 @@ describe('reading payments', () => {
     prisma.payment.updateMany.mockResolvedValue({ count: 1 });
     prisma.receipt.create.mockResolvedValue({ id: 'rc-1' });
     prisma.payment.update.mockResolvedValue({});
-    prisma.notification.create.mockResolvedValue({});
+    prisma.notification.createMany.mockResolvedValue({ count: 1 });
+    prisma.member.findFirst.mockResolvedValue({ id: 'member-1', firstName: 'Ada', lastName: 'Moyo', email: null, phone: null });
+    prisma.church.findUnique.mockResolvedValue({ name: 'Grace UMC' });
+    prisma.notificationPreference.findMany.mockResolvedValue([]);
     const res = await request(app).get('/api/v2/payments/pay-1').set(auth());
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ status: 'COMPLETED', receiptNumber: 'ON-ECC-ABC', instructions: null });
