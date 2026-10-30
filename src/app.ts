@@ -5,6 +5,7 @@ import pinoHttp from 'pino-http';
 import { logger } from '@/config/logger';
 
 import memberRoutes from '@/features/members/routes';
+import myAccountRoutes from '@/features/members/routes/me';
 import familyRoutes from '@/features/families/routes';
 import sectionRoutes from '@/features/sections/routes';
 import organizationRoutes from '@/features/organizations/routes';
@@ -46,6 +47,7 @@ export function createApp(): Application {
   app.use('/api/v2/events', eventRoutes);
   app.use('/api/v2/committees', committeeRoutes);
 
+  app.use('/api/v2/me', myAccountRoutes);
   app.use('/api/v2/members', memberRoutes);
   app.use('/api/v2/families', familyRoutes);
   app.use('/api/v2/sections', sectionRoutes);

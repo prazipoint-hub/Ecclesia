@@ -18,6 +18,11 @@ import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
 import { AcceptInvitationPage } from '@/pages/auth/AcceptInvitationPage';
 import { SecuritySettingsPage } from '@/pages/settings/SecuritySettingsPage';
+import { MyAccountPage } from '@/pages/account/MyAccountPage';
+import { MyProfilePage } from '@/pages/account/MyProfilePage';
+import { MyGivingPage } from '@/pages/account/MyGivingPage';
+import { MyFamilyPage } from '@/pages/account/MyFamilyPage';
+import { NotificationsPage } from '@/pages/account/NotificationsPage';
 import { useAuthStore } from '@/stores/authStore';
 
 const HomeRedirect = () => {
@@ -62,6 +67,11 @@ function App() {
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
     <Route path="/settings/security" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
+    <Route path="/my-account" element={<ProtectedRoute><MyAccountPage /></ProtectedRoute>} />
+    <Route path="/my-account/profile" element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>} />
+    <Route path="/my-account/giving" element={<ProtectedRoute><MyGivingPage /></ProtectedRoute>} />
+    <Route path="/my-account/family" element={<ProtectedRoute><MyFamilyPage /></ProtectedRoute>} />
+    <Route path="/my-account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
     <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />
   </Routes></BrowserRouter>;
 }

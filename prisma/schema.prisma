@@ -1443,14 +1443,17 @@ model OrganizationFinancialAccount {
 }
 
 model Notification {
-  id          String   @id
+  id          String    @id
   recipientId String?
   type        String
   title       String
-  body        String   @db.Text
+  body        String    @db.Text
   entityType  String?
   entityId    String?
-  createdAt   DateTime @default(now())
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([recipientId])
 }
 
 model SectionJournalEntry {

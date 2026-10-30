@@ -10,6 +10,7 @@ const model = () => ({
   upsert: vi.fn(),
   delete: vi.fn(),
   deleteMany: vi.fn(),
+  count: vi.fn(),
 });
 
 export function createMockPrisma() {
@@ -24,6 +25,11 @@ export function createMockPrisma() {
     invitation: model(),
     twoFactorSecret: model(),
     auditLog: model(),
+    receipt: model(),
+    sectionReceipt: model(),
+    familyRelationship: model(),
+    notification: model(),
+    pastoralNotification: model(),
     $transaction: vi.fn(async (operations: unknown[]) => Promise.all(operations)),
   };
   return prisma;
