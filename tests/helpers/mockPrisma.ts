@@ -11,6 +11,7 @@ const model = () => ({
   delete: vi.fn(),
   deleteMany: vi.fn(),
   count: vi.fn(),
+  aggregate: vi.fn(),
 });
 
 export function createMockPrisma() {
@@ -30,8 +31,16 @@ export function createMockPrisma() {
     familyRelationship: model(),
     notification: model(),
     pastoralNotification: model(),
-    $transaction: vi.fn(async (operations: unknown[]) => Promise.all(operations)),
+    fund: model(),
+    payment: model(),
+    pledge: model(),
+    recurringGiving: model(),
+    savedPaymentMethod: model(),
+    $transaction: vi.fn(),
   };
+  // Supports both transaction styles: an array of operations and an interactive callback.
+  prisma.$transaction.mockImplementation((async (arg: unknown) =>
+    typeof arg === 'function' ? arg(prisma) : Promise.all(arg as unknown[])) as never);
   return prisma;
 }
 

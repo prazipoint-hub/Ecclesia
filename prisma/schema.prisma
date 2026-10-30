@@ -229,6 +229,11 @@ model Church {
   auditLogs   AuditLog[]
   invitations Invitation[]
 
+  // Payments
+  payments        Payment[]
+  pledges         Pledge[]
+  recurringGiving RecurringGiving[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -349,6 +354,10 @@ model Member {
 
   // Section Finance
   sectionReceipts SectionReceipt[]
+  payments            Payment[]
+  pledges             Pledge[]
+  recurringGiving     RecurringGiving[]
+  savedPaymentMethods SavedPaymentMethod[]
 
   // Pastoral Care
   pastoralCases               PastoralCase[]               @relation("PastoralCaseMember")
@@ -685,6 +694,9 @@ model Fund {
 
   receipts     Receipt[]
   expenditures Expenditure[]
+  payments     Payment[]
+  pledges      Pledge[]
+  recurring    RecurringGiving[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -723,6 +735,7 @@ model Receipt {
   financialAccountId String?
 
   updatedAt DateTime @default(now()) @updatedAt
+  payment   Payment?
 
   @@index([churchId])
   @@index([fundId])
@@ -1573,4 +1586,128 @@ model DistrictExpenditure {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([circuitId])
+}
+
+
+model Payment {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  fundId String
+  fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
+
+  pledgeId String?
+  pledge   Pledge? @relation(fields: [pledgeId], references: [id], onDelete: SetNull)
+
+  recurringGivingId String?
+  recurringGiving   RecurringGiving? @relation(fields: [recurringGivingId], references: [id], onDelete: SetNull)
+
+  receiptId String?  @unique
+  receipt   Receipt? @relation(fields: [receiptId], references: [id], onDelete: SetNull)
+
+  amount     Decimal
+  currency   String  @default("USD")
+  incomeType String // OFFERING, TITHE, DONATION, FUNDRAISING
+  gateway    String  @default("PAYNOW") // PAYNOW, MANUAL
+  method     String // ECOCASH, ONEMONEY, CARD, WEB
+  phone      String?
+
+  reference     String  @unique // our reference sent to the gateway
+  gatewayRef    String? // gateway's own reference
+  pollUrl       String? @db.Text
+  redirectUrl   String? @db.Text
+  instructions  String? @db.Text
+  status        String  @default("PENDING") // PENDING, COMPLETED, FAILED, CANCELLED
+  failureReason String?
+  paidAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([memberId])
+  @@index([fundId])
+  @@index([pledgeId])
+  @@index([recurringGivingId])
+  @@index([status])
+}
+
+model SavedPaymentMethod {
+  id       String @id @default(cuid())
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  type      String // ECOCASH, ONEMONEY
+  phone     String
+  label     String
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([memberId])
+}
+
+model Pledge {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  fundId String
+  fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
+
+  name         String
+  targetAmount Decimal
+  currency     String   @default("USD")
+  status       String   @default("ACTIVE") // ACTIVE, FULFILLED, CANCELLED
+  startDate    DateTime @default(now())
+  endDate      DateTime?
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([memberId])
+  @@index([fundId])
+}
+
+model RecurringGiving {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  fundId String
+  fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
+
+  amount     Decimal
+  currency   String   @default("USD")
+  incomeType String   @default("OFFERING")
+  frequency  String // WEEKLY, MONTHLY
+  method     String // ECOCASH, ONEMONEY
+  phone      String
+
+  nextChargeDate DateTime
+  isActive       Boolean  @default(true)
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId])
+  @@index([memberId])
+  @@index([fundId])
+  @@index([isActive, nextChargeDate])
 }

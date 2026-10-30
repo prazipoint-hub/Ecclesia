@@ -5,6 +5,7 @@ import pinoHttp from 'pino-http';
 import { logger } from '@/config/logger';
 
 import memberRoutes from '@/features/members/routes';
+import { paymentRoutes, pledgeRoutes, recurringGivingRoutes, paymentMethodRoutes } from '@/features/payments/routes';
 import myAccountRoutes from '@/features/members/routes/me';
 import familyRoutes from '@/features/families/routes';
 import sectionRoutes from '@/features/sections/routes';
@@ -48,6 +49,10 @@ export function createApp(): Application {
   app.use('/api/v2/committees', committeeRoutes);
 
   app.use('/api/v2/me', myAccountRoutes);
+  app.use('/api/v2/payments', paymentRoutes);
+  app.use('/api/v2/pledges', pledgeRoutes);
+  app.use('/api/v2/recurring-giving', recurringGivingRoutes);
+  app.use('/api/v2/payment-methods', paymentMethodRoutes);
   app.use('/api/v2/members', memberRoutes);
   app.use('/api/v2/families', familyRoutes);
   app.use('/api/v2/sections', sectionRoutes);

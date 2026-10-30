@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, Building2, CalendarDays, FileText, HeartHandshake, Home, Layers3, Settings, UserCircle, Users, X } from 'lucide-react';
+import { BarChart3, Building2, CalendarDays, FileText, Heart, HeartHandshake, Home, Layers3, Settings, UserCircle, Users, X } from 'lucide-react';
 import { useOrganizationStore } from '@stores/organizationStore';
 
 interface SidebarProps { isOpen: boolean; onClose: () => void; }
@@ -12,6 +12,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const scopePrefix = scope.toLowerCase();
   const navigation = [
     item('My Account', '/my-account', UserCircle),
+    item('Give', '/give', Heart),
     item('Dashboard', `/${scopePrefix}`, Home),
     ...(scope === 'CONFERENCE' ? [item('Districts', '/conference/districts', Building2)] : []),
     ...(scope === 'DISTRICT' ? [item('Circuits', '/district/circuits', Building2)] : []),

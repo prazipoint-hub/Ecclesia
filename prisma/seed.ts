@@ -30,6 +30,7 @@ async function main() {
     'report:view:financial', 'report:view:administrative', 'report:view:audit', 'report:view:all_churches',
     'report:view:section_finance', 'report:view:organization_finance',
     'auth:invite:create', 'auth:invite:revoke',
+    'payment:view:all', 'pledge:view:all', 'recurring:manage',
   ];
   const permissions = await Promise.all(permissionNames.map((name) => prisma.permission.upsert({ where: { name }, update: {}, create: { name } })));
   const role = await prisma.role.upsert({
