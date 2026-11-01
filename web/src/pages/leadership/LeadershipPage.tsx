@@ -79,7 +79,7 @@ const EndTermModal = ({ target, onClose }: { target: EndTarget | null; onClose: 
     >
       <div className="space-y-4">
         <p role="note" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Ending a term also ends this person's authority and the permissions that come with the appointment, from the end date.
+          Ending a term also ends this person&apos;s authority and the permissions that come with the appointment, from the end date.
         </p>
         <FormSelect label="How did it end?" value={status} options={[{ value: 'COMPLETED', label: 'Completed normally' }, { value: 'TERMINATED', label: 'Terminated early' }]} onChange={(e) => setStatus(e.target.value as 'COMPLETED' | 'TERMINATED')} />
         <FormField label="End date (defaults to today)" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />

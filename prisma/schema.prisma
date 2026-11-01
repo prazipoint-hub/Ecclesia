@@ -27,11 +27,16 @@ model User {
 
   emailVerified Boolean @default(false)
 
+  // An administrator can switch an account off without deleting its history; sign-in and refresh are refused.
+  disabledAt     DateTime?
+  disabledReason String?
+
   sessions           Session[]
   devices            Device[]
   passwordResets     PasswordReset[]
   emailVerifications EmailVerification[]
   twoFactorSecret    TwoFactorSecret?
+  calendarFeeds      CalendarFeed[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -251,6 +256,21 @@ model Church {
   pledges         Pledge[]
   recurringGiving RecurringGiving[]
 
+  // Administration
+  systemSettings     SystemSetting[]
+  dataRetentionRules DataRetentionRule[]
+  campaigns          Campaign[]
+  smallGroups        SmallGroup[]
+  documentTemplates  DocumentTemplate[]
+  generatedDocuments GeneratedDocument[]
+  assetCategories    AssetCategory[]
+  assets             Asset[]
+  calendarFeeds      CalendarFeed[]
+
+  // Reporting
+  savedReports     SavedReport[]
+  reportExecutions ReportExecution[]
+
   // Events
   eventRegistrations EventRegistration[]
   eventCheckIns      EventCheckIn[]
@@ -373,7 +393,7 @@ model Member {
   organizationMemberships OrganizationMembership[]
 
   // Events & Attendance
-  eventAttendances EventAttendance[]
+  eventAttendances   EventAttendance[]
   eventRegistrations EventRegistration[]
   eventCheckIns      EventCheckIn[]
   volunteerSchedules VolunteerSchedule[]
@@ -384,13 +404,15 @@ model Member {
   expenditures Expenditure[]
 
   // Section Finance
-  sectionReceipts SectionReceipt[]
+  sectionReceipts         SectionReceipt[]
   notificationPreferences NotificationPreference[]
   pushSubscriptions       PushSubscription[]
-  payments            Payment[]
-  pledges             Pledge[]
-  recurringGiving     RecurringGiving[]
-  savedPaymentMethods SavedPaymentMethod[]
+  payments                Payment[]
+  pledges                 Pledge[]
+  recurringGiving         RecurringGiving[]
+  savedPaymentMethods     SavedPaymentMethod[]
+  smallGroupMemberships   SmallGroupMember[]
+  documents               GeneratedDocument[]
 
   // Pastoral Care
   pastoralCases               PastoralCase[]               @relation("PastoralCaseMember")
@@ -605,7 +627,7 @@ model LeadershipAssignment {
   sectionId   String?
 
   position  String? // Specific title within role
-  startDate DateTime  @default(now())
+  startDate DateTime         @default(now())
   endDate   DateTime?
   terms     LeadershipTerm[]
 
@@ -715,7 +737,7 @@ model EventRegistration {
   email String?
   phone String?
 
-  status       String   @default("REGISTERED") // REGISTERED, CANCELLED
+  status       String    @default("REGISTERED") // REGISTERED, CANCELLED
   registeredBy String // user or member id that made the registration
   cancelledAt  DateTime?
 
@@ -804,6 +826,101 @@ model AbsenceFollowUp {
   @@index([assignedTo])
 }
 
+model SavedReport {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  createdBy   String // user id of the owner; permissions are re-read from this user at every scheduled run
+  name        String
+  description String?
+  reportType  String
+  parameters  Json
+  format      String  @default("PDF") // PDF, CSV, XLSX, JSON
+  visibility  String  @default("PRIVATE") // PRIVATE, CHURCH
+
+  schedule     String    @default("NONE") // NONE, DAILY, WEEKLY, MONTHLY
+  recipients   Json? // email addresses of users in the same church
+  nextRunAt    DateTime?
+  lastRunAt    DateTime?
+  isActive     Boolean   @default(true)
+  // Consecutive failed scheduled runs; the schedule switches itself off after too many.
+  failureCount Int       @default(0)
+
+  executions ReportExecution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId, visibility])
+  @@index([createdBy])
+  @@index([schedule, isActive, nextRunAt])
+}
+
+model ReportExecution {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  reportId String?
+  report   SavedReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  requestedBy String
+  reportType  String
+  format      String
+  trigger     String // ADHOC, MANUAL, SCHEDULED
+  status      String @default("RUNNING") // RUNNING, SUCCEEDED, FAILED
+
+  rowCount    Int?
+  byteSize    Int?
+  filename    String?
+  error       String?
+  deliveredTo Json?
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([churchId, startedAt])
+  @@index([reportId])
+  @@index([requestedBy])
+}
+
+model SystemSetting {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  key       String
+  value     Json
+  category  String
+  updatedBy String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, key])
+  @@index([churchId, category])
+}
+
+model DataRetentionRule {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  entityType    String // AUDIT_LOG, REPORT_EXECUTION, SESSION, TOKEN
+  retentionDays Int
+  isActive      Boolean @default(true)
+
+  lastRunAt  DateTime?
+  lastPurged Int?
+  updatedBy  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, entityType])
+}
+
 // ============================================================================
 // FINANCE - MAIN CHURCH LEDGER
 // ============================================================================
@@ -835,10 +952,10 @@ model Fund {
   accountId String
   account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  name        String // Building Fund, Missions, General, etc.
-  description String?
-  balance     Decimal @default(0)
-  isActive    Boolean @default(true)
+  name         String // Building Fund, Missions, General, etc.
+  description  String?
+  balance      Decimal @default(0)
+  isActive     Boolean @default(true)
   // Restricted funds may only be spent on their stated purpose
   isRestricted Boolean @default(false)
 
@@ -847,6 +964,7 @@ model Fund {
   payments     Payment[]
   pledges      Pledge[]
   recurring    RecurringGiving[]
+  campaign     Campaign?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -935,15 +1053,15 @@ model CashSession {
   accountId String
   account   FinancialAccount @relation(fields: [accountId], references: [id])
 
-  openingBalance Decimal
-  closingBalance Decimal?
-  status         String   @default("OPEN") // OPEN, CLOSED
-  closedAt       DateTime?
-  closedBy       String? // user id
-  cashPaidOut    Decimal?
+  openingBalance  Decimal
+  closingBalance  Decimal?
+  status          String    @default("OPEN") // OPEN, CLOSED
+  closedAt        DateTime?
+  closedBy        String? // user id
+  cashPaidOut     Decimal?
   expectedClosing Decimal?
-  variance       Decimal?
-  notes          String?  @db.Text
+  variance        Decimal?
+  notes           String?   @db.Text
 
   handledBy   String // Member ID
   sessionDate DateTime @default(now())
@@ -1748,7 +1866,6 @@ model DistrictExpenditure {
   @@index([circuitId])
 }
 
-
 model Payment {
   id       String @id @default(cuid())
   churchId String
@@ -1776,12 +1893,12 @@ model Payment {
   method     String // ECOCASH, ONEMONEY, CARD, WEB
   phone      String?
 
-  reference     String  @unique // our reference sent to the gateway
+  reference     String    @unique // our reference sent to the gateway
   gatewayRef    String? // gateway's own reference
-  pollUrl       String? @db.Text
-  redirectUrl   String? @db.Text
-  instructions  String? @db.Text
-  status        String  @default("PENDING") // PENDING, COMPLETED, FAILED, CANCELLED
+  pollUrl       String?   @db.Text
+  redirectUrl   String?   @db.Text
+  instructions  String?   @db.Text
+  status        String    @default("PENDING") // PENDING, COMPLETED, FAILED, CANCELLED
   failureReason String?
   paidAt        DateTime?
 
@@ -1825,9 +1942,9 @@ model Pledge {
 
   name         String
   targetAmount Decimal
-  currency     String   @default("USD")
-  status       String   @default("ACTIVE") // ACTIVE, FULFILLED, CANCELLED
-  startDate    DateTime @default(now())
+  currency     String    @default("USD")
+  status       String    @default("ACTIVE") // ACTIVE, FULFILLED, CANCELLED
+  startDate    DateTime  @default(now())
   endDate      DateTime?
 
   payments Payment[]
@@ -1852,8 +1969,8 @@ model RecurringGiving {
   fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
 
   amount     Decimal
-  currency   String   @default("USD")
-  incomeType String   @default("OFFERING")
+  currency   String  @default("USD")
+  incomeType String  @default("OFFERING")
   frequency  String // WEEKLY, MONTHLY
   method     String // ECOCASH, ONEMONEY
   phone      String
@@ -1871,7 +1988,6 @@ model RecurringGiving {
   @@index([fundId])
   @@index([isActive, nextChargeDate])
 }
-
 
 model NotificationPreference {
   id       String @id @default(cuid())
@@ -1965,7 +2081,6 @@ model NotificationDelivery {
   @@index([broadcastId])
   @@index([memberId])
 }
-
 
 model MemberImport {
   id       String @id @default(cuid())
@@ -2063,13 +2178,13 @@ model CommitteeDecision {
   meeting   CommitteeMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   churchId  String
 
-  description  String   @db.Text
-  status       String   @default("PROPOSED") // PROPOSED, APPROVED, REJECTED, DEFERRED
-  votesFor     Int      @default(0)
-  votesAgainst Int      @default(0)
-  abstentions  Int      @default(0)
+  description   String    @db.Text
+  status        String    @default("PROPOSED") // PROPOSED, APPROVED, REJECTED, DEFERRED
+  votesFor      Int       @default(0)
+  votesAgainst  Int       @default(0)
+  abstentions   Int       @default(0)
   ownerMemberId String?
-  dueDate      DateTime?
+  dueDate       DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -2101,7 +2216,6 @@ model LeadershipTerm {
   @@index([churchId])
   @@index([status, plannedEndDate])
 }
-
 
 model LedgerAccount {
   id       String @id @default(cuid())
@@ -2161,11 +2275,11 @@ model JournalEntry {
   periodId    String?
   period      FinancialPeriod? @relation(fields: [periodId], references: [id])
 
-  status         String  @default("DRAFT") // DRAFT, POSTED, REVERSED
-  source         String  @default("MANUAL") // MANUAL, RECEIPT, EXPENDITURE, OPENING, REVERSAL
-  sourceId       String?
+  status          String  @default("DRAFT") // DRAFT, POSTED, REVERSED
+  source          String  @default("MANUAL") // MANUAL, RECEIPT, EXPENDITURE, OPENING, REVERSAL
+  sourceId        String?
   reversesEntryId String? @unique
-  reversalReason String?
+  reversalReason  String?
 
   createdBy String // user id
   postedBy  String? // user id
@@ -2234,4 +2348,224 @@ model BudgetItem {
 
   @@index([budgetId])
   @@index([accountId])
+}
+
+// ---------------------------------------------------------------- Phase 11
+
+/// A fundraising drive. It owns one fund, so "raised" is the completed payments into that fund.
+model Campaign {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  fundId String @unique
+  fund   Fund   @relation(fields: [fundId], references: [id], onDelete: Restrict)
+
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  goalAmount  Decimal
+  startDate   DateTime
+  endDate     DateTime?
+  status      String    @default("DRAFT") // DRAFT, ACTIVE, CLOSED
+  // Only public ACTIVE campaigns appear on the unauthenticated progress page.
+  isPublic    Boolean   @default(false)
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([churchId])
+  @@index([status])
+}
+
+model SmallGroup {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name           String
+  description    String? @db.Text
+  meetingDay     String? // MONDAY..SUNDAY
+  meetingTime    String? // HH:mm
+  location       String?
+  curriculumName String?
+  capacity       Int?
+  status         String  @default("ACTIVE") // ACTIVE, PAUSED, CLOSED
+
+  members  SmallGroupMember[]
+  sessions SmallGroupSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, name])
+  @@index([churchId])
+}
+
+model SmallGroupMember {
+  id       String     @id @default(cuid())
+  groupId  String
+  group    SmallGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  memberId String
+  member   Member     @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  role     String    @default("MEMBER") // LEADER, MEMBER
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  attendance SmallGroupAttendance[]
+
+  @@index([groupId])
+  @@index([memberId])
+}
+
+model SmallGroupSession {
+  id      String     @id @default(cuid())
+  groupId String
+  group   SmallGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  heldOn     DateTime
+  topic      String
+  lesson     String? // curriculum reference, e.g. "Week 3: Prayer"
+  notes      String?  @db.Text
+  recordedBy String
+
+  attendance SmallGroupAttendance[]
+
+  createdAt DateTime @default(now())
+
+  @@index([groupId])
+  @@index([heldOn])
+}
+
+model SmallGroupAttendance {
+  id           String            @id @default(cuid())
+  sessionId    String
+  session      SmallGroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  membershipId String
+  membership   SmallGroupMember  @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+
+  present Boolean @default(true)
+
+  @@unique([sessionId, membershipId])
+  @@index([membershipId])
+}
+
+model DocumentTemplate {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  type     String // CERTIFICATE, LETTER, MINUTES
+  name     String
+  title    String // heading printed on the document; may contain {{placeholders}}
+  body     String  @db.Text // may contain {{placeholders}} from a fixed list
+  isActive Boolean @default(true)
+
+  documents GeneratedDocument[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, name])
+  @@index([churchId])
+}
+
+/// What was actually issued: the text is frozen at generation, so later template edits never change a past document.
+model GeneratedDocument {
+  id         String           @id @default(cuid())
+  churchId   String
+  church     Church           @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  templateId String
+  template   DocumentTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  memberId   String?
+  member     Member?          @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  type       String
+  serial     String    @unique
+  title      String
+  content    String    @db.Text
+  issuedBy   String
+  voidedAt   DateTime?
+  voidReason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([churchId])
+  @@index([memberId])
+}
+
+model AssetCategory {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  name   String
+  assets Asset[]
+
+  @@unique([churchId, name])
+}
+
+model Asset {
+  id         String        @id @default(cuid())
+  churchId   String
+  church     Church        @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   AssetCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  tag          String // church-unique label, e.g. SND-0012
+  name         String
+  location     String?
+  status       String    @default("ACTIVE") // ACTIVE, IN_REPAIR, RETIRED
+  purchaseDate DateTime?
+  purchaseCost Decimal?
+  serialNumber String?
+  notes        String?   @db.Text
+  retiredAt    DateTime?
+
+  maintenance AssetMaintenance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, tag])
+  @@index([churchId])
+  @@index([categoryId])
+}
+
+model AssetMaintenance {
+  id      String @id @default(cuid())
+  assetId String
+  asset   Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  performedOn DateTime
+  description String
+  cost        Decimal?
+  nextDueDate DateTime?
+  recordedBy  String
+
+  createdAt DateTime @default(now())
+
+  @@index([assetId])
+  @@index([nextDueDate])
+}
+
+/// A private calendar subscription link. Only a hash of the secret is stored, so the link can be shown once and revoked.
+model CalendarFeed {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash  String    @unique
+  label      String?
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([churchId])
 }

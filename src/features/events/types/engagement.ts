@@ -62,7 +62,7 @@ export const AnalyticsQuerySchema = z.object({
 // ------------------------------------------------------------------- absences
 export const DetectAbsencesSchema = z.object({
   eventType: z.string().trim().min(2).max(80).default('SERVICE'),
-  threshold: z.coerce.number().int().min(2).max(12).default(3),
+  threshold: z.coerce.number().int().min(2).max(12).optional(),
   dryRun: z.boolean().default(false),
 });
 export const AbsenceListQuerySchema = z.object({

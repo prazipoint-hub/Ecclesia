@@ -8,6 +8,7 @@ import { Modal } from '@/components/forms/Modal';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/utils/api';
 import { getApiErrorMessage } from '@/utils/apiError';
+import { CalendarFeedsCard } from '@/pages/advanced/CalendarFeedsCard';
 import { ErrorNotice, PASSWORD_MAX, PASSWORD_MIN, SuccessNotice, validateNewPassword } from '@/pages/auth/AuthShell';
 
 interface Device {
@@ -335,6 +336,7 @@ export const SecuritySettingsPage = () => (
       <EmailVerificationSection />
       <DevicesSection />
       <TwoFactorSection />
+      <CalendarFeedsCard />
     </div>
   </MainLayout>
 );

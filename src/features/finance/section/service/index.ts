@@ -291,13 +291,21 @@ export class SectionFinanceService {
       throw new Error(`Cannot approve: expenditure status is ${expenditure.status}`);
     }
 
+    // The person who asked for the money cannot be the one who releases it.
+    if (approved && [user.id, user.memberId].some((id) => id && id === expenditure.requestedBy)) {
+      throw new Error('Cannot approve your own request');
+    }
+
     // Update status
-    const updated = await sectionFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await sectionFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { sectionId: expenditure.sectionId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
       approvedAt: new Date(),
       approverNotes: approverNotes || null,
     });
+    if (!updated) {
+      throw new Error('Cannot approve: this expenditure was already decided');
+    }
 
     // Audit log
     await this.logAudit({
@@ -362,11 +370,14 @@ export class SectionFinanceService {
     }
 
     // Mark as paid
-    const updated = await sectionFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await sectionFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { sectionId: expenditure.sectionId }, {
       status: 'PAID',
       paidAt: new Date(),
       paymentMethod,
     });
+    if (!updated) {
+      throw new Error('Cannot pay: this expenditure was already paid or changed');
+    }
 
     // Create accounting entry
     await this.createSectionJournalEntry({

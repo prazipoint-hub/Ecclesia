@@ -90,7 +90,7 @@ export const NotificationBell = () => {
             </button>
           </div>
           {items.length === 0 ? (
-            <p className="px-4 py-6 text-center text-sm text-gray-500">You're all caught up.</p>
+            <p className="px-4 py-6 text-center text-sm text-gray-500">You&apos;re all caught up.</p>
           ) : (
             <ul className="max-h-80 divide-y divide-gray-100 overflow-y-auto">
               {items.map((item) => (

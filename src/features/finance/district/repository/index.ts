@@ -62,6 +62,16 @@ export class DistrictFinanceRepository {
     return { expenditures, total };
   }
 
+  /**
+   * Moves an expenditure from one status to the next only if it is still in the expected one, within its own scope.
+   * Returns null when someone else got there first, so a decision or payment can only ever happen once.
+   */
+  async claimExpenditure(id: string, from: string, scope: { circuitId: string }, data: Record<string, unknown>) {
+    const claimed = await prisma.districtExpenditure.updateMany({ where: { id, status: from, ...scope }, data: data as never });
+    if (claimed.count === 0) return null;
+    return prisma.districtExpenditure.findUnique({ where: { id } });
+  }
+
   async updateExpenditure(id: string, data: Prisma.DistrictExpenditureUpdateInput) {
     return prisma.districtExpenditure.update({
       where: { id },

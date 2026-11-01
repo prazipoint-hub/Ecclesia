@@ -14,8 +14,8 @@ export class CheckInService {
   async eventQr(user: AuthorizedUser, eventId: string) {
     require(user, 'event:qr:generate');
     const event = await eventInChurch(user, eventId);
-    this.assertOpenForCheckIn(event, false);
-    const { closes } = checkInWindow(event);
+    await this.assertOpenForCheckIn(event, false);
+    const { closes } = await checkInWindow(user.churchId, event);
     const { token, expiresAt } = signQr({ typ: 'event', eventId: event.id, churchId: user.churchId } satisfies EventQrPayload, (closes.getTime() - Date.now()) / 1000);
     await audit(user, 'EVENT_QR_GENERATED', event.id);
     return { token, expiresAt, dataUrl: await qrDataUrl(token) };
@@ -60,10 +60,10 @@ export class CheckInService {
     return repository.listCheckIns(eventId, query);
   }
 
-  private assertOpenForCheckIn(event: EventRow, enforceTime = true): void {
+  private async assertOpenForCheckIn(event: EventRow, enforceTime = true): Promise<void> {
     if (event.status === 'CANCELLED') throw new ConflictError('This event was cancelled');
     if (event.status === 'COMPLETED') throw new ConflictError('This event has finished');
-    const { opens, closes } = checkInWindow(event);
+    const { opens, closes } = await checkInWindow(event.churchId, event);
     if (!enforceTime && Date.now() > closes.getTime()) throw new ConflictError('Check-in for this event has closed');
     if (!enforceTime) return;
     const now = Date.now();
@@ -73,7 +73,7 @@ export class CheckInService {
 
   /** Idempotent: scanning twice, or two ushers at once, leaves a single record and reports it. */
   private async checkIn(user: AuthorizedUser, event: EventRow, memberId: string, method: 'QR' | 'MANUAL' | 'KIOSK') {
-    this.assertOpenForCheckIn(event);
+    await this.assertOpenForCheckIn(event);
     const member = await repository.findMember(user.churchId, memberId);
     if (!member) throw new NotFoundError('Member');
     if (member.archivedAt) throw new ForbiddenError('This member record is archived');

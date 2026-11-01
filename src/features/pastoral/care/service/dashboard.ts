@@ -1,15 +1,16 @@
 import type { AuthorizedUser } from '@/types';
+import { settingsReader } from '@/features/admin/service/settings';
 import { pastoralCareRepository as repository } from '../repository';
 import { audit, memberInChurch, require } from './common';
 import { redact } from './counseling';
 import { NotFoundError } from '@/types/errors';
 
 const DAY = 24 * 60 * 60 * 1000;
-const UNVISITED_AFTER_DAYS = 180;
 
 export class PastoralDashboardService {
   async overview(user: AuthorizedUser) {
     require(user, 'pastoral:dashboard:view');
+    const UNVISITED_AFTER_DAYS = await settingsReader.get(user.churchId, 'pastoral.unvisitedAfterDays');
     const now = new Date();
     const monthAgo = new Date(now.getTime() - 30 * DAY);
     const unvisitedCutoff = new Date(now.getTime() - UNVISITED_AFTER_DAYS * DAY);

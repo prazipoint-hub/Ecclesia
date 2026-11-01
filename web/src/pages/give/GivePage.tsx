@@ -34,7 +34,7 @@ export const GivePage = () => {
   const [params] = useSearchParams();
   const presetPledge = params.get('pledgeId') ?? '';
 
-  const [fundId, setFundId] = useState('');
+  const [fundId, setFundId] = useState(params.get('fundId') ?? '');
   const [incomeType, setIncomeType] = useState<IncomeType>('OFFERING');
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<PaymentMethod>('ECOCASH');

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useAuthStore } from '@/stores/authStore';
 
 export const LoginForm = () => {
@@ -10,6 +12,7 @@ export const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, error, clearError, requiresTwoFactor, cancelTwoFactor } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,13 +35,12 @@ export const LoginForm = () => {
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+      <div className="mb-4 flex justify-end"><LanguageSwitcher /></div>
       <div className="mb-8">
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary-600">Ecclesia</p>
-        <h1 className="text-3xl font-bold text-gray-900">{requiresTwoFactor ? 'Two-factor check' : 'Welcome back'}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{requiresTwoFactor ? t('login.twoFactorTitle') : t('login.welcome')}</h1>
         <p className="mt-2 text-gray-600">
-          {requiresTwoFactor
-            ? 'Enter the 6-digit code from your authenticator app, or one of your backup codes.'
-            : 'Sign in to manage your church community.'}
+          {requiresTwoFactor ? t('login.twoFactorSubtitle') : t('login.subtitle')}
         </p>
       </div>
 
@@ -52,7 +54,7 @@ export const LoginForm = () => {
       <form onSubmit={handleSubmit} className="space-y-5">
         {requiresTwoFactor ? (
           <label className="block text-sm font-medium text-gray-700">
-            Authentication code
+            {t('login.code')}
             <input
               className="mt-1 block w-full rounded-lg border-gray-300 tracking-widest"
               type="text"
@@ -68,26 +70,26 @@ export const LoginForm = () => {
         ) : (
           <>
             <label className="block text-sm font-medium text-gray-700">
-              Email
+              {t('login.email')}
               <input className="mt-1 block w-full rounded-lg border-gray-300" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
             </label>
             <label className="block text-sm font-medium text-gray-700">
-              Password
+              {t('login.password')}
               <input className="mt-1 block w-full rounded-lg border-gray-300" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isSubmitting} />
             </label>
             <div className="text-right">
               <Link to="/auth/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-700">
-                Forgot password?
+                {t('login.forgot')}
               </Link>
             </div>
           </>
         )}
         <button className="w-full rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Signing in…' : requiresTwoFactor ? 'Verify and sign in' : 'Sign in'}
+          {isSubmitting ? t('login.signingIn') : requiresTwoFactor ? t('login.verify') : t('login.signIn')}
         </button>
         {requiresTwoFactor && (
           <button type="button" onClick={backToCredentials} disabled={isSubmitting} className="w-full text-sm font-medium text-gray-600 hover:text-gray-900">
-            Back to sign in
+            {t('login.back')}
           </button>
         )}
       </form>

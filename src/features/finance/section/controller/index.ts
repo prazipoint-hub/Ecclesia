@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { sectionFinanceService } from '../service';
-import { CreateSectionReceiptSchema, CreateSectionExpenditureSchema } from '../types';
+import { CreateSectionReceiptSchema, CreateSectionExpenditureSchema, PendingListQuerySchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 
@@ -66,15 +66,12 @@ export class SectionFinanceController {
   async listPendingExpenditures(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { sectionId } = req.params;
-      const { skip = '0', take = '20' } = req.query;
+      const page = PendingListQuerySchema.parse(req.query);
 
       const pending = await sectionFinanceService.listPendingExpenditures(
         sectionId,
         req.user!,
-        {
-          skip: parseInt(skip as string, 10),
-          take: parseInt(take as string, 10),
-        }
+        page
       );
 
       res.json(pending);
@@ -92,8 +89,8 @@ export class SectionFinanceController {
       const { sectionId, expenditureId } = req.params;
       const { approved, approverNotes } = req.body;
 
-      if (approved === undefined) {
-        res.status(400).json({ error: 'approved field required' });
+      if (typeof approved !== 'boolean') {
+        res.status(400).json({ error: 'approved field required (true or false)' });
         return;
       }
 

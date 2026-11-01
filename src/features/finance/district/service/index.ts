@@ -117,7 +117,6 @@ export class DistrictFinanceService {
       purpose: string;
       expenseCategory: string;
       description?: string;
-      requestedBy: string;
       attachments?: string[];
     },
     user: AuthorizedUser
@@ -147,7 +146,7 @@ export class DistrictFinanceService {
       description: data.description || null,
       attachments: data.attachments || [],
       status: 'SUBMITTED',
-      requestedBy: data.requestedBy,
+      requestedBy: user.memberId ?? user.id,
       requestedAt: new Date(),
     });
 
@@ -215,12 +214,20 @@ export class DistrictFinanceService {
       throw new Error(`Cannot approve: expenditure status is ${expenditure.status}`);
     }
 
-    const updated = await districtFinanceRepository.updateExpenditure(expenditureId, {
+    // The person who asked for the money cannot be the one who releases it.
+    if (approved && [user.id, user.memberId].some((id) => id && id === expenditure.requestedBy)) {
+      throw new Error('Cannot approve your own request');
+    }
+
+    const updated = await districtFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { circuitId: expenditure.circuitId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
       approvedAt: new Date(),
       approverNotes: approverNotes || null,
     });
+    if (!updated) {
+      throw new Error('Cannot approve: this expenditure was already decided');
+    }
 
     await prisma.auditLog.create({
       data: {
@@ -261,11 +268,14 @@ export class DistrictFinanceService {
       throw new Error('Can only pay approved expenditures');
     }
 
-    const updated = await districtFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await districtFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { circuitId: expenditure.circuitId }, {
       status: 'PAID',
       paidAt: new Date(),
       paymentMethod,
     });
+    if (!updated) {
+      throw new Error('Cannot pay: this expenditure was already paid or changed');
+    }
 
     await prisma.auditLog.create({
       data: {

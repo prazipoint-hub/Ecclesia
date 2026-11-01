@@ -17,6 +17,11 @@ import { FundsPage } from '@/pages/finance/FundsPage';
 import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
 import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
+import { ReportBuilderPage } from '@/pages/reports/ReportBuilderPage';
+import { SavedReportsPage } from '@/pages/reports/SavedReportsPage';
+import { ChurchDashboardPage } from '@/pages/reports/ChurchDashboardPage';
+import { SectionDashboardPage } from '@/pages/reports/SectionDashboardPage';
+import { HierarchyDashboardPage } from '@/pages/reports/HierarchyDashboardPage';
 import { ScopeWorkspacePage } from '@/pages/ScopeWorkspacePage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { PastoralDashboardPage } from '@/pages/pastoral/PastoralDashboardPage';
@@ -54,6 +59,21 @@ import { RecurringGivingPage } from '@/pages/account/RecurringGivingPage';
 import { NotificationPreferencesPage } from '@/pages/account/NotificationPreferencesPage';
 import { BroadcastsPage } from '@/pages/admin/BroadcastsPage';
 import { TemplatesPage } from '@/pages/admin/TemplatesPage';
+import { RolesPage } from '@/pages/admin/RolesPage';
+import { RoleDetailPage } from '@/pages/admin/RoleDetailPage';
+import { UsersPage } from '@/pages/admin/UsersPage';
+import { SystemSettingsPage } from '@/pages/admin/SystemSettingsPage';
+import { AuditLogPage } from '@/pages/admin/AuditLogPage';
+import { RetentionPage } from '@/pages/admin/RetentionPage';
+import { ApiReferencePage } from '@/pages/admin/ApiReferencePage';
+import { CampaignsPage } from '@/pages/advanced/CampaignsPage';
+import { CampaignDetailPage } from '@/pages/advanced/CampaignDetailPage';
+import { PublicCampaignPage } from '@/pages/advanced/PublicCampaignPage';
+import { GroupsPage } from '@/pages/advanced/GroupsPage';
+import { GroupDetailPage } from '@/pages/advanced/GroupDetailPage';
+import { AssetsPage } from '@/pages/advanced/AssetsPage';
+import { AssetDetailPage } from '@/pages/advanced/AssetDetailPage';
+import { DocumentsPage } from '@/pages/advanced/DocumentsPage';
 import { GivePage } from '@/pages/give/GivePage';
 import { GiveConfirmPage } from '@/pages/give/GiveConfirmPage';
 import { MemberDirectoryPage } from '@/pages/members/MemberDirectoryPage';
@@ -121,6 +141,12 @@ function App() {
     <Route path="/pastoral/assessments" element={<ProtectedRoute><AssessmentsPage /></ProtectedRoute>} />
     <Route path="/pastoral/sacraments" element={<ProtectedRoute><SacramentsPage /></ProtectedRoute>} />
     <Route path="/pastoral/members/:memberId" element={<ProtectedRoute><MemberCareProfilePage /></ProtectedRoute>} />
+    <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+    <Route path="/reports/build" element={<ProtectedRoute><ReportBuilderPage /></ProtectedRoute>} />
+    <Route path="/reports/saved" element={<ProtectedRoute><SavedReportsPage /></ProtectedRoute>} />
+    <Route path="/dashboard/church" element={<ProtectedRoute><ChurchDashboardPage /></ProtectedRoute>} />
+    <Route path="/dashboard/section/:sectionId" element={<ProtectedRoute><SectionDashboardPage /></ProtectedRoute>} />
+    <Route path="/dashboard/hierarchy" element={<ProtectedRoute><HierarchyDashboardPage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
     <Route path="/events/upcoming" element={<ProtectedRoute><UpcomingEventsPage /></ProtectedRoute>} />
     <Route path="/events/my-badge" element={<ProtectedRoute><MyBadgePage /></ProtectedRoute>} />
@@ -153,6 +179,21 @@ function App() {
     <Route path="/my-account/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
     <Route path="/admin/broadcasts" element={<ProtectedRoute><BroadcastsPage /></ProtectedRoute>} />
     <Route path="/admin/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+    <Route path="/admin/roles" element={<ProtectedRoute><RolesPage /></ProtectedRoute>} />
+    <Route path="/admin/roles/:id" element={<ProtectedRoute><RoleDetailPage /></ProtectedRoute>} />
+    <Route path="/admin/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+    <Route path="/admin/settings" element={<ProtectedRoute><SystemSettingsPage /></ProtectedRoute>} />
+    <Route path="/admin/audit-log" element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
+    <Route path="/admin/retention" element={<ProtectedRoute><RetentionPage /></ProtectedRoute>} />
+    <Route path="/admin/api" element={<ProtectedRoute><ApiReferencePage /></ProtectedRoute>} />
+    <Route path="/campaign/:slug" element={<PublicCampaignPage />} />
+    <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+    <Route path="/campaigns/:id" element={<ProtectedRoute><CampaignDetailPage /></ProtectedRoute>} />
+    <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
+    <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
+    <Route path="/assets" element={<ProtectedRoute><AssetsPage /></ProtectedRoute>} />
+    <Route path="/assets/:id" element={<ProtectedRoute><AssetDetailPage /></ProtectedRoute>} />
+    <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
     <Route path="/give" element={<ProtectedRoute><GivePage /></ProtectedRoute>} />
     <Route path="/give/confirm" element={<ProtectedRoute><GiveConfirmPage /></ProtectedRoute>} />
     <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />

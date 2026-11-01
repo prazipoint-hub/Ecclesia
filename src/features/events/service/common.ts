@@ -1,4 +1,5 @@
 import { logger } from '@/config/logger';
+import { settingsReader } from '@/features/admin/service/settings';
 import { prisma } from '@/database';
 import type { AuthorizedUser } from '@/types';
 import { ForbiddenError, NotFoundError, ValidationError } from '@/types/errors';
@@ -24,11 +25,17 @@ const HOUR = 60 * 60 * 1000;
 export const eventEnd = (event: { startDateTime: Date; endDateTime: Date | null }): Date =>
   event.endDateTime ?? new Date(event.startDateTime.getTime() + 6 * HOUR);
 
-/** Check-in opens two hours before the start and closes two hours after the end. */
-export const checkInWindow = (event: { startDateTime: Date; endDateTime: Date | null }) => ({
-  opens: new Date(event.startDateTime.getTime() - 2 * HOUR),
-  closes: new Date(eventEnd(event).getTime() + 2 * HOUR),
-});
+/** Check-in opens and closes around the event; the margins are church settings (two hours each by default). */
+export const checkInWindow = async (churchId: string, event: { startDateTime: Date; endDateTime: Date | null }) => {
+  const [before, after] = await Promise.all([
+    settingsReader.get(churchId, 'events.checkInOpensHoursBefore'),
+    settingsReader.get(churchId, 'events.checkInClosesHoursAfter'),
+  ]);
+  return {
+    opens: new Date(event.startDateTime.getTime() - before * HOUR),
+    closes: new Date(eventEnd(event).getTime() + after * HOUR),
+  };
+};
 
 export async function audit(user: AuthorizedUser, action: string, entityId: string, details: Record<string, unknown> = {}) {
   try {

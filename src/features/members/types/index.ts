@@ -9,8 +9,8 @@ export const CreateMemberSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email().optional(),
   address: z.string().optional(),
-  churchId: z.string().uuid(),
-  sectionId: z.string().uuid().optional(),
+  churchId: z.string().min(1).max(64),
+  sectionId: z.string().min(1).max(64).optional(),
   membershipStatus: z.enum(['ACTIVE', 'INACTIVE', 'TRANSFERRED', 'DECEASED']).default('ACTIVE'),
   membershipDate: z.string().datetime().optional(),
 });
@@ -18,7 +18,7 @@ export const CreateMemberSchema = z.object({
 export const UpdateMemberSchema = CreateMemberSchema.partial();
 
 export const MemberResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1).max(64),
   firstName: z.string(),
   middleName: z.string().nullable(),
   lastName: z.string(),
@@ -28,11 +28,11 @@ export const MemberResponseSchema = z.object({
   email: z.string().email().nullable(),
   address: z.string().nullable(),
   membershipNumber: z.string(),
-  churchId: z.string().uuid(),
-  sectionId: z.string().uuid().nullable(),
+  churchId: z.string().min(1).max(64),
+  sectionId: z.string().min(1).max(64).nullable(),
   membershipStatus: z.enum(['ACTIVE', 'INACTIVE', 'TRANSFERRED', 'DECEASED']),
   isDependent: z.boolean(),
-  parentMemberId: z.string().uuid().nullable(),
+  parentMemberId: z.string().min(1).max(64).nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

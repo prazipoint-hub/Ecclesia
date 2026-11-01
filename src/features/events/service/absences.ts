@@ -1,4 +1,5 @@
 import type { AuthorizedUser } from '@/types';
+import { settingsReader } from '@/features/admin/service/settings';
 import { ConflictError, NotFoundError, ValidationError } from '@/types/errors';
 import { eventEngagementRepository as repository } from '../repository/engagement';
 import type { DetectAbsencesInput, UpdateAbsenceInput } from '../types/engagement';
@@ -14,9 +15,10 @@ export class AbsenceFollowUpService {
    */
   async detect(user: AuthorizedUser, input: DetectAbsencesInput) {
     require(user, 'absence:followup:manage');
-    const recent = await repository.recentEventsWithAttendance(user.churchId, input.eventType, new Date(), input.threshold);
-    if (recent.length < input.threshold) {
-      return { created: 0, candidates: [], eventsConsidered: recent.length, message: `Only ${recent.length} recent ${input.eventType} event(s) have attendance recorded; ${input.threshold} are needed.` };
+    const threshold = input.threshold ?? (await settingsReader.get(user.churchId, 'events.absenceThreshold'));
+    const recent = await repository.recentEventsWithAttendance(user.churchId, input.eventType, new Date(), threshold);
+    if (recent.length < threshold) {
+      return { created: 0, candidates: [], eventsConsidered: recent.length, message: `Only ${recent.length} recent ${input.eventType} event(s) have attendance recorded; ${threshold} are needed.` };
     }
     // Members who joined after the oldest event could not have attended it.
     const oldest = recent.reduce((min, e) => (e.startDateTime < min ? e.startDateTime : min), recent[0].startDateTime);
@@ -24,9 +26,9 @@ export class AbsenceFollowUpService {
     if (input.dryRun || candidates.length === 0) return { created: 0, candidates, eventsConsidered: recent.length };
 
     const result = await repository.createAbsenceFollowUps(
-      candidates.map((m) => ({ churchId: user.churchId, memberId: m.id, consecutiveAbsences: input.threshold, eventType: input.eventType }))
+      candidates.map((m) => ({ churchId: user.churchId, memberId: m.id, consecutiveAbsences: threshold, eventType: input.eventType }))
     );
-    await audit(user, 'ABSENCE_FOLLOWUPS_DETECTED', user.churchId, { eventType: input.eventType, threshold: input.threshold, created: result.count });
+    await audit(user, 'ABSENCE_FOLLOWUPS_DETECTED', user.churchId, { eventType: input.eventType, threshold: threshold, created: result.count });
     return { created: result.count, candidates, eventsConsidered: recent.length };
   }
 

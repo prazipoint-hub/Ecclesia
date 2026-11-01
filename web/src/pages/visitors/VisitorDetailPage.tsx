@@ -160,7 +160,7 @@ export const VisitorDetailPage = () => {
         }
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">This creates a member record from the visitor's details. The visit history stays attached.</p>
+          <p className="text-sm text-gray-600">This creates a member record from the visitor&apos;s details. The visit history stays attached.</p>
           <FormSelect label="Section (optional)" value={sectionId} placeholder="No section" options={(sections.data ?? []).map((s) => ({ value: s.id, label: s.name }))} onChange={(e) => setSectionId(e.target.value)} />
           <FormSelect label="Gender (optional)" value={gender} placeholder="Not recorded" options={[{ value: 'MALE', label: 'Male' }, { value: 'FEMALE', label: 'Female' }, { value: 'OTHER', label: 'Other' }]} onChange={(e) => setGender(e.target.value)} />
           <FormField label="Date of birth (optional)" type="date" value={dob} max={toDateInput(new Date().toISOString())} onChange={(e) => setDob(e.target.value)} />

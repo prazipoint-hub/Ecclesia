@@ -33,6 +33,7 @@ type AuthUser = {
   emailVerified: boolean;
   churchId: string | null;
   memberId: string | null;
+  disabledAt?: Date | null;
   member: {
     firstName: string;
     lastName: string;
@@ -139,6 +140,8 @@ async function resolveDeviceId(userId: string, context: SessionContext): Promise
 async function issueSession(user: AuthUser, context: SessionContext = {}): Promise<AuthResponse> {
   // Archived members keep their history but can no longer sign in or refresh a session.
   if ((user.member as { archivedAt?: Date | null } | null)?.archivedAt) throw new AppError(403, 'This account has been deactivated', 'ACCOUNT_ARCHIVED');
+  // An administrator can switch an account off; it keeps its history but cannot sign in or refresh.
+  if (user.disabledAt) throw new AppError(403, 'This account has been switched off. Contact your church administrator.', 'ACCOUNT_DISABLED');
   const userPayload = clientUser(user);
   const tokenId = randomUUID();
   const refreshToken = randomUUID();

@@ -21,8 +21,11 @@ export function handleError(error: unknown, res: Response): void {
     const message = error.message || 'Unknown error';
 
     // Legacy services still throw plain Errors with keyword messages.
+    // "Unauthorized: ..." is used both for failed credentials (401) and for refused access (403). Only the former
+    // means the caller should sign in again, so everything about permissions, scope or another church is a 403.
     if (message.includes('Unauthorized')) {
-      res.status(401).json({ error: message });
+      const badCredentials = /invalid|incorrect|expired|credential|sign in|token/i.test(message);
+      res.status(badCredentials ? 401 : 403).json({ error: message });
       return;
     }
 
@@ -33,6 +36,17 @@ export function handleError(error: unknown, res: Response): void {
 
     if (message.includes('not found')) {
       res.status(404).json({ error: message });
+      return;
+    }
+
+    // Legacy business-rule refusals: the request was understood but the record is not in a state that allows it.
+    if (/^(Insufficient|Cannot |Can only )/.test(message) || /already part of|must be part of|is already /.test(message)) {
+      res.status(409).json({ error: message });
+      return;
+    }
+
+    if (message.includes('does not belong')) {
+      res.status(400).json({ error: message });
       return;
     }
 

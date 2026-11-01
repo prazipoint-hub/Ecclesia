@@ -1,6 +1,8 @@
 import { LogOut, Menu, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { useAuthStore } from '@stores/authStore';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { OrganizationSwitcher } from '@/components/hierarchy/OrganizationSwitcher';
@@ -13,6 +15,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await logout();
@@ -27,7 +30,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
             <button
               onClick={onMenuClick}
               className="rounded-lg p-2 hover:bg-gray-100 lg:hidden"
-              aria-label="Toggle menu"
+              aria-label={t('header.toggleMenu')}
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -38,6 +41,7 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
           </div>
 
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             <NotificationBell />
             <div className="relative">
               <button
@@ -59,14 +63,14 @@ export const Header = ({ onMenuClick }: HeaderProps) => {
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50"
                   >
                     <Settings className="h-4 w-4" />
-                    Settings
+                    {t('header.settings')}
                   </button>
                   <button
                     onClick={handleLogout}
                     className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                   >
                     <LogOut className="h-4 w-4" />
-                    Logout
+                    {t('header.logout')}
                   </button>
                 </div>
               )}

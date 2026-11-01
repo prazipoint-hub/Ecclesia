@@ -1,7 +1,13 @@
-import express, { Application } from 'express';
+import express, { Application, Router } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import pino from 'pino';
 import pinoHttp from 'pino-http';
+import assetRoutes from '@/features/assets/routes';
+import documentRoutes from '@/features/documents/routes';
+import smallGroupRoutes from '@/features/smallGroups/routes';
+import { campaignRoutes, publicCampaignRoutes } from '@/features/campaigns/routes';
+import { calendarRoutes, publicCalendarRoutes } from '@/features/calendar/routes';
 import { logger } from '@/config/logger';
 
 import memberRoutes from '@/features/members/routes';
@@ -29,6 +35,8 @@ import pastoralCareRoutes from '@/features/pastoral/care/routes';
 import eventRoutes from '@/features/events/routes';
 import eventEngagementRoutes from '@/features/events/routes/engagement';
 import committeeRoutes from '@/features/committees/routes';
+import adminRoutes from '@/features/admin/routes';
+import { buildOpenApi } from '@/features/admin/service/apiReference';
 
 export function createApp(): Application {
   const app = express();
@@ -41,46 +49,75 @@ export function createApp(): Application {
     const hops = Number(process.env.TRUST_PROXY);
     app.set('trust proxy', Number.isNaN(hops) ? process.env.TRUST_PROXY : hops);
   }
-  app.use(pinoHttp({ logger }));
+  // Calendar links carry a secret in the URL, so it is masked before the request line reaches the logs.
+  app.use(
+    pinoHttp({
+      logger,
+      serializers: { req: (req) => { const out = pino.stdSerializers.req(req); return { ...out, url: String(out.url).replace(/(\/public\/calendar\/)[^/?#]+/, '$1[redacted]') }; } },
+    })
+  );
   app.use(helmet());
   app.use(cors({ origin: allowedOrigins, credentials: true }));
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Every router is registered through here so the API reference can list the real routes.
+  const mounts: Array<{ path: string; router: Router }> = [];
+  const mount = (path: string, router: Router) => {
+    mounts.push({ path, router });
+    app.use(path, router);
+  };
+  app.locals.apiMounts = mounts;
+
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
-  app.use('/api/v1/auth', authRoutes);
-  app.use('/api/v2/hierarchy', hierarchyRoutes);
-  app.use('/api/v2/pastoral/cases', pastoralCaseRoutes);
-  app.use('/api/v2/pastoral', pastoralCareRoutes);
-  app.use('/api/v2/events', eventEngagementRoutes);
-  app.use('/api/v2/events', eventRoutes);
-  app.use('/api/v2/committees', committeeMeetingRoutes);
-  app.use('/api/v2/committees', committeeRoutes);
+  mount('/api/v1/auth', authRoutes);
+  mount('/api/v2/hierarchy', hierarchyRoutes);
+  mount('/api/v2/pastoral/cases', pastoralCaseRoutes);
+  mount('/api/v2/pastoral', pastoralCareRoutes);
+  mount('/api/v2/events', eventEngagementRoutes);
+  mount('/api/v2/events', eventRoutes);
+  mount('/api/v2/committees', committeeMeetingRoutes);
+  mount('/api/v2/committees', committeeRoutes);
 
-  app.use('/api/v2/me', myAccountRoutes);
-  app.use('/api/v2/notifications', notificationRoutes);
-  app.use('/api/v2/visitors', visitorRoutes);
-  app.use('/api/v2/leadership', leadershipRoutes);
-  app.use('/api/v2/accounting', accountingRoutes);
-  app.use('/api/v2/payments', paymentRoutes);
-  app.use('/api/v2/pledges', pledgeRoutes);
-  app.use('/api/v2/recurring-giving', recurringGivingRoutes);
-  app.use('/api/v2/payment-methods', paymentMethodRoutes);
-  app.use('/api/v2/members', memberDirectoryRoutes);
-  app.use('/api/v2/members', memberRoutes);
-  app.use('/api/v2/families', familyRoutes);
-  app.use('/api/v2/sections', sectionRoutes);
-  app.use('/api/v2/organizations', organizationRoutes);
-  app.use('/api/v2/membership', membershipRoutes);
-  app.use('/api/v2/reports', reportingRoutes);
+  mount('/api/v2/me', myAccountRoutes);
+  mount('/api/v2/notifications', notificationRoutes);
+  mount('/api/v2/visitors', visitorRoutes);
+  mount('/api/v2/leadership', leadershipRoutes);
+  mount('/api/v2/accounting', accountingRoutes);
+  mount('/api/v2/payments', paymentRoutes);
+  mount('/api/v2/pledges', pledgeRoutes);
+  mount('/api/v2/recurring-giving', recurringGivingRoutes);
+  mount('/api/v2/payment-methods', paymentMethodRoutes);
+  mount('/api/v2/members', memberDirectoryRoutes);
+  mount('/api/v2/members', memberRoutes);
+  mount('/api/v2/families', familyRoutes);
+  mount('/api/v2/sections', sectionRoutes);
+  mount('/api/v2/organizations', organizationRoutes);
+  mount('/api/v2/membership', membershipRoutes);
+  mount('/api/v2/reports', reportingRoutes);
+  mount('/api/v2/admin', adminRoutes);
+  mount('/api/v2/campaigns', campaignRoutes);
+  mount('/api/v2/calendar', calendarRoutes);
+  mount('/api/v2/groups', smallGroupRoutes);
+  mount('/api/v2/assets', assetRoutes);
+  mount('/api/v2/documents', documentRoutes);
+  mount('/api/v2/public', publicCampaignRoutes);
+  mount('/api/v2/public', publicCalendarRoutes);
   // Finance controllers depend on the owning unit id from route params. Mount
   // them beneath that resource so the params are always available.
-  app.use('/api/v2/sections/:sectionId/finance', sectionFinanceRoutes);
-  app.use('/api/v2/churches/:churchId', mainChurchFinanceRoutes);
-  app.use('/api/v2/circuits/:circuitId', circuitFinanceRoutes);
-  app.use('/api/v2/districts/:districtId', districtFinanceRoutes);
+  mount('/api/v2/sections/:sectionId/finance', sectionFinanceRoutes);
+  mount('/api/v2/churches/:churchId', mainChurchFinanceRoutes);
+  mount('/api/v2/circuits/:circuitId', circuitFinanceRoutes);
+  mount('/api/v2/districts/:districtId', districtFinanceRoutes);
+
+  // Machine-readable route list for tools such as Postman. Off in production unless API_DOCS=true.
+  if (process.env.NODE_ENV !== 'production' || process.env.API_DOCS === 'true') {
+    app.get('/api/docs.json', (_req, res) => {
+      res.json(buildOpenApi(mounts));
+    });
+  }
 
   app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error({ err }, 'Unhandled application error');
