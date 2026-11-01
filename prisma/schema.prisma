@@ -251,6 +251,12 @@ model Church {
   pledges         Pledge[]
   recurringGiving RecurringGiving[]
 
+  // Events
+  eventRegistrations EventRegistration[]
+  eventCheckIns      EventCheckIn[]
+  volunteerSchedules VolunteerSchedule[]
+  absenceFollowUps   AbsenceFollowUp[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -368,6 +374,10 @@ model Member {
 
   // Events & Attendance
   eventAttendances EventAttendance[]
+  eventRegistrations EventRegistration[]
+  eventCheckIns      EventCheckIn[]
+  volunteerSchedules VolunteerSchedule[]
+  absenceFollowUps   AbsenceFollowUp[]
 
   // Finance
   receipts     Receipt[]
@@ -635,8 +645,14 @@ model Event {
   status             String @default("SCHEDULED") // SCHEDULED, ONGOING, COMPLETED, CANCELLED
   expectedAttendance Int?
 
-  attendances  EventAttendance[]
-  participants EventParticipant[]
+  capacity             Int?
+  registrationRequired Boolean @default(false)
+
+  attendances        EventAttendance[]
+  participants       EventParticipant[]
+  registrations      EventRegistration[]
+  checkIns           EventCheckIn[]
+  volunteerSchedules VolunteerSchedule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -681,6 +697,111 @@ model EventParticipant {
   @@unique([eventId, memberId])
   @@index([eventId])
   @@index([memberId])
+}
+
+model EventRegistration {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // A member registers themselves; a guest has no member record, only contact details.
+  memberId String?
+  member   Member? @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  name  String
+  email String?
+  phone String?
+
+  status       String   @default("REGISTERED") // REGISTERED, CANCELLED
+  registeredBy String // user or member id that made the registration
+  cancelledAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, memberId])
+  @@index([churchId])
+  @@index([eventId, status])
+  @@index([memberId])
+}
+
+model EventCheckIn {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  method      String // QR, MANUAL, KIOSK
+  checkedInBy String // user or member id that performed the check-in
+  checkedInAt DateTime @default(now())
+
+  @@unique([eventId, memberId])
+  @@index([churchId])
+  @@index([eventId])
+  @@index([memberId])
+}
+
+model VolunteerSchedule {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  role   String
+  status String  @default("ASSIGNED") // ASSIGNED, CONFIRMED, DECLINED, COMPLETED, NO_SHOW, CANCELLED
+  notes  String? @db.Text
+
+  assignedBy  String
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, memberId, role])
+  @@index([churchId])
+  @@index([eventId])
+  @@index([memberId, status])
+}
+
+model AbsenceFollowUp {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  consecutiveAbsences Int
+  eventType           String
+
+  status     String  @default("OPEN") // OPEN, CONTACTED, RESOLVED, DISMISSED
+  // "OPEN" while the follow-up is live, NULL once closed: the unique index then allows one live follow-up per member.
+  openKey    String? @default("OPEN")
+  assignedTo String?
+  notes      String? @db.Text
+
+  detectedAt DateTime  @default(now())
+  closedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([churchId, memberId, openKey])
+  @@index([churchId, status])
+  @@index([assignedTo])
 }
 
 // ============================================================================

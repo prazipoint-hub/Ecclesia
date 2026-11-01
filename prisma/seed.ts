@@ -38,6 +38,8 @@ async function main() {
     'pastoral:prayer:view', 'pastoral:prayer:manage', 'pastoral:referral:view', 'pastoral:referral:create', 'pastoral:referral:update',
     'pastoral:followup:view', 'pastoral:followup:manage', 'pastoral:sacrament:manage',
     'pastoral:assessment:view', 'pastoral:assessment:update', 'pastoral:dashboard:view', 'pastoral:l4:access',
+    'event:registration:manage', 'event:checkin:manage', 'event:qr:generate', 'volunteer:schedule:view', 'volunteer:schedule:manage',
+    'attendance:analytics:view', 'absence:followup:manage',
     'committee:meeting:create', 'committee:meeting:manage', 'leadership:term:manage',
     'notification:broadcast:create', 'notification:broadcast:send', 'notification:template:manage',
     'payment:view:all', 'pledge:view:all', 'recurring:manage',

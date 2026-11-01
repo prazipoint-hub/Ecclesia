@@ -29,6 +29,14 @@ import { AssessmentsPage } from '@/pages/pastoral/AssessmentsPage';
 import { SacramentsPage } from '@/pages/pastoral/SacramentsPage';
 import { MemberCareProfilePage } from '@/pages/pastoral/MemberCareProfilePage';
 import { PastoralCasesPage } from '@/pages/PastoralCasesPage';
+import { UpcomingEventsPage } from '@/pages/events/UpcomingEventsPage';
+import { MyBadgePage } from '@/pages/events/MyBadgePage';
+import { ScanPage } from '@/pages/events/ScanPage';
+import { CheckInPage } from '@/pages/events/CheckInPage';
+import { RegistrationsPage } from '@/pages/events/RegistrationsPage';
+import { VolunteersPage } from '@/pages/events/VolunteersPage';
+import { AnalyticsPage } from '@/pages/events/AnalyticsPage';
+import { AbsencesPage } from '@/pages/events/AbsencesPage';
 import { EventsPage } from '@/pages/EventsPage';
 import { CommitteesPage } from '@/pages/CommitteesPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
@@ -114,6 +122,14 @@ function App() {
     <Route path="/pastoral/sacraments" element={<ProtectedRoute><SacramentsPage /></ProtectedRoute>} />
     <Route path="/pastoral/members/:memberId" element={<ProtectedRoute><MemberCareProfilePage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+    <Route path="/events/upcoming" element={<ProtectedRoute><UpcomingEventsPage /></ProtectedRoute>} />
+    <Route path="/events/my-badge" element={<ProtectedRoute><MyBadgePage /></ProtectedRoute>} />
+    <Route path="/events/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+    <Route path="/events/volunteers" element={<ProtectedRoute><VolunteersPage /></ProtectedRoute>} />
+    <Route path="/events/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+    <Route path="/events/absences" element={<ProtectedRoute><AbsencesPage /></ProtectedRoute>} />
+    <Route path="/events/:eventId/checkin" element={<ProtectedRoute><CheckInPage /></ProtectedRoute>} />
+    <Route path="/events/:eventId/registrations" element={<ProtectedRoute><RegistrationsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
     <Route path="/finance/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
     <Route path="/finance/periods" element={<ProtectedRoute><PeriodsPage /></ProtectedRoute>} />
