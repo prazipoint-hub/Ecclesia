@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { authenticate } from '@/middleware/auth';
+import { authorize } from '@/middleware/authorization';
+import { committeeController } from '../controller';
+const router = Router();
+router.use(authenticate);
+router.get('/', authorize('committee:view'), committeeController.list.bind(committeeController));
+router.post('/', authorize('committee:create'), committeeController.create.bind(committeeController));
+router.put('/:committeeId', authorize('committee:update'), committeeController.update.bind(committeeController));
+export default router;
