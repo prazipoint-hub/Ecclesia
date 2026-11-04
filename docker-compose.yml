@@ -10,7 +10,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRY: 24h
       REFRESH_TOKEN_EXPIRY: 7d
-      CORS_ORIGIN: https://${DOMAIN}
+      CORS_ORIGIN: ${PUBLIC_URL}
       LOG_LEVEL: info
     networks:
       - app
@@ -20,18 +20,12 @@ services:
       context: .
       dockerfile: web/Dockerfile
       args:
-        VITE_API_URL: https://${DOMAIN}
+        VITE_API_URL: ${PUBLIC_URL}
     restart: unless-stopped
     depends_on:
       - api
-    environment:
-      DOMAIN: ${DOMAIN}
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
     networks:
       - app
 
@@ -41,7 +35,3 @@ networks:
       config:
         - subnet: 172.30.0.0/24
           gateway: 172.30.0.1
-
-volumes:
-  caddy_data:
-  caddy_config:
