@@ -11,7 +11,7 @@ import { z } from 'zod';
 export const OrganizationTypeEnum = z.enum(['MUMC', 'RRW', 'UMYF', 'CHILDREN_MINISTRIES']);
 
 export const CreateOrganizationSchema = z.object({
-  churchId: z.string().uuid(),
+  churchId: z.string().min(1).max(64),
   organizationType: OrganizationTypeEnum,
   name: z.string().min(1),
   shortName: z.string().min(1).max(20),
@@ -20,23 +20,23 @@ export const CreateOrganizationSchema = z.object({
 });
 
 export const CreateOrganizationMembershipSchema = z.object({
-  organizationId: z.string().uuid(),
-  memberId: z.string().uuid(),
+  organizationId: z.string().min(1).max(64),
+  memberId: z.string().min(1).max(64),
   membershipStatus: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'LEFT']).default('ACTIVE'),
   notes: z.string().optional(),
 });
 
 export const AssignOrganizationRoleSchema = z.object({
-  organizationId: z.string().uuid(),
-  memberId: z.string().uuid(),
+  organizationId: z.string().min(1).max(64),
+  memberId: z.string().min(1).max(64),
   position: z.string().min(1), // e.g., "President", "Treasurer", "Secretary"
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
 });
 
 export const OrganizationResponseSchema = z.object({
-  id: z.string().uuid(),
-  churchId: z.string().uuid(),
+  id: z.string().min(1).max(64),
+  churchId: z.string().min(1).max(64),
   organizationType: OrganizationTypeEnum,
   name: z.string(),
   shortName: z.string(),
@@ -48,9 +48,9 @@ export const OrganizationResponseSchema = z.object({
 });
 
 export const OrganizationMembershipResponseSchema = z.object({
-  id: z.string().uuid(),
-  organizationId: z.string().uuid(),
-  memberId: z.string().uuid(),
+  id: z.string().min(1).max(64),
+  organizationId: z.string().min(1).max(64),
+  memberId: z.string().min(1).max(64),
   membershipStatus: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'LEFT']),
   joinedAt: z.string().datetime(),
   endedAt: z.string().datetime().nullable(),
@@ -58,9 +58,9 @@ export const OrganizationMembershipResponseSchema = z.object({
 });
 
 export const OrganizationRoleAssignmentResponseSchema = z.object({
-  id: z.string().uuid(),
-  organizationId: z.string().uuid(),
-  memberId: z.string().uuid(),
+  id: z.string().min(1).max(64),
+  organizationId: z.string().min(1).max(64),
+  memberId: z.string().min(1).max(64),
   position: z.string(),
   startDate: z.string().datetime(),
   endDate: z.string().datetime().nullable(),

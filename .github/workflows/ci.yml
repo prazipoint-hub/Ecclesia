@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: ecclesia_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DATABASE_URL: mysql://root@127.0.0.1:3306/ecclesia_ci
+      JWT_SECRET: ci-only-secret-ci-only-secret-ci-only-secret
+      NODE_ENV: development
+      PORT: '4455'
+      LOG_LEVEL: warn
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Lint (errors only)
+        run: npx eslint src --ext .ts --quiet
+      - name: Unit and API tests with coverage thresholds
+        run: npx vitest run --coverage
+      - name: Apply every migration to a real MySQL
+        run: npx prisma migrate deploy
+      - name: Schema and migrations must agree (no drift)
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+      - name: Seed
+        run: npm run db:seed
+      - name: Smoke test the running API
+        run: |
+          npx tsx src/server.ts &
+          for i in $(seq 1 30); do curl -sf localhost:4455/health >/dev/null 2>&1 && break; sleep 1; done
+          API_URL=http://localhost:4455 node scripts/smoke.mjs
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx eslint src --ext .ts,.tsx --quiet
+      - run: npm test
+      - run: npx vite build

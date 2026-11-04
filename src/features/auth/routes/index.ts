@@ -1,57 +1,34 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { authenticate } from '@/middleware/auth';
-import { AuthRequest } from '@/types';
-import * as authService from '@/features/auth/service';
+import { authorize } from '@/middleware/authorization';
+import { loginLimiter, passwordResetLimiter, registrationLimiter } from '@/middleware/rateLimit';
+import { authController as c } from '@/features/auth/controller';
 
 const router = Router();
-const CredentialsSchema = z.object({ email: z.string().email(), password: z.string().min(8).max(128) });
-const RegistrationSchema = CredentialsSchema.extend({ churchId: z.string().min(1) });
-const RefreshSchema = z.object({ refreshToken: z.string().uuid() });
-const validationError = (error: unknown) =>
-  error instanceof z.ZodError ? error.issues.map((issue) => issue.message).join(', ') : 'Invalid request';
 
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = CredentialsSchema.parse(req.body);
-    const response = await authService.login(email.toLowerCase(), password);
-    if (!response) return res.status(401).json({ error: 'Invalid email or password' });
-    return res.json(response);
-  } catch (error) {
-    return res.status(400).json({ error: validationError(error) });
-  }
-});
+router.post('/login', loginLimiter, c.login.bind(c));
+router.post('/register', registrationLimiter, c.register.bind(c));
+router.post('/refresh', c.refresh.bind(c));
+router.post('/logout', authenticate, c.logout.bind(c));
+router.get('/me', authenticate, c.me.bind(c));
 
-router.post('/register', async (req, res) => {
-  try {
-    const { email, password, churchId } = RegistrationSchema.parse(req.body);
-    const response = await authService.register(email.toLowerCase(), password, churchId);
-    return res.status(201).json(response);
-  } catch (error) {
-    return res.status(400).json({ error: error instanceof Error ? error.message : 'Unable to register account' });
-  }
-});
+router.post('/password-reset/request', passwordResetLimiter, c.requestPasswordReset.bind(c));
+router.post('/password-reset/confirm', c.confirmPasswordReset.bind(c));
+router.post('/password/change', authenticate, c.changePassword.bind(c));
 
-router.post('/refresh', async (req, res) => {
-  try {
-    const { refreshToken } = RefreshSchema.parse(req.body);
-    const response = await authService.refresh(refreshToken);
-    if (!response) return res.status(401).json({ error: 'Invalid or expired refresh token' });
-    return res.json(response);
-  } catch (error) {
-    return res.status(400).json({ error: validationError(error) });
-  }
-});
+router.post('/email/verify', c.verifyEmail.bind(c));
+router.post('/email/resend-verification', authenticate, passwordResetLimiter, c.resendVerification.bind(c));
 
-router.post('/logout', authenticate, async (req: AuthRequest, res) => {
-  if (req.sessionId) await authService.revokeSession(req.sessionId);
-  res.status(204).send();
-});
+router.post('/invite', authenticate, authorize('auth:invite:create'), c.createInvitation.bind(c));
+router.delete('/invite/:invitationId', authenticate, authorize('auth:invite:revoke'), c.revokeInvitation.bind(c));
+router.post('/invite/accept', registrationLimiter, c.acceptInvitation.bind(c));
 
-router.get('/me', authenticate, async (req: AuthRequest, res) => {
-  const user = await authService.getCurrentUser(req.user!.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  return res.json(user);
-});
+router.get('/devices', authenticate, c.listDevices.bind(c));
+router.delete('/devices/:deviceId', authenticate, c.revokeDevice.bind(c));
+
+router.get('/2fa/status', authenticate, c.twoFactorStatus.bind(c));
+router.post('/2fa/setup', authenticate, c.twoFactorSetup.bind(c));
+router.post('/2fa/verify', authenticate, c.twoFactorVerify.bind(c));
+router.post('/2fa/disable', authenticate, c.twoFactorDisable.bind(c));
 
 export default router;

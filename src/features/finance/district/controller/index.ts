@@ -1,13 +1,13 @@
 import { Response } from 'express';
 import { districtFinanceService } from '../service';
-import { CreateDistrictReceiptSchema, CreateDistrictExpenditureSchema } from '../types';
+import { CreateDistrictReceiptSchema, CreateDistrictExpenditureSchema, PendingListQuerySchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 
 export class DistrictFinanceController {
   async getDashboard(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId } = req.params;
+      const { districtId: circuitId } = req.params;
       const dashboard = await districtFinanceService.getDistrictFinanceDashboard(circuitId, req.user!);
       res.json(dashboard);
     } catch (error) {
@@ -17,7 +17,7 @@ export class DistrictFinanceController {
 
   async createReceipt(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId } = req.params;
+      const { districtId: circuitId } = req.params;
       const validated = CreateDistrictReceiptSchema.parse({
         ...req.body,
         circuitId,
@@ -32,7 +32,7 @@ export class DistrictFinanceController {
 
   async createExpenditure(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId } = req.params;
+      const { districtId: circuitId } = req.params;
       const validated = CreateDistrictExpenditureSchema.parse({
         ...req.body,
         circuitId,
@@ -47,16 +47,13 @@ export class DistrictFinanceController {
 
   async listPendingExpenditures(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId } = req.params;
-      const { skip = '0', take = '20' } = req.query;
+      const { districtId: circuitId } = req.params;
+      const page = PendingListQuerySchema.parse(req.query);
 
       const pending = await districtFinanceService.listPendingExpenditures(
         circuitId,
         req.user!,
-        {
-          skip: parseInt(skip as string, 10),
-          take: parseInt(take as string, 10),
-        }
+        page
       );
 
       res.json(pending);
@@ -67,11 +64,11 @@ export class DistrictFinanceController {
 
   async approveExpenditure(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId, expenditureId } = req.params;
+      const { districtId: circuitId, expenditureId } = req.params;
       const { approved, approverNotes } = req.body;
 
-      if (approved === undefined) {
-        res.status(400).json({ error: 'approved field required' });
+      if (typeof approved !== 'boolean') {
+        res.status(400).json({ error: 'approved field required (true or false)' });
         return;
       }
 
@@ -91,7 +88,7 @@ export class DistrictFinanceController {
 
   async paymentExpenditure(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { circuitId, expenditureId } = req.params;
+      const { districtId: circuitId, expenditureId } = req.params;
       const { paymentMethod } = req.body;
 
       if (!paymentMethod) {

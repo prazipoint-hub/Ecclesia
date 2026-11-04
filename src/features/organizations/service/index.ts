@@ -51,13 +51,14 @@ export class OrganizationService {
     user: AuthorizedUser,
     options?: { skip?: number; take?: number; status?: string }
   ) {
+    // Permission first, so a user without it cannot tell a missing organization from a forbidden one.
+    if (!user.permissions.includes('organization:view')) {
+      throw new Error('Unauthorized: organization:view permission required');
+    }
+
     const org = await organizationRepository.findById(organizationId, user);
     if (!org) {
       throw new Error('Organization not found');
-    }
-
-    if (!user.permissions.includes('organization:view')) {
-      throw new Error('Unauthorized: organization:view permission required');
     }
 
     const result = await organizationRepository.getOrganizationMembers(organizationId, options);

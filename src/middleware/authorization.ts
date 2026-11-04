@@ -1,8 +1,11 @@
 import { NextFunction, Response } from 'express';
 import { AuthRequest } from '@/types';
 
-export function authorize(permission: string) {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+/** The returned middleware carries its permission so the API reference can list what each route needs. */
+export type PermissionGuard = ((req: AuthRequest, res: Response, next: NextFunction) => void) & { requiredPermission: string };
+
+export function authorize(permission: string): PermissionGuard {
+  const guard = (req: AuthRequest, res: Response, next: NextFunction): void => {
     const user = req.user;
 
     if (!user) {
@@ -17,4 +20,5 @@ export function authorize(permission: string) {
 
     next();
   };
+  return Object.assign(guard, { requiredPermission: permission });
 }

@@ -141,26 +141,33 @@ export class MembershipStatusChangeService {
       throw new Error(`Cannot approve: request status is ${request.status}`);
     }
 
-    // Use transaction to ensure atomic update: approval + status change + audit
+    // Four-eyes rule: whoever raised a request cannot be the one to approve it.
+    if (request.requestedById && request.requestedById === user.id) {
+      throw new Error('Cannot approve your own request');
+    }
+
+    // Atomic: claim the request only while it is still PENDING, so two approvers cannot both succeed,
+    // then change the member's status in the same transaction.
     const updated = await prisma.$transaction(async (tx) => {
-      // 1. Update the approval request
-      const approvedRequest = await tx.membershipStatusChange.update({
+      const claimed = await tx.membershipStatusChange.updateMany({
+        where: { id: requestId, status: 'PENDING' },
+        data: { status: 'APPROVED', approvedById: user.id, approvedAt: new Date() },
+      });
+      if (claimed.count === 0) {
+        throw new Error('Cannot approve: request is no longer pending');
+      }
+      const approvedRequest = await tx.membershipStatusChange.findUnique({
         where: { id: requestId },
-        data: {
-          status: 'APPROVED',
-          approvedById: user.id,
-          approvedAt: new Date(),
-        },
         include: { member: true },
       });
+      if (!approvedRequest) {
+        throw new Error('Status change request not found');
+      }
 
-      // 2. Update member's actual status in the database
       if (approvedRequest.proposedStatus) {
         await tx.member.update({
           where: { id: approvedRequest.memberId },
-          data: {
-            membershipStatus: approvedRequest.proposedStatus,
-          },
+          data: { membershipStatus: approvedRequest.proposedStatus },
         });
       }
 
@@ -214,12 +221,18 @@ export class MembershipStatusChangeService {
     }
 
     // Update request to REJECTED (member status does NOT change)
-    const updated = await membershipRepository.updateStatusChangeRequest(requestId, {
-      status: 'REJECTED',
-      approvedById: user.id,
-      approvedAt: new Date(),
-      rejectionReason,
+    // Atomic: only a request that is still PENDING can be rejected.
+    const claimed = await prisma.membershipStatusChange.updateMany({
+      where: { id: requestId, status: 'PENDING' },
+      data: { status: 'REJECTED', approvedById: user.id, approvedAt: new Date(), rejectionReason },
     });
+    if (claimed.count === 0) {
+      throw new Error('Cannot reject: request is no longer pending');
+    }
+    const updated = await membershipRepository.getStatusChangeRequest(requestId);
+    if (!updated) {
+      throw new Error('Status change request not found');
+    }
 
     // Audit log
     await this.logAudit({

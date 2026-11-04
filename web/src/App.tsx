@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { DistrictCircuits } from '@/pages/district/DistrictCircuits';
 import { DistrictPrograms } from '@/pages/district/DistrictPrograms';
 import { SbuDashboard } from '@/pages/sbu/SbuDashboard';
@@ -7,12 +7,83 @@ import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { MembersPage } from '@/pages/MembersPage';
 import { FinancePage } from '@/pages/FinancePage';
+import { AccountsPage } from '@/pages/finance/AccountsPage';
+import { PeriodsPage } from '@/pages/finance/PeriodsPage';
+import { JournalsPage } from '@/pages/finance/JournalsPage';
+import { JournalEditorPage } from '@/pages/finance/JournalEditorPage';
+import { BudgetsPage } from '@/pages/finance/BudgetsPage';
+import { BudgetDetailPage } from '@/pages/finance/BudgetDetailPage';
+import { FundsPage } from '@/pages/finance/FundsPage';
+import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
+import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
+import { ReportBuilderPage } from '@/pages/reports/ReportBuilderPage';
+import { SavedReportsPage } from '@/pages/reports/SavedReportsPage';
+import { ChurchDashboardPage } from '@/pages/reports/ChurchDashboardPage';
+import { SectionDashboardPage } from '@/pages/reports/SectionDashboardPage';
+import { HierarchyDashboardPage } from '@/pages/reports/HierarchyDashboardPage';
 import { ScopeWorkspacePage } from '@/pages/ScopeWorkspacePage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { PastoralDashboardPage } from '@/pages/pastoral/PastoralDashboardPage';
+import { VisitsPage } from '@/pages/pastoral/VisitsPage';
+import { CounselingPage } from '@/pages/pastoral/CounselingPage';
+import { PrayerPage } from '@/pages/pastoral/PrayerPage';
+import { ReferralsPage } from '@/pages/pastoral/ReferralsPage';
+import { FollowUpsPage } from '@/pages/pastoral/FollowUpsPage';
+import { AssessmentsPage } from '@/pages/pastoral/AssessmentsPage';
+import { SacramentsPage } from '@/pages/pastoral/SacramentsPage';
+import { MemberCareProfilePage } from '@/pages/pastoral/MemberCareProfilePage';
 import { PastoralCasesPage } from '@/pages/PastoralCasesPage';
+import { UpcomingEventsPage } from '@/pages/events/UpcomingEventsPage';
+import { MyBadgePage } from '@/pages/events/MyBadgePage';
+import { ScanPage } from '@/pages/events/ScanPage';
+import { CheckInPage } from '@/pages/events/CheckInPage';
+import { RegistrationsPage } from '@/pages/events/RegistrationsPage';
+import { VolunteersPage } from '@/pages/events/VolunteersPage';
+import { AnalyticsPage } from '@/pages/events/AnalyticsPage';
+import { AbsencesPage } from '@/pages/events/AbsencesPage';
 import { EventsPage } from '@/pages/EventsPage';
 import { CommitteesPage } from '@/pages/CommitteesPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage';
+import { AcceptInvitationPage } from '@/pages/auth/AcceptInvitationPage';
+import { SecuritySettingsPage } from '@/pages/settings/SecuritySettingsPage';
+import { MyAccountPage } from '@/pages/account/MyAccountPage';
+import { MyProfilePage } from '@/pages/account/MyProfilePage';
+import { MyGivingPage } from '@/pages/account/MyGivingPage';
+import { MyFamilyPage } from '@/pages/account/MyFamilyPage';
+import { NotificationsPage } from '@/pages/account/NotificationsPage';
+import { PledgesPage } from '@/pages/account/PledgesPage';
+import { RecurringGivingPage } from '@/pages/account/RecurringGivingPage';
+import { NotificationPreferencesPage } from '@/pages/account/NotificationPreferencesPage';
+import { BroadcastsPage } from '@/pages/admin/BroadcastsPage';
+import { TemplatesPage } from '@/pages/admin/TemplatesPage';
+import { RolesPage } from '@/pages/admin/RolesPage';
+import { RoleDetailPage } from '@/pages/admin/RoleDetailPage';
+import { UsersPage } from '@/pages/admin/UsersPage';
+import { SystemSettingsPage } from '@/pages/admin/SystemSettingsPage';
+import { AuditLogPage } from '@/pages/admin/AuditLogPage';
+import { RetentionPage } from '@/pages/admin/RetentionPage';
+import { ApiReferencePage } from '@/pages/admin/ApiReferencePage';
+import { CampaignsPage } from '@/pages/advanced/CampaignsPage';
+import { CampaignDetailPage } from '@/pages/advanced/CampaignDetailPage';
+import { PublicCampaignPage } from '@/pages/advanced/PublicCampaignPage';
+import { GroupsPage } from '@/pages/advanced/GroupsPage';
+import { GroupDetailPage } from '@/pages/advanced/GroupDetailPage';
+import { AssetsPage } from '@/pages/advanced/AssetsPage';
+import { AssetDetailPage } from '@/pages/advanced/AssetDetailPage';
+import { DocumentsPage } from '@/pages/advanced/DocumentsPage';
+import { GivePage } from '@/pages/give/GivePage';
+import { GiveConfirmPage } from '@/pages/give/GiveConfirmPage';
+import { MemberDirectoryPage } from '@/pages/members/MemberDirectoryPage';
+import { MemberImportPage } from '@/pages/members/MemberImportPage';
+import { MemberDetailPage } from '@/pages/members/MemberDetailPage';
+import { VisitorsPage } from '@/pages/visitors/VisitorsPage';
+import { VisitorDetailPage } from '@/pages/visitors/VisitorDetailPage';
+import { CommitteeMeetingsPage } from '@/pages/committees/CommitteeMeetingsPage';
+import { MeetingDetailPage } from '@/pages/committees/MeetingDetailPage';
+import { LeadershipPage } from '@/pages/leadership/LeadershipPage';
 import { useAuthStore } from '@/stores/authStore';
 
 const HomeRedirect = () => {
@@ -25,6 +96,10 @@ const HomeRedirect = () => {
 function App() {
   return <BrowserRouter><Routes>
     <Route path="/auth/login" element={<LoginPage />} />
+    <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+    <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+    <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+    <Route path="/auth/invite" element={<AcceptInvitationPage />} />
     <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
     <Route path="/conference" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" /></ProtectedRoute>} />
     <Route path="/conference/districts" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" view="structure" /></ProtectedRoute>} />
@@ -48,10 +123,79 @@ function App() {
     <Route path="/section/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
     <Route path="/section/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
     <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
+    <Route path="/members/search" element={<ProtectedRoute><MemberDirectoryPage /></ProtectedRoute>} />
+    <Route path="/members/import" element={<ProtectedRoute><MemberImportPage /></ProtectedRoute>} />
+    <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
+    <Route path="/visitors" element={<ProtectedRoute><VisitorsPage /></ProtectedRoute>} />
+    <Route path="/visitors/:id" element={<ProtectedRoute><VisitorDetailPage /></ProtectedRoute>} />
+    <Route path="/committees/:committeeId/meetings" element={<ProtectedRoute><CommitteeMeetingsPage /></ProtectedRoute>} />
+    <Route path="/committees/:committeeId/meetings/:meetingId" element={<ProtectedRoute><MeetingDetailPage /></ProtectedRoute>} />
+    <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
     <Route path="/pastoral" element={<ProtectedRoute><PastoralCasesPage /></ProtectedRoute>} />
+    <Route path="/pastoral/dashboard" element={<ProtectedRoute><PastoralDashboardPage /></ProtectedRoute>} />
+    <Route path="/pastoral/visits" element={<ProtectedRoute><VisitsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/counseling" element={<ProtectedRoute><CounselingPage /></ProtectedRoute>} />
+    <Route path="/pastoral/prayer" element={<ProtectedRoute><PrayerPage /></ProtectedRoute>} />
+    <Route path="/pastoral/referrals" element={<ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/followups" element={<ProtectedRoute><FollowUpsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/assessments" element={<ProtectedRoute><AssessmentsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/sacraments" element={<ProtectedRoute><SacramentsPage /></ProtectedRoute>} />
+    <Route path="/pastoral/members/:memberId" element={<ProtectedRoute><MemberCareProfilePage /></ProtectedRoute>} />
+    <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+    <Route path="/reports/build" element={<ProtectedRoute><ReportBuilderPage /></ProtectedRoute>} />
+    <Route path="/reports/saved" element={<ProtectedRoute><SavedReportsPage /></ProtectedRoute>} />
+    <Route path="/dashboard/church" element={<ProtectedRoute><ChurchDashboardPage /></ProtectedRoute>} />
+    <Route path="/dashboard/section/:sectionId" element={<ProtectedRoute><SectionDashboardPage /></ProtectedRoute>} />
+    <Route path="/dashboard/hierarchy" element={<ProtectedRoute><HierarchyDashboardPage /></ProtectedRoute>} />
     <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+    <Route path="/events/upcoming" element={<ProtectedRoute><UpcomingEventsPage /></ProtectedRoute>} />
+    <Route path="/events/my-badge" element={<ProtectedRoute><MyBadgePage /></ProtectedRoute>} />
+    <Route path="/events/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
+    <Route path="/events/volunteers" element={<ProtectedRoute><VolunteersPage /></ProtectedRoute>} />
+    <Route path="/events/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+    <Route path="/events/absences" element={<ProtectedRoute><AbsencesPage /></ProtectedRoute>} />
+    <Route path="/events/:eventId/checkin" element={<ProtectedRoute><CheckInPage /></ProtectedRoute>} />
+    <Route path="/events/:eventId/registrations" element={<ProtectedRoute><RegistrationsPage /></ProtectedRoute>} />
     <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
+    <Route path="/finance/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+    <Route path="/finance/periods" element={<ProtectedRoute><PeriodsPage /></ProtectedRoute>} />
+    <Route path="/finance/journals" element={<ProtectedRoute><JournalsPage /></ProtectedRoute>} />
+    <Route path="/finance/journals/new" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
+    <Route path="/finance/journals/:journalId" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
+    <Route path="/finance/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
+    <Route path="/finance/budgets/:budgetId" element={<ProtectedRoute><BudgetDetailPage /></ProtectedRoute>} />
+    <Route path="/finance/funds" element={<ProtectedRoute><FundsPage /></ProtectedRoute>} />
+    <Route path="/finance/cash-sessions" element={<ProtectedRoute><CashSessionsPage /></ProtectedRoute>} />
+    <Route path="/finance/reports" element={<ProtectedRoute><FinanceReportsPage /></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+    <Route path="/settings/security" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
+    <Route path="/my-account" element={<ProtectedRoute><MyAccountPage /></ProtectedRoute>} />
+    <Route path="/my-account/profile" element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>} />
+    <Route path="/my-account/giving" element={<ProtectedRoute><MyGivingPage /></ProtectedRoute>} />
+    <Route path="/my-account/family" element={<ProtectedRoute><MyFamilyPage /></ProtectedRoute>} />
+    <Route path="/my-account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+    <Route path="/my-account/pledges" element={<ProtectedRoute><PledgesPage /></ProtectedRoute>} />
+    <Route path="/my-account/recurring" element={<ProtectedRoute><RecurringGivingPage /></ProtectedRoute>} />
+    <Route path="/my-account/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+    <Route path="/admin/broadcasts" element={<ProtectedRoute><BroadcastsPage /></ProtectedRoute>} />
+    <Route path="/admin/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
+    <Route path="/admin/roles" element={<ProtectedRoute><RolesPage /></ProtectedRoute>} />
+    <Route path="/admin/roles/:id" element={<ProtectedRoute><RoleDetailPage /></ProtectedRoute>} />
+    <Route path="/admin/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
+    <Route path="/admin/settings" element={<ProtectedRoute><SystemSettingsPage /></ProtectedRoute>} />
+    <Route path="/admin/audit-log" element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
+    <Route path="/admin/retention" element={<ProtectedRoute><RetentionPage /></ProtectedRoute>} />
+    <Route path="/admin/api" element={<ProtectedRoute><ApiReferencePage /></ProtectedRoute>} />
+    <Route path="/campaign/:slug" element={<PublicCampaignPage />} />
+    <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
+    <Route path="/campaigns/:id" element={<ProtectedRoute><CampaignDetailPage /></ProtectedRoute>} />
+    <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
+    <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
+    <Route path="/assets" element={<ProtectedRoute><AssetsPage /></ProtectedRoute>} />
+    <Route path="/assets/:id" element={<ProtectedRoute><AssetDetailPage /></ProtectedRoute>} />
+    <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
+    <Route path="/give" element={<ProtectedRoute><GivePage /></ProtectedRoute>} />
+    <Route path="/give/confirm" element={<ProtectedRoute><GiveConfirmPage /></ProtectedRoute>} />
     <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />
   </Routes></BrowserRouter>;
 }

@@ -26,12 +26,12 @@ router.get('/:id', sectionController.getSection.bind(sectionController));
 /**
  * GET /api/v2/sections/:id/members
  */
-router.get('/:id/members', sectionController.getSectionMembers.bind(sectionController));
+router.get('/:id/members', authorize('member:view'), sectionController.getSectionMembers.bind(sectionController));
 
 /**
  * GET /api/v2/sections/:id/leadership
  */
-router.get('/:id/leadership', sectionController.getSectionLeadership.bind(sectionController));
+router.get('/:id/leadership', authorize('member:view'), sectionController.getSectionLeadership.bind(sectionController));
 
 /**
  * POST /api/v2/sections/leadership

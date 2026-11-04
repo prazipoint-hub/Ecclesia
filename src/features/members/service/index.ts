@@ -3,6 +3,7 @@ import { Member } from '@prisma/client';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { prisma } from '@/database';
+import { nextMembershipNumbers } from './membershipNumber';
 
 export class MemberService {
   /**
@@ -209,12 +210,10 @@ export class MemberService {
   /**
    * Generate unique membership number for church
    */
-  private async generateMembershipNumber(churchId: string): Promise<string> {
-    const count = await prisma.member.count({ where: { churchId } });
-    // Format: M{YYYY}{COUNTER} e.g., M202501001
-    const year = new Date().getFullYear();
-    const counter = String(count + 1).padStart(3, '0');
-    return `M${year}${counter}`;
+  private async generateMembershipNumber(_churchId: string): Promise<string> {
+    // Numbers are unique across all churches, so the sequence is global rather than per church.
+    const [number] = await nextMembershipNumbers(1);
+    return number;
   }
 
   /**

@@ -29,6 +29,23 @@ async function main() {
     'district_finance:view', 'district_receipt:create', 'district_expenditure:create', 'district_expenditure:approve', 'district_payment:create',
     'report:view:financial', 'report:view:administrative', 'report:view:audit', 'report:view:all_churches',
     'report:view:section_finance', 'report:view:organization_finance',
+    'auth:invite:create', 'auth:invite:revoke',
+    'member:import', 'member:export', 'member:archive', 'visitor:view', 'visitor:create', 'visitor:manage',
+    'finance:coa:manage', 'finance:journal:create', 'finance:journal:approve', 'finance:journal:reverse', 'finance:budget:create', 'finance:budget:approve',
+    'finance:period:manage', 'finance:fund:manage', 'finance:opening:set', 'finance:cash_session:manage',
+    'pastoral:visit:view', 'pastoral:visit:create', 'pastoral:visit:update',
+    'pastoral:counseling:view', 'pastoral:counseling:create', 'pastoral:counseling:update', 'pastoral:counseling:confidential',
+    'pastoral:prayer:view', 'pastoral:prayer:manage', 'pastoral:referral:view', 'pastoral:referral:create', 'pastoral:referral:update',
+    'pastoral:followup:view', 'pastoral:followup:manage', 'pastoral:sacrament:manage',
+    'pastoral:assessment:view', 'pastoral:assessment:update', 'pastoral:dashboard:view', 'pastoral:l4:access',
+    'event:registration:manage', 'event:checkin:manage', 'event:qr:generate', 'volunteer:schedule:view', 'volunteer:schedule:manage',
+    'attendance:analytics:view', 'absence:followup:manage',
+    'report:saved:manage_all', 'report:schedule:run',
+    'admin:user:manage', 'admin:role:manage', 'admin:settings:manage', 'admin:audit:view', 'admin:retention:manage', 'admin:api:view',
+    'campaign:manage', 'group:view', 'group:manage', 'group:attendance:record', 'document:view', 'document:template:manage', 'document:generate', 'asset:view', 'asset:manage',
+    'committee:meeting:create', 'committee:meeting:manage', 'leadership:term:manage',
+    'notification:broadcast:create', 'notification:broadcast:send', 'notification:template:manage',
+    'payment:view:all', 'pledge:view:all', 'recurring:manage',
   ];
   const permissions = await Promise.all(permissionNames.map((name) => prisma.permission.upsert({ where: { name }, update: {}, create: { name } })));
   const role = await prisma.role.upsert({

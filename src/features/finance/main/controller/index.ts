@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { mainChurchFinanceService } from '../service';
-import { CreateChurchReceiptSchema, CreateChurchExpenditureSchema } from '../types';
+import { CreateChurchReceiptSchema, CreateChurchExpenditureSchema, PendingListQuerySchema } from '../types';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 
@@ -48,15 +48,12 @@ export class MainChurchFinanceController {
   async listPendingExpenditures(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { churchId } = req.params;
-      const { skip = '0', take = '20' } = req.query;
+      const page = PendingListQuerySchema.parse(req.query);
 
       const pending = await mainChurchFinanceService.listPendingExpenditures(
         churchId,
         req.user!,
-        {
-          skip: parseInt(skip as string, 10),
-          take: parseInt(take as string, 10),
-        }
+        page
       );
 
       res.json(pending);
@@ -70,8 +67,8 @@ export class MainChurchFinanceController {
       const { churchId, expenditureId } = req.params;
       const { approved, approverNotes } = req.body;
 
-      if (approved === undefined) {
-        res.status(400).json({ error: 'approved field required' });
+      if (typeof approved !== 'boolean') {
+        res.status(400).json({ error: 'approved field required (true or false)' });
         return;
       }
 

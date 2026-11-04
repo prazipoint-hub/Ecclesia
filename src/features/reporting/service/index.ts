@@ -173,6 +173,20 @@ export class ReportingService {
       throw new Error('Unauthorized: cannot generate reports for another church');
     }
 
+    // A section or organization named in the request must belong to the church being reported on.
+    if (data.organizationId) {
+      const org = await prisma.organization.findUnique({ where: { id: data.organizationId } });
+      if (!org || org.churchId !== data.churchId) {
+        throw new Error('Organization not found in this church');
+      }
+    }
+    if (data.sectionId) {
+      const section = await prisma.section.findUnique({ where: { id: data.sectionId } });
+      if (!section || section.churchId !== data.churchId) {
+        throw new Error('Section not found in this church');
+      }
+    }
+
     let reportData: any;
 
     switch (data.reportType) {
@@ -313,7 +327,7 @@ export class ReportingService {
    * Format report in a transport-safe representation. Binary formats are sent
    * as downloads by the controller; JSON remains inspectable by API clients.
    */
-  private async formatReport(reportType: string, data: unknown, format: string): Promise<ExportedReport> {
+  async formatReport(reportType: string, data: unknown, format: string): Promise<ExportedReport> {
     const normalizedFormat = format.toUpperCase();
     const filenameBase = `${reportType.toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
     const rows = this.toRows(data);
@@ -372,13 +386,13 @@ export class ReportingService {
   }
 
   private flattenRecord(value: unknown, prefix = ''): ReportRow {
-    if (!value || typeof value !== 'object' || value instanceof Date) {
+    if (!value || typeof value !== 'object' || value instanceof Date || this.isDecimal(value)) {
       return { value: this.cellValue(value) };
     }
     const flattened: ReportRow = {};
     for (const [key, nestedValue] of Object.entries(value as Record<string, unknown>)) {
       const column = prefix ? `${prefix}.${key}` : key;
-      if (nestedValue && typeof nestedValue === 'object' && !(nestedValue instanceof Date) && !Array.isArray(nestedValue)) {
+      if (nestedValue && typeof nestedValue === 'object' && !(nestedValue instanceof Date) && !Array.isArray(nestedValue) && !this.isDecimal(nestedValue)) {
         Object.assign(flattened, this.flattenRecord(nestedValue, column));
       } else {
         flattened[column] = this.cellValue(nestedValue);
@@ -387,15 +401,26 @@ export class ReportingService {
     return flattened;
   }
 
+  /** Prisma Decimal values are objects with their own fields; they are money amounts and must stay single cells. */
+  private isDecimal(value: object): boolean {
+    return typeof (value as { toNumber?: unknown }).toNumber === 'function';
+  }
+
+  /** A leading = + - @ tab or CR makes spreadsheet apps run a text cell as a formula, so it is prefixed with an apostrophe. */
+  private neutralise(text: string): string {
+    return /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  }
+
   private cellValue(value: unknown): string | number | boolean | null {
     if (value === null || value === undefined) return null;
     if (value instanceof Date) return value.toISOString();
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+    if (typeof value === 'string') return this.neutralise(value);
+    if (typeof value === 'number' || typeof value === 'boolean') return value;
     if (typeof value === 'bigint') return value.toString();
     if (typeof value === 'object' && 'toNumber' in value && typeof (value as { toNumber?: unknown }).toNumber === 'function') {
       return (value as { toNumber: () => number }).toNumber();
     }
-    return JSON.stringify(value);
+    return this.neutralise(JSON.stringify(value));
   }
 
   private headersFor(rows: ReportRow[]): string[] {

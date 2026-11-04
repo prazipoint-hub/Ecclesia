@@ -13,6 +13,8 @@ export const CreateEventSchema = z.object({
   sectionId: z.string().min(1).optional(),
   organizationId: z.string().min(1).optional(),
   expectedAttendance: z.coerce.number().int().min(0).max(1_000_000).optional(),
+  capacity: z.coerce.number().int().min(1).max(1_000_000).nullable().optional(),
+  registrationRequired: z.boolean().optional(),
 });
 
 export const UpdateEventSchema = CreateEventSchema.partial().extend({

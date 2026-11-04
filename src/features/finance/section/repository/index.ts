@@ -108,6 +108,16 @@ export class SectionFinanceRepository {
   /**
    * Update expenditure approval status
    */
+  /**
+   * Moves an expenditure from one status to the next only if it is still in the expected one, within its own scope.
+   * Returns null when someone else got there first, so a decision or payment can only ever happen once.
+   */
+  async claimExpenditure(id: string, from: string, scope: { sectionId: string }, data: Record<string, unknown>) {
+    const claimed = await prisma.sectionExpenditure.updateMany({ where: { id, status: from, ...scope }, data: data as never });
+    if (claimed.count === 0) return null;
+    return prisma.sectionExpenditure.findUnique({ where: { id } });
+  }
+
   async updateExpenditure(
     id: string,
     data: Prisma.SectionExpenditureUpdateInput
@@ -142,7 +152,7 @@ export class SectionFinanceRepository {
         _sum: { amount: true },
       }),
       prisma.sectionExpenditure.aggregate({
-        where: { sectionId, status: 'PAID' },
+        where: { sectionId, status: { in: ['APPROVED', 'PAID'] } },
         _sum: { amount: true },
       }),
     ]);

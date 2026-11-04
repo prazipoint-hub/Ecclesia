@@ -38,25 +38,18 @@ export const ReportTypeEnum = z.enum([
 export const ReportFormatEnum = z.enum(['PDF', 'CSV', 'JSON', 'XLSX']);
 
 export const GenerateFinancialReportSchema = z.object({
-  churchId: z.string().uuid(),
-  reportType: z.enum([
-    'INCOME_STATEMENT',
-    'BALANCE_SHEET',
-    'CASH_FLOW',
-    'TRIAL_BALANCE',
-    'RECEIPT_DETAIL',
-    'EXPENDITURE_DETAIL',
-  ]),
+  churchId: z.string().min(1),
+  reportType: z.enum(['INCOME_STATEMENT', 'TRIAL_BALANCE', 'RECEIPT_DETAIL', 'EXPENDITURE_DETAIL']),
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
-  organizationId: z.string().uuid().optional(),
-  sectionId: z.string().uuid().optional(),
+  organizationId: z.string().min(1).optional(),
+  sectionId: z.string().min(1).optional(),
   scope: z.enum(['CHURCH', 'ORGANIZATION', 'SECTION']).default('CHURCH'),
   format: ReportFormatEnum.default('PDF'),
 });
 
 export const GenerateAdministrativeReportSchema = z.object({
-  churchId: z.string().uuid(),
+  churchId: z.string().min(1),
   reportType: z.enum([
     'MEMBERSHIP_SUMMARY',
     'MEMBERSHIP_DETAIL',
@@ -67,15 +60,15 @@ export const GenerateAdministrativeReportSchema = z.object({
   ]),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
-  organizationId: z.string().uuid().optional(),
-  sectionId: z.string().uuid().optional(),
+  organizationId: z.string().min(1).optional(),
+  sectionId: z.string().min(1).optional(),
   membershipStatus: z.string().optional(),
   ageRange: z.object({ min: z.number(), max: z.number() }).optional(),
   format: ReportFormatEnum.default('PDF'),
 });
 
 export const GenerateAuditReportSchema = z.object({
-  churchId: z.string().uuid(),
+  churchId: z.string().min(1),
   reportType: z.enum(['AUDIT_TRAIL', 'EXCEPTION_REPORT']),
   startDate: z.string().datetime(),
   endDate: z.string().datetime(),
@@ -86,7 +79,7 @@ export const GenerateAuditReportSchema = z.object({
 });
 
 export const SavedReportSchema = z.object({
-  churchId: z.string().uuid(),
+  churchId: z.string().min(1),
   name: z.string().min(1),
   description: z.string().optional(),
   reportType: ReportTypeEnum,
@@ -118,7 +111,7 @@ export const MembershipSummarySchema = z.object({
 });
 
 export const AttendanceSummarySchema = z.object({
-  eventId: z.string().uuid().optional(),
+  eventId: z.string().min(1).optional(),
   totalEvents: z.number(),
   totalAttendances: z.number(),
   averageAttendancePerEvent: z.number(),

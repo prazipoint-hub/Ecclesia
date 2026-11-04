@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Building2, FileText, Layers3, ShieldCheck } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useOrganizationStore, type OrganizationScope } from '@/stores/organizationStore';
+import { useAuthStore } from '@stores/authStore';
 import { ScopeBadge } from '@/components/hierarchy/ScopeBadge';
 
 type WorkspaceView = 'dashboard' | 'structure' | 'committees' | 'management';
@@ -28,6 +29,7 @@ export const ScopeWorkspacePage = ({
     units.find((unit) => unit.type === scope);
   const sbus = selected ? getSbusForScope(selected.id) : [];
   const scopePath = scope.toLowerCase();
+  const canRollUp = (useAuthStore((state) => state.user?.permissions) ?? []).includes('report:view:all_churches') && scope !== 'SECTION';
 
   const selectWorkspace = () => {
     if (selected) setSelectedUnitId(selected.id);
@@ -131,6 +133,15 @@ export const ScopeWorkspacePage = ({
                   <p className="font-semibold text-gray-900">Reports</p>
                   <p className="mt-1 text-sm text-gray-500">Generate administrative reports</p>
                 </Link>
+                {canRollUp && (
+                  <Link
+                    to="/dashboard/hierarchy"
+                    className="rounded-lg border border-gray-200 p-4 transition hover:border-primary-300 hover:bg-primary-50"
+                  >
+                    <p className="font-semibold text-gray-900">Church roll-up</p>
+                    <p className="mt-1 text-sm text-gray-500">Member and attendance counts by church</p>
+                  </Link>
+                )}
               </div>
             </section>
           </>

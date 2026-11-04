@@ -2,8 +2,10 @@ import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, AuthorizedUser } from '@/types';
 import { prisma } from '@/database';
+import { jwtSecret as JWT_SECRET } from '@/config/secrets';
+import { logger } from '@/config/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'ecclesia-dev-secret';
+const DEVICE_TOUCH_INTERVAL_MS = 5 * 60 * 1000;
 
 export async function authenticate(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization;
@@ -45,6 +47,15 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       roleIds: payload.roleIds || [],
     };
     req.sessionId = session.id;
+
+    if (session.deviceId) {
+      prisma.device
+        .updateMany({
+          where: { id: session.deviceId, lastSeenAt: { lt: new Date(Date.now() - DEVICE_TOUCH_INTERVAL_MS) } },
+          data: { lastSeenAt: new Date() },
+        })
+        .catch((error) => logger.warn({ err: error }, 'Failed to update device last-seen'));
+    }
 
     next();
   } catch (error) {

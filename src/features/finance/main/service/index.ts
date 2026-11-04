@@ -51,6 +51,15 @@ export class MainChurchFinanceService {
       throw new Error('Unauthorized: church not found or user not in same church');
     }
 
+    const fund = await prisma.fund.findFirst({ where: { id: data.fundId, churchId: data.churchId } });
+    if (!fund) throw new Error('Fund not found');
+    if (fund.isActive === false) throw new Error('Invalid: this fund is inactive and cannot receive money');
+
+    if (data.memberId) {
+      const member = await prisma.member.findFirst({ where: { id: data.memberId, churchId: data.churchId } });
+      if (!member) throw new Error('Member not found');
+    }
+
     let account = await mainChurchFinanceRepository.getFinanceAccount(data.churchId);
     if (!account) {
       account = await mainChurchFinanceRepository.createFinanceAccount({
@@ -104,7 +113,6 @@ export class MainChurchFinanceService {
       purpose: string;
       category: string;
       description?: string;
-      requestedBy: string;
     },
     user: AuthorizedUser
   ) {
@@ -117,6 +125,15 @@ export class MainChurchFinanceService {
       throw new Error('Unauthorized: church not found or user not in same church');
     }
 
+    // The expenditure table links the requester to a member record, and the requester is always the signed-in user.
+    if (!user.memberId) {
+      throw new Error('Invalid: your account is not linked to a member, so it cannot file expenditure requests');
+    }
+
+    const fund = await prisma.fund.findFirst({ where: { id: data.fundId, churchId: data.churchId } });
+    if (!fund) throw new Error('Fund not found');
+    if (fund.isActive === false) throw new Error('Invalid: this fund is inactive and cannot be spent from');
+
     const summary = await mainChurchFinanceRepository.getFinancialSummary(data.churchId);
     if (summary.currentBalance < data.amount) {
       throw new Error(
@@ -128,7 +145,7 @@ export class MainChurchFinanceService {
       id: uuidv4(),
       churchId: data.churchId,
       fundId: data.fundId,
-      requestedBy: data.requestedBy,
+      requestedBy: user.memberId,
       amount: data.amount,
       purpose: data.purpose,
       category: data.category,
@@ -205,11 +222,19 @@ export class MainChurchFinanceService {
       throw new Error(`Cannot approve: expenditure status is ${expenditure.status}`);
     }
 
-    const updated = await mainChurchFinanceRepository.updateExpenditure(expenditureId, {
+    // The person who asked for the money cannot be the one who releases it.
+    if (approved && [user.id, user.memberId].some((id) => id && id === expenditure.requestedBy)) {
+      throw new Error('Cannot approve your own request');
+    }
+
+    const updated = await mainChurchFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { churchId: expenditure.churchId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
       approvedAt: new Date(),
     });
+    if (!updated) {
+      throw new Error('Cannot approve: this expenditure was already decided');
+    }
 
     await prisma.auditLog.create({
       data: {
@@ -246,14 +271,22 @@ export class MainChurchFinanceService {
       throw new Error('Expenditure does not belong to the provided church');
     }
 
+    // A user may only pay their own church's expenditures, whatever church id the URL names.
+    if (expenditure.churchId !== user.churchId) {
+      throw new Error('Unauthorized: expenditure belongs to another church');
+    }
+
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');
     }
 
-    const updated = await mainChurchFinanceRepository.updateExpenditure(expenditureId, {
+    const updated = await mainChurchFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { churchId: expenditure.churchId }, {
       status: 'PAID',
       paidAt: new Date(),
     });
+    if (!updated) {
+      throw new Error('Cannot pay: this expenditure was already paid or changed');
+    }
 
     await prisma.auditLog.create({
       data: {

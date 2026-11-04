@@ -65,6 +65,10 @@ export class PastoralCaseService {
     if (existing.status === 'CLOSED') {
       throw new Error('Invalid: a closed pastoral case cannot be updated');
     }
+    // Closing records a reason and needs its own permission, so it cannot be done through a plain update.
+    if (data.status === 'CLOSED') {
+      throw new Error('Invalid: use the close action to close a case');
+    }
     if (data.assignedPastorId) {
       await this.assertMemberInChurch(data.assignedPastorId, user.churchId, 'Assigned pastor');
     }
