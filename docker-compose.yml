@@ -1,0 +1,47 @@
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # 172.30.0.1 = host machine as seen from containers (network gateway below)
+      DATABASE_URL: mysql://ecclesia:${DB_PASSWORD}@172.30.0.1:3306/ecclesia
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: 24h
+      REFRESH_TOKEN_EXPIRY: 7d
+      CORS_ORIGIN: https://${DOMAIN}
+      LOG_LEVEL: info
+    networks:
+      - app
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        VITE_API_URL: https://${DOMAIN}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - app
+
+networks:
+  app:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+
+volumes:
+  caddy_data:
+  caddy_config:
