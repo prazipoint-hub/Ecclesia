@@ -3,6 +3,7 @@ import { ArrowDownRight, ArrowUpRight, RefreshCw, WalletCards } from 'lucide-rea
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/utils/api';
+import { FinanceNav } from '@/pages/finance/financeShared';
 
 interface FinanceDashboard {
   summary: {
@@ -66,14 +67,14 @@ export const FinancePage = () => {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-[1440px] space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">
+            <p className="page-eyebrow">
               Church finance
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">Finance dashboard</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Finance dashboard</h1>
+            <p className="mt-2 max-w-2xl text-gray-600">
               Live receipts, expenditure approvals, and current balance.
             </p>
           </div>
@@ -81,12 +82,13 @@ export const FinancePage = () => {
             type="button"
             onClick={() => void loadDashboard()}
             disabled={isLoading || !user?.churchId}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
+        <FinanceNav />
         {!user?.churchId ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
             Assign this account to a church workspace before using finance.
@@ -103,7 +105,7 @@ export const FinancePage = () => {
             </button>
           </div>
         ) : isLoading && !dashboard ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-gray-500">
+          <div className="rounded-2xl border border-gray-200/80 bg-white p-10 text-center text-gray-500 shadow-soft">
             Loading finance dashboard…
           </div>
         ) : (
@@ -130,14 +132,14 @@ export const FinancePage = () => {
                 />
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
-                <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <section className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
                   <h2 className="text-lg font-semibold text-gray-900">Recent receipts</h2>
                   <div className="mt-4 space-y-3">
                     {dashboard.recentReceipts.length ? (
                       dashboard.recentReceipts.map((receipt) => (
                         <div
                           key={receipt.id}
-                          className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-3"
+                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{receipt.receiptNumber}</p>
@@ -155,14 +157,14 @@ export const FinancePage = () => {
                     )}
                   </div>
                 </section>
-                <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                <section className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
                   <h2 className="text-lg font-semibold text-gray-900">Pending expenditure</h2>
                   <div className="mt-4 space-y-3">
                     {dashboard.pendingExpenditures.length ? (
                       dashboard.pendingExpenditures.map((expenditure) => (
                         <div
                           key={expenditure.id}
-                          className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-3"
+                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{expenditure.purpose}</p>
@@ -200,13 +202,13 @@ const Metric = ({
   icon: typeof WalletCards;
   tone: string;
 }) => (
-  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+  <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm text-gray-500">{label}</p>
-        <p className="mt-3 text-2xl font-bold text-gray-900">{value}</p>
+        <p className="mt-3 font-display text-2xl font-semibold text-gray-950">{value}</p>
       </div>
-      <span className={`rounded-lg p-2 ${tone}`}>
+      <span className={`rounded-xl p-2.5 ${tone}`}>
         <Icon className="h-5 w-5" />
       </span>
     </div>

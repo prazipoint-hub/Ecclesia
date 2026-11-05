@@ -1,6 +1,11 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { Plus, RefreshCw, Users, X } from 'lucide-react';
+import { Plus, RefreshCw, Users } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { FormField } from '@/components/forms/FormField';
+import { FormSelect } from '@/components/forms/FormSelect';
+import { Modal } from '@/components/forms/Modal';
+import { EmptyBlock, LoadingBlock, primaryBtn, secondaryBtn } from '@/pages/account/shared';
+import { ErrorNotice } from '@/pages/auth/AuthShell';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/utils/api';
 
@@ -34,7 +39,8 @@ export const MembersPage = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
@@ -48,7 +54,7 @@ export const MembersPage = () => {
   const loadMembers = useCallback(async () => {
     if (!user?.churchId) return;
     setIsLoading(true);
-    setError(null);
+    setListError(null);
     try {
       const { data } = await apiClient.get<MemberListResponse>('/api/v2/members', {
         params: { churchId: user.churchId, take: 50 },
@@ -56,7 +62,7 @@ export const MembersPage = () => {
       setMembers(data.members);
       setTotal(data.total);
     } catch (loadError) {
-      setError(messageFrom(loadError, 'Members could not be loaded.'));
+      setListError(messageFrom(loadError, 'Members could not be loaded.'));
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +76,7 @@ export const MembersPage = () => {
     event.preventDefault();
     if (!user?.churchId) return;
     setIsSaving(true);
-    setError(null);
+    setCreateError(null);
     try {
       await apiClient.post('/api/v2/members', {
         firstName: form.firstName.trim(),
@@ -84,22 +90,31 @@ export const MembersPage = () => {
       setIsCreateOpen(false);
       await loadMembers();
     } catch (createError) {
-      setError(messageFrom(createError, 'The member could not be created.'));
+      setCreateError(messageFrom(createError, 'The member could not be created.'));
     } finally {
       setIsSaving(false);
     }
   };
 
+  const openCreate = () => {
+    setCreateError(null);
+    setIsCreateOpen(true);
+  };
+
+  const closeCreate = () => {
+    if (isSaving) return;
+    setCreateError(null);
+    setIsCreateOpen(false);
+  };
+
   return (
     <MainLayout>
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-[1440px] space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">
-              People
-            </p>
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">Members</h1>
-            <p className="mt-2 text-gray-600">
+            <p className="page-eyebrow">People</p>
+            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Members</h1>
+            <p className="mt-2 max-w-2xl text-gray-600">
               Searchable church records and registration in one place.
             </p>
           </div>
@@ -108,15 +123,15 @@ export const MembersPage = () => {
               type="button"
               onClick={() => void loadMembers()}
               disabled={isLoading || !user?.churchId}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className={secondaryBtn}
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
             </button>
             <button
               type="button"
-              onClick={() => setIsCreateOpen(true)}
+              onClick={openCreate}
               disabled={!user?.churchId}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className={primaryBtn}
             >
               <Plus className="h-4 w-4" /> Add member
             </button>
@@ -128,9 +143,9 @@ export const MembersPage = () => {
             Your account is not assigned to a church yet. A church workspace is required before
             member records can be viewed or created.
           </div>
-        ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
-            <p>{error}</p>
+        ) : listError ? (
+          <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+            <p>{listError}</p>
             <button
               type="button"
               onClick={() => void loadMembers()}
@@ -140,7 +155,7 @@ export const MembersPage = () => {
             </button>
           </div>
         ) : (
-          <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
               <div className="flex items-center gap-3">
                 <span className="rounded-lg bg-primary-50 p-2 text-primary-700">
@@ -155,15 +170,17 @@ export const MembersPage = () => {
               </div>
             </div>
             {isLoading ? (
-              <div className="p-10 text-center text-gray-500">Loading members…</div>
+              <div className="p-5">
+                <LoadingBlock label="Loading members…" />
+              </div>
             ) : members.length === 0 ? (
-              <div className="p-10 text-center text-gray-500">
-                No members have been registered in this church yet.
+              <div className="p-5">
+                <EmptyBlock message="No members have been registered in this church yet." />
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-left">
-                  <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                  <thead className="bg-gray-50/80 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
                     <tr>
                       <th className="px-5 py-3">Member</th>
                       <th className="px-5 py-3">Membership no.</th>
@@ -173,7 +190,7 @@ export const MembersPage = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {members.map((member) => (
-                      <tr key={member.id}>
+                      <tr key={member.id} className="hover:bg-primary-50/40">
                         <td className="px-5 py-4">
                           <p className="font-semibold text-gray-900">
                             {member.firstName} {member.lastName}
@@ -200,92 +217,79 @@ export const MembersPage = () => {
         )}
       </div>
 
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">Register member</h2>
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                aria-label="Close"
-                className="rounded-lg p-2 hover:bg-gray-100"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <form onSubmit={createMember} className="space-y-4 p-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-medium text-gray-700">
-                  First name
-                  <input
-                    required
-                    value={form.firstName}
-                    onChange={(event) => setForm({ ...form, firstName: event.target.value })}
-                    className="mt-1 block w-full rounded-lg border-gray-300"
-                  />
-                </label>
-                <label className="text-sm font-medium text-gray-700">
-                  Last name
-                  <input
-                    required
-                    value={form.lastName}
-                    onChange={(event) => setForm({ ...form, lastName: event.target.value })}
-                    className="mt-1 block w-full rounded-lg border-gray-300"
-                  />
-                </label>
-              </div>
-              <label className="block text-sm font-medium text-gray-700">
-                Gender
-                <select
-                  value={form.gender}
-                  onChange={(event) => setForm({ ...form, gender: event.target.value as Gender })}
-                  className="mt-1 block w-full rounded-lg border-gray-300"
-                >
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Email
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(event) => setForm({ ...form, email: event.target.value })}
-                    className="mt-1 block w-full rounded-lg border-gray-300"
-                  />
-                </label>
-                <label className="text-sm font-medium text-gray-700">
-                  Phone
-                  <input
-                    value={form.phone}
-                    onChange={(event) => setForm({ ...form, phone: event.target.value })}
-                    className="mt-1 block w-full rounded-lg border-gray-300"
-                  />
-                </label>
-              </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateOpen(false)}
-                  className="rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="rounded-lg bg-primary-600 px-4 py-2 font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
-                >
-                  {isSaving ? 'Saving…' : 'Register member'}
-                </button>
-              </div>
-            </form>
+      <Modal
+        open={isCreateOpen}
+        title="Register member"
+        onClose={closeCreate}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={closeCreate}
+              className={secondaryBtn}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="register-member-form"
+              disabled={isSaving}
+              className={primaryBtn}
+            >
+              {isSaving ? 'Saving…' : 'Register member'}
+            </button>
+          </>
+        }
+      >
+        <form id="register-member-form" onSubmit={createMember} className="space-y-4">
+          {createError && <ErrorNotice message={createError} />}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              label="First name"
+              required
+              autoComplete="given-name"
+              value={form.firstName}
+              onChange={(event) => setForm({ ...form, firstName: event.target.value })}
+            />
+            <FormField
+              label="Last name"
+              required
+              autoComplete="family-name"
+              value={form.lastName}
+              onChange={(event) => setForm({ ...form, lastName: event.target.value })}
+            />
           </div>
-        </div>
-      )}
+          <FormSelect
+            label="Gender"
+            value={form.gender}
+            onChange={(event) => setForm({ ...form, gender: event.target.value as Gender })}
+            options={[
+              { value: 'MALE', label: 'Male' },
+              { value: 'FEMALE', label: 'Female' },
+              { value: 'OTHER', label: 'Other' },
+            ]}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              label="Email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              value={form.email}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
+            />
+            <FormField
+              label="Phone"
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+            />
+          </div>
+        </form>
+      </Modal>
     </MainLayout>
   );
 };

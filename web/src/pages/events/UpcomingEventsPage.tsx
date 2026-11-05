@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CalendarDays, MapPin, Users } from 'lucide-react';
 import { EmptyBlock, ErrorBlock, LoadingBlock, card, primaryBtn, secondaryBtn } from '@/pages/account/shared';
 import { apiClient } from '@/utils/api';
 import type { UpcomingEvent } from '@/types/events';
@@ -20,11 +21,14 @@ export const UpcomingEventsPage = () => {
           {events.data.map((e) => {
             const full = e.spotsLeft === 0 && !e.registeredByMe;
             return (
-              <article key={e.id} className={card}>
-                <h2 className="text-lg font-semibold text-gray-900">{e.title}</h2>
-                <p className="text-sm text-gray-500">{label(e.eventType)} · {dateTime(e.startDateTime)}{e.location ? ` · ${e.location}` : ''}</p>
+              <article key={e.id} className={`${card} overflow-hidden !p-0`}>
+                <div className="h-1.5 bg-gradient-to-r from-primary-600 via-primary-400 to-accent-500" />
+                <div className="p-5 sm:p-6">
+                <div className="flex items-start justify-between gap-3"><div><p className="page-eyebrow">{label(e.eventType)} event</p><h2 className="mt-2 text-lg font-semibold text-gray-950">{e.title}</h2></div><span className="rounded-xl bg-primary-50 p-2.5 text-primary-700"><CalendarDays className="h-5 w-5" /></span></div>
+                <p className="mt-3 flex items-center gap-2 text-sm text-gray-600"><CalendarDays className="h-4 w-4 text-gray-400" />{dateTime(e.startDateTime)}</p>
+                {e.location && <p className="mt-2 flex items-center gap-2 text-sm text-gray-600"><MapPin className="h-4 w-4 text-gray-400" />{e.location}</p>}
                 {e.description && <p className="mt-2 text-sm text-gray-700">{e.description}</p>}
-                <p className="mt-3 text-sm text-gray-600">
+                <p className="mt-3 flex items-center gap-2 text-sm text-gray-600"><Users className="h-4 w-4 text-gray-400" />
                   {e.registered} registered{e.spotsLeft !== null && ` · ${e.spotsLeft} spot${e.spotsLeft === 1 ? '' : 's'} left`}
                   {e.registrationRequired && ' · Registration required'}
                 </p>
@@ -34,6 +38,7 @@ export const UpcomingEventsPage = () => {
                   ) : (
                     <button type="button" className={primaryBtn} disabled={full || change.isPending} onClick={() => change.mutate({ id: e.id, register: true })}>{full ? 'Full' : 'Register'}</button>
                   )}
+                </div>
                 </div>
               </article>
             );

@@ -88,115 +88,787 @@ import { useAuthStore } from '@/stores/authStore';
 
 const HomeRedirect = () => {
   const { user } = useAuthStore();
-  const level = user?.organizationContexts.find((context) => context.roleId === user.defaultContextId)?.organizationLevel;
+  const level = user?.organizationContexts.find(
+    (context) => context.roleId === user.defaultContextId
+  )?.organizationLevel;
   const route = level ? `/${level.toLowerCase()}` : '/district';
   return <Navigate to={route} replace />;
 };
 
 function App() {
-  return <BrowserRouter><Routes>
-    <Route path="/auth/login" element={<LoginPage />} />
-    <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-    <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-    <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
-    <Route path="/auth/invite" element={<AcceptInvitationPage />} />
-    <Route path="/" element={<ProtectedRoute><HomeRedirect /></ProtectedRoute>} />
-    <Route path="/conference" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" /></ProtectedRoute>} />
-    <Route path="/conference/districts" element={<ProtectedRoute><ScopeWorkspacePage scope="CONFERENCE" view="structure" /></ProtectedRoute>} />
-    <Route path="/conference/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
-    <Route path="/conference/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-    <Route path="/conference/sbus/:sbuId" element={<ProtectedRoute><SbuDashboard /></ProtectedRoute>} />
-    <Route path="/district" element={<ProtectedRoute><ScopeWorkspacePage scope="DISTRICT" /></ProtectedRoute>} />
-    <Route path="/district/management" element={<ProtectedRoute><ScopeWorkspacePage scope="DISTRICT" view="management" /></ProtectedRoute>} />
-    <Route path="/district/circuits" element={<ProtectedRoute><DistrictCircuits /></ProtectedRoute>} />
-    <Route path="/district/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
-    <Route path="/district/committees/manage" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
-    <Route path="/district/programs" element={<ProtectedRoute><DistrictPrograms /></ProtectedRoute>} />
-    <Route path="/district/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-    <Route path="/district/sbus/:sbuId" element={<ProtectedRoute><SbuDashboard /></ProtectedRoute>} />
-    <Route path="/circuit" element={<ProtectedRoute><ScopeWorkspacePage scope="CIRCUIT" /></ProtectedRoute>} />
-    <Route path="/circuit/management" element={<ProtectedRoute><ScopeWorkspacePage scope="CIRCUIT" view="management" /></ProtectedRoute>} />
-    <Route path="/circuit/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
-    <Route path="/circuit/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-    <Route path="/circuit/sbus/:sbuId" element={<ProtectedRoute><SbuDashboard /></ProtectedRoute>} />
-    <Route path="/section" element={<ProtectedRoute><ScopeWorkspacePage scope="SECTION" /></ProtectedRoute>} />
-    <Route path="/section/committees" element={<ProtectedRoute><CommitteesPage /></ProtectedRoute>} />
-    <Route path="/section/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-    <Route path="/members" element={<ProtectedRoute><MembersPage /></ProtectedRoute>} />
-    <Route path="/members/search" element={<ProtectedRoute><MemberDirectoryPage /></ProtectedRoute>} />
-    <Route path="/members/import" element={<ProtectedRoute><MemberImportPage /></ProtectedRoute>} />
-    <Route path="/members/:id" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />
-    <Route path="/visitors" element={<ProtectedRoute><VisitorsPage /></ProtectedRoute>} />
-    <Route path="/visitors/:id" element={<ProtectedRoute><VisitorDetailPage /></ProtectedRoute>} />
-    <Route path="/committees/:committeeId/meetings" element={<ProtectedRoute><CommitteeMeetingsPage /></ProtectedRoute>} />
-    <Route path="/committees/:committeeId/meetings/:meetingId" element={<ProtectedRoute><MeetingDetailPage /></ProtectedRoute>} />
-    <Route path="/leadership" element={<ProtectedRoute><LeadershipPage /></ProtectedRoute>} />
-    <Route path="/pastoral" element={<ProtectedRoute><PastoralCasesPage /></ProtectedRoute>} />
-    <Route path="/pastoral/dashboard" element={<ProtectedRoute><PastoralDashboardPage /></ProtectedRoute>} />
-    <Route path="/pastoral/visits" element={<ProtectedRoute><VisitsPage /></ProtectedRoute>} />
-    <Route path="/pastoral/counseling" element={<ProtectedRoute><CounselingPage /></ProtectedRoute>} />
-    <Route path="/pastoral/prayer" element={<ProtectedRoute><PrayerPage /></ProtectedRoute>} />
-    <Route path="/pastoral/referrals" element={<ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
-    <Route path="/pastoral/followups" element={<ProtectedRoute><FollowUpsPage /></ProtectedRoute>} />
-    <Route path="/pastoral/assessments" element={<ProtectedRoute><AssessmentsPage /></ProtectedRoute>} />
-    <Route path="/pastoral/sacraments" element={<ProtectedRoute><SacramentsPage /></ProtectedRoute>} />
-    <Route path="/pastoral/members/:memberId" element={<ProtectedRoute><MemberCareProfilePage /></ProtectedRoute>} />
-    <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-    <Route path="/reports/build" element={<ProtectedRoute><ReportBuilderPage /></ProtectedRoute>} />
-    <Route path="/reports/saved" element={<ProtectedRoute><SavedReportsPage /></ProtectedRoute>} />
-    <Route path="/dashboard/church" element={<ProtectedRoute><ChurchDashboardPage /></ProtectedRoute>} />
-    <Route path="/dashboard/section/:sectionId" element={<ProtectedRoute><SectionDashboardPage /></ProtectedRoute>} />
-    <Route path="/dashboard/hierarchy" element={<ProtectedRoute><HierarchyDashboardPage /></ProtectedRoute>} />
-    <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-    <Route path="/events/upcoming" element={<ProtectedRoute><UpcomingEventsPage /></ProtectedRoute>} />
-    <Route path="/events/my-badge" element={<ProtectedRoute><MyBadgePage /></ProtectedRoute>} />
-    <Route path="/events/scan" element={<ProtectedRoute><ScanPage /></ProtectedRoute>} />
-    <Route path="/events/volunteers" element={<ProtectedRoute><VolunteersPage /></ProtectedRoute>} />
-    <Route path="/events/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
-    <Route path="/events/absences" element={<ProtectedRoute><AbsencesPage /></ProtectedRoute>} />
-    <Route path="/events/:eventId/checkin" element={<ProtectedRoute><CheckInPage /></ProtectedRoute>} />
-    <Route path="/events/:eventId/registrations" element={<ProtectedRoute><RegistrationsPage /></ProtectedRoute>} />
-    <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
-    <Route path="/finance/accounts" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
-    <Route path="/finance/periods" element={<ProtectedRoute><PeriodsPage /></ProtectedRoute>} />
-    <Route path="/finance/journals" element={<ProtectedRoute><JournalsPage /></ProtectedRoute>} />
-    <Route path="/finance/journals/new" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
-    <Route path="/finance/journals/:journalId" element={<ProtectedRoute><JournalEditorPage /></ProtectedRoute>} />
-    <Route path="/finance/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
-    <Route path="/finance/budgets/:budgetId" element={<ProtectedRoute><BudgetDetailPage /></ProtectedRoute>} />
-    <Route path="/finance/funds" element={<ProtectedRoute><FundsPage /></ProtectedRoute>} />
-    <Route path="/finance/cash-sessions" element={<ProtectedRoute><CashSessionsPage /></ProtectedRoute>} />
-    <Route path="/finance/reports" element={<ProtectedRoute><FinanceReportsPage /></ProtectedRoute>} />
-    <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-    <Route path="/settings/security" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
-    <Route path="/my-account" element={<ProtectedRoute><MyAccountPage /></ProtectedRoute>} />
-    <Route path="/my-account/profile" element={<ProtectedRoute><MyProfilePage /></ProtectedRoute>} />
-    <Route path="/my-account/giving" element={<ProtectedRoute><MyGivingPage /></ProtectedRoute>} />
-    <Route path="/my-account/family" element={<ProtectedRoute><MyFamilyPage /></ProtectedRoute>} />
-    <Route path="/my-account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-    <Route path="/my-account/pledges" element={<ProtectedRoute><PledgesPage /></ProtectedRoute>} />
-    <Route path="/my-account/recurring" element={<ProtectedRoute><RecurringGivingPage /></ProtectedRoute>} />
-    <Route path="/my-account/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
-    <Route path="/admin/broadcasts" element={<ProtectedRoute><BroadcastsPage /></ProtectedRoute>} />
-    <Route path="/admin/templates" element={<ProtectedRoute><TemplatesPage /></ProtectedRoute>} />
-    <Route path="/admin/roles" element={<ProtectedRoute><RolesPage /></ProtectedRoute>} />
-    <Route path="/admin/roles/:id" element={<ProtectedRoute><RoleDetailPage /></ProtectedRoute>} />
-    <Route path="/admin/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
-    <Route path="/admin/settings" element={<ProtectedRoute><SystemSettingsPage /></ProtectedRoute>} />
-    <Route path="/admin/audit-log" element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
-    <Route path="/admin/retention" element={<ProtectedRoute><RetentionPage /></ProtectedRoute>} />
-    <Route path="/admin/api" element={<ProtectedRoute><ApiReferencePage /></ProtectedRoute>} />
-    <Route path="/campaign/:slug" element={<PublicCampaignPage />} />
-    <Route path="/campaigns" element={<ProtectedRoute><CampaignsPage /></ProtectedRoute>} />
-    <Route path="/campaigns/:id" element={<ProtectedRoute><CampaignDetailPage /></ProtectedRoute>} />
-    <Route path="/groups" element={<ProtectedRoute><GroupsPage /></ProtectedRoute>} />
-    <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
-    <Route path="/assets" element={<ProtectedRoute><AssetsPage /></ProtectedRoute>} />
-    <Route path="/assets/:id" element={<ProtectedRoute><AssetDetailPage /></ProtectedRoute>} />
-    <Route path="/documents" element={<ProtectedRoute><DocumentsPage /></ProtectedRoute>} />
-    <Route path="/give" element={<ProtectedRoute><GivePage /></ProtectedRoute>} />
-    <Route path="/give/confirm" element={<ProtectedRoute><GiveConfirmPage /></ProtectedRoute>} />
-    <Route path="/404" element={<NotFoundPage />} /><Route path="*" element={<Navigate to="/404" replace />} />
-  </Routes></BrowserRouter>;
+  return (
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Routes>
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/auth/invite" element={<AcceptInvitationPage />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <HomeRedirect />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conference"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="CONFERENCE" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conference/districts"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="CONFERENCE" view="structure" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conference/committees"
+          element={
+            <ProtectedRoute>
+              <CommitteesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conference/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conference/sbus/:sbuId"
+          element={
+            <ProtectedRoute>
+              <SbuDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="DISTRICT" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/management"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="DISTRICT" view="management" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/circuits"
+          element={
+            <ProtectedRoute>
+              <DistrictCircuits />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/committees"
+          element={
+            <ProtectedRoute>
+              <CommitteesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/committees/manage"
+          element={
+            <ProtectedRoute>
+              <CommitteesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/programs"
+          element={
+            <ProtectedRoute>
+              <DistrictPrograms />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/district/sbus/:sbuId"
+          element={
+            <ProtectedRoute>
+              <SbuDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuit"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="CIRCUIT" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuit/management"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="CIRCUIT" view="management" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuit/committees"
+          element={
+            <ProtectedRoute>
+              <CommitteesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuit/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuit/sbus/:sbuId"
+          element={
+            <ProtectedRoute>
+              <SbuDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/section"
+          element={
+            <ProtectedRoute>
+              <ScopeWorkspacePage scope="SECTION" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/section/committees"
+          element={
+            <ProtectedRoute>
+              <CommitteesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/section/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members"
+          element={
+            <ProtectedRoute>
+              <MembersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members/search"
+          element={
+            <ProtectedRoute>
+              <MemberDirectoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members/import"
+          element={
+            <ProtectedRoute>
+              <MemberImportPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members/:id"
+          element={
+            <ProtectedRoute>
+              <MemberDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/visitors"
+          element={
+            <ProtectedRoute>
+              <VisitorsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/visitors/:id"
+          element={
+            <ProtectedRoute>
+              <VisitorDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/committees/:committeeId/meetings"
+          element={
+            <ProtectedRoute>
+              <CommitteeMeetingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/committees/:committeeId/meetings/:meetingId"
+          element={
+            <ProtectedRoute>
+              <MeetingDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leadership"
+          element={
+            <ProtectedRoute>
+              <LeadershipPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral"
+          element={
+            <ProtectedRoute>
+              <PastoralCasesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/dashboard"
+          element={
+            <ProtectedRoute>
+              <PastoralDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/visits"
+          element={
+            <ProtectedRoute>
+              <VisitsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/counseling"
+          element={
+            <ProtectedRoute>
+              <CounselingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/prayer"
+          element={
+            <ProtectedRoute>
+              <PrayerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/referrals"
+          element={
+            <ProtectedRoute>
+              <ReferralsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/followups"
+          element={
+            <ProtectedRoute>
+              <FollowUpsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/assessments"
+          element={
+            <ProtectedRoute>
+              <AssessmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/sacraments"
+          element={
+            <ProtectedRoute>
+              <SacramentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pastoral/members/:memberId"
+          element={
+            <ProtectedRoute>
+              <MemberCareProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports/build"
+          element={
+            <ProtectedRoute>
+              <ReportBuilderPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports/saved"
+          element={
+            <ProtectedRoute>
+              <SavedReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/church"
+          element={
+            <ProtectedRoute>
+              <ChurchDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/section/:sectionId"
+          element={
+            <ProtectedRoute>
+              <SectionDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/hierarchy"
+          element={
+            <ProtectedRoute>
+              <HierarchyDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute>
+              <EventsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/upcoming"
+          element={
+            <ProtectedRoute>
+              <UpcomingEventsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/my-badge"
+          element={
+            <ProtectedRoute>
+              <MyBadgePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/scan"
+          element={
+            <ProtectedRoute>
+              <ScanPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/volunteers"
+          element={
+            <ProtectedRoute>
+              <VolunteersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/absences"
+          element={
+            <ProtectedRoute>
+              <AbsencesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/:eventId/checkin"
+          element={
+            <ProtectedRoute>
+              <CheckInPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/events/:eventId/registrations"
+          element={
+            <ProtectedRoute>
+              <RegistrationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance"
+          element={
+            <ProtectedRoute>
+              <FinancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/accounts"
+          element={
+            <ProtectedRoute>
+              <AccountsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/periods"
+          element={
+            <ProtectedRoute>
+              <PeriodsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/journals"
+          element={
+            <ProtectedRoute>
+              <JournalsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/journals/new"
+          element={
+            <ProtectedRoute>
+              <JournalEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/journals/:journalId"
+          element={
+            <ProtectedRoute>
+              <JournalEditorPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/budgets"
+          element={
+            <ProtectedRoute>
+              <BudgetsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/budgets/:budgetId"
+          element={
+            <ProtectedRoute>
+              <BudgetDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/funds"
+          element={
+            <ProtectedRoute>
+              <FundsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/cash-sessions"
+          element={
+            <ProtectedRoute>
+              <CashSessionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/reports"
+          element={
+            <ProtectedRoute>
+              <FinanceReportsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings/security"
+          element={
+            <ProtectedRoute>
+              <SecuritySettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account"
+          element={
+            <ProtectedRoute>
+              <MyAccountPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/profile"
+          element={
+            <ProtectedRoute>
+              <MyProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/giving"
+          element={
+            <ProtectedRoute>
+              <MyGivingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/family"
+          element={
+            <ProtectedRoute>
+              <MyFamilyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/pledges"
+          element={
+            <ProtectedRoute>
+              <PledgesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/recurring"
+          element={
+            <ProtectedRoute>
+              <RecurringGivingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/notification-preferences"
+          element={
+            <ProtectedRoute>
+              <NotificationPreferencesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/broadcasts"
+          element={
+            <ProtectedRoute>
+              <BroadcastsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/templates"
+          element={
+            <ProtectedRoute>
+              <TemplatesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/roles"
+          element={
+            <ProtectedRoute>
+              <RolesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/roles/:id"
+          element={
+            <ProtectedRoute>
+              <RoleDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute>
+              <SystemSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-log"
+          element={
+            <ProtectedRoute>
+              <AuditLogPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/retention"
+          element={
+            <ProtectedRoute>
+              <RetentionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/api"
+          element={
+            <ProtectedRoute>
+              <ApiReferencePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/campaign/:slug" element={<PublicCampaignPage />} />
+        <Route
+          path="/campaigns"
+          element={
+            <ProtectedRoute>
+              <CampaignsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/campaigns/:id"
+          element={
+            <ProtectedRoute>
+              <CampaignDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups"
+          element={
+            <ProtectedRoute>
+              <GroupsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/groups/:id"
+          element={
+            <ProtectedRoute>
+              <GroupDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assets"
+          element={
+            <ProtectedRoute>
+              <AssetsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assets/:id"
+          element={
+            <ProtectedRoute>
+              <AssetDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <DocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/give"
+          element={
+            <ProtectedRoute>
+              <GivePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/give/confirm"
+          element={
+            <ProtectedRoute>
+              <GiveConfirmPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/404" element={<NotFoundPage />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 export default App;

@@ -28,8 +28,8 @@ export const GiveConfirmPage = ({ pollMs = POLL_INTERVAL_MS }: { pollMs?: number
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-lg space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Your gift</h1>
+      <div className="mx-auto max-w-xl space-y-7">
+        <div><p className="page-eyebrow">Giving</p><h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Your gift</h1><p className="mt-2 text-gray-600">Track the status and details of your contribution.</p></div>
 
         {!paymentId && (
           <div role="alert" className={card}>
@@ -41,10 +41,10 @@ export const GiveConfirmPage = ({ pollMs = POLL_INTERVAL_MS }: { pollMs?: number
         {paymentId && payment.isError && <ErrorBlock error={payment.error} onRetry={() => payment.refetch()} />}
 
         {data && (
-          <section className={`${card} space-y-4 text-center`} aria-live="polite">
+          <section className={`${card} space-y-5 overflow-hidden text-center`} aria-live="polite">
             {data.status === 'PENDING' && !timedOut && (
               <>
-                <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary-600" />
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-50"><Loader2 className="h-8 w-8 animate-spin text-primary-600" /></span>
                 <h2 className="text-xl font-semibold text-gray-900">Waiting for your payment</h2>
                 <p className="text-gray-600">{data.instructions ?? 'Approve the prompt on your phone to complete your gift.'}</p>
                 {data.redirectUrl && (
@@ -62,20 +62,20 @@ export const GiveConfirmPage = ({ pollMs = POLL_INTERVAL_MS }: { pollMs?: number
             )}
             {data.status === 'COMPLETED' && (
               <>
-                <CheckCircle className="mx-auto h-10 w-10 text-green-600" />
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-green-50"><CheckCircle className="h-9 w-9 text-green-600" /></span>
                 <h2 className="text-xl font-semibold text-gray-900">Thank you!</h2>
                 <p className="text-gray-600">Your gift was received.</p>
               </>
             )}
             {(data.status === 'FAILED' || data.status === 'CANCELLED') && (
               <>
-                <XCircle className="mx-auto h-10 w-10 text-red-600" />
+                <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50"><XCircle className="h-9 w-9 text-red-600" /></span>
                 <h2 className="text-xl font-semibold text-gray-900">Payment {data.status === 'CANCELLED' ? 'cancelled' : 'failed'}</h2>
                 <p className="text-gray-600">{data.failureReason ?? 'The payment was not completed. You have not been charged.'}</p>
               </>
             )}
 
-            <dl className="divide-y divide-gray-100 text-left text-sm">
+            <dl className="divide-y divide-gray-100 rounded-xl bg-gray-50/70 px-4 text-left text-sm">
               <div className="flex justify-between py-2"><dt className="text-gray-500">Amount</dt><dd className="font-medium">{formatMoney(data.amount, data.currency)}</dd></div>
               <div className="flex justify-between py-2"><dt className="text-gray-500">Fund</dt><dd>{data.fundName}</dd></div>
               <div className="flex justify-between py-2"><dt className="text-gray-500">Type</dt><dd>{titleCase(data.incomeType)}</dd></div>
@@ -86,7 +86,7 @@ export const GiveConfirmPage = ({ pollMs = POLL_INTERVAL_MS }: { pollMs?: number
               {data.paidAt && <div className="flex justify-between py-2"><dt className="text-gray-500">Paid</dt><dd>{formatDate(data.paidAt)}</dd></div>}
             </dl>
 
-            <div className="flex justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               {(data.status === 'FAILED' || data.status === 'CANCELLED') && <Link to="/give" className={primaryBtn}>Try again</Link>}
               <Link to="/my-account/giving" className={secondaryBtn}>View giving history</Link>
             </div>

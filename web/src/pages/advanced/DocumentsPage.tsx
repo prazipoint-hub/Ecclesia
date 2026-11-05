@@ -120,12 +120,12 @@ export const DocumentsPage = () => {
   const tabs = [['issued', 'Issued'], ...(canGenerate ? [['generate', 'Generate']] : []), ...(canTemplates ? [['templates', 'Templates']] : [])] as Array<[typeof tab, string]>;
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <AdminHeader title="Documents" subtitle="Certificates, letters and minutes issued from templates." />
         {!allowed && <NoAccess permission="document:view" />}
         {allowed && (
-          <div role="tablist" className="flex gap-2">
-            {tabs.map(([key, label]) => <button key={key} role="tab" type="button" aria-selected={tab === key} className={tab === key ? primaryBtn : secondaryBtn} onClick={() => setTab(key)}>{label}</button>)}
+          <div role="tablist" aria-label="Document views" className="inline-flex gap-1 rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-sm">
+            {tabs.map(([key, label]) => <button key={key} role="tab" type="button" aria-selected={tab === key} className={`min-h-10 rounded-lg px-4 py-2 text-sm font-semibold ${tab === key ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`} onClick={() => setTab(key)}>{label}</button>)}
           </div>
         )}
         {allowed && tab === 'issued' && (

@@ -18,14 +18,14 @@ export const SearchInput = ({ onSearch, placeholder = 'Search...', delayMs = 300
 
   return (
     <div className={`relative ${className ?? ''}`}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
       <input
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="block w-full rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+        className="block min-h-11 w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100"
       />
     </div>
   );

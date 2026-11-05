@@ -100,7 +100,7 @@ export const GroupDetailPage = () => {
   const g = group.data;
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <Link to="/groups" className="text-sm font-medium text-primary-600">← Groups</Link>
         <AdminHeader title={g?.name ?? 'Group'} subtitle={g ? `${titleCase(g.status)}${g.meetingDay ? ` · ${titleCase(g.meetingDay)}` : ''}${g.curriculumName ? ` · ${g.curriculumName}` : ''}` : undefined} />
         {!allowed && <NoAccess permission="group:view" />}

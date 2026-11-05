@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { Program } from '@/types/program';
 import type { Committee } from '@/types/committee';
 import { Button } from '@/components/common/Button';
+import { FormField } from '@/components/forms/FormField';
+import { FormSelect } from '@/components/forms/FormSelect';
+import { Modal } from '@/components/forms/Modal';
 
 type ProgramStatus = Program['status'];
 
@@ -21,13 +23,27 @@ export const EditProgramModal = ({
   program,
   committees,
 }: EditProgramModalProps) => {
-  const [formData, setFormData] = useState<{ name: string; ownerCommitteeId: string; status: ProgramStatus }>({
+  const [formData, setFormData] = useState<{
+    name: string;
+    ownerCommitteeId: string;
+    status: ProgramStatus;
+  }>({
     name: program?.name ?? '',
     ownerCommitteeId: program?.ownerCommitteeId ?? '',
     status: program?.status ?? 'ACTIVE',
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !program) return;
+    setFormData({
+      name: program.name,
+      ownerCommitteeId: program.ownerCommitteeId ?? '',
+      status: program.status ?? 'ACTIVE',
+    });
+    setError(null);
+  }, [isOpen, program]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,86 +62,57 @@ export const EditProgramModal = ({
     }
   };
 
-  if (!isOpen || !program) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-lg">
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-gray-900">Edit Program</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 hover:bg-gray-100"
-            aria-label="Close"
+    <Modal
+      open={isOpen && Boolean(program)}
+      title="Edit program"
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} type="button" disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit" form="edit-program-form" isLoading={isLoading}>
+            Save changes
+          </Button>
+        </>
+      }
+    >
+      <form id="edit-program-form" onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
           >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Program Name
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-primary-500 focus:outline-none"
-            />
+            {error}
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Owning Committee
-            </label>
-            <select
-              required
-              value={formData.ownerCommitteeId}
-              onChange={(e) => setFormData({ ...formData, ownerCommitteeId: e.target.value })}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none"
-            >
-              <option value="">Select a committee...</option>
-              {committees.map((committee) => (
-                <option key={committee.id} value={committee.id}>
-                  {committee.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Status
-            </label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as ProgramStatus })}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-primary-500 focus:outline-none"
-            >
-              <option value="PLANNED">Planned</option>
-              <option value="ACTIVE">Active</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          </div>
-
-          <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
-            <Button variant="secondary" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" isLoading={isLoading}>
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <FormField
+          label="Program name"
+          required
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+        <FormSelect
+          label="Owning committee"
+          required
+          value={formData.ownerCommitteeId}
+          onChange={(e) => setFormData({ ...formData, ownerCommitteeId: e.target.value })}
+          placeholder="Select a committee…"
+          options={committees.map((committee) => ({ value: committee.id, label: committee.name }))}
+        />
+        <FormSelect
+          label="Status"
+          value={formData.status}
+          onChange={(e) => setFormData({ ...formData, status: e.target.value as ProgramStatus })}
+          options={[
+            { value: 'PLANNED', label: 'Planned' },
+            { value: 'ACTIVE', label: 'Active' },
+            { value: 'COMPLETED', label: 'Completed' },
+          ]}
+        />
+      </form>
+    </Modal>
   );
 };

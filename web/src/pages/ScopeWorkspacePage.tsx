@@ -38,17 +38,18 @@ export const ScopeWorkspacePage = ({
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-[1440px] space-y-6">
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
+          <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-primary-100/70 blur-3xl" />
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="relative">
               <div className="flex items-center gap-3">
                 <ScopeBadge type={scope} />
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+                <span className="page-eyebrow">
                   Workspace
                 </span>
               </div>
-              <h1 className="mt-3 text-3xl font-bold text-gray-900">{titleFor(scope, view)}</h1>
+              <h1 className="mt-3 text-3xl font-semibold text-gray-950 sm:text-4xl">{titleFor(scope, view)}</h1>
               <p className="mt-2 text-gray-600">
                 {selected?.displayName ?? `Choose a ${scope.toLowerCase()} workspace`}.
               </p>
@@ -56,14 +57,14 @@ export const ScopeWorkspacePage = ({
             <button
               type="button"
               onClick={selectWorkspace}
-              className="rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-100"
+              className="relative min-h-11 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md"
             >
               Use this workspace
             </button>
           </div>
         </div>
         {view === 'structure' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
             <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-primary-600" />
               <h2 className="text-lg font-semibold text-gray-900">Available workspaces</h2>
@@ -76,7 +77,7 @@ export const ScopeWorkspacePage = ({
                     key={unit.id}
                     type="button"
                     onClick={() => setSelectedUnitId(unit.id)}
-                    className={`rounded-lg border p-4 text-left ${unit.id === selectedUnitId ? 'border-primary-400 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'}`}
+                    className={`rounded-xl border p-4 text-left transition-colors ${unit.id === selectedUnitId ? 'border-primary-300 bg-primary-50 shadow-sm' : 'border-gray-200 hover:border-primary-200 hover:bg-primary-50/40'}`}
                   >
                     <p className="font-semibold text-gray-900">{unit.displayName}</p>
                     <p className="mt-1 text-sm text-gray-500">{unit.type}</p>
@@ -85,7 +86,7 @@ export const ScopeWorkspacePage = ({
             </div>
           </section>
         ) : view === 'committees' ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
             <div className="flex items-center gap-3">
               <Layers3 className="h-5 w-5 text-primary-600" />
               <h2 className="text-lg font-semibold text-gray-900">Committee workspace</h2>
@@ -110,7 +111,7 @@ export const ScopeWorkspacePage = ({
               <Summary label="Sub-unit dashboards" value={String(sbus.length)} icon={Layers3} />
               <Summary label="Reporting" value="Available" icon={FileText} />
             </div>
-            <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-primary-600" />
                 <h2 className="text-lg font-semibold text-gray-900">Workspace actions</h2>
@@ -120,7 +121,7 @@ export const ScopeWorkspacePage = ({
                   <Link
                     key={sbu.id}
                     to={`/${scopePath}/sbus/${sbu.id}`}
-                    className="rounded-lg border border-gray-200 p-4 transition hover:border-primary-300 hover:bg-primary-50"
+                    className="rounded-xl border border-gray-200 p-4 transition-colors hover:border-primary-300 hover:bg-primary-50"
                   >
                     <p className="font-semibold text-gray-900">{sbu.name}</p>
                     <p className="mt-1 text-sm text-gray-500">Open SBU dashboard</p>
@@ -128,7 +129,7 @@ export const ScopeWorkspacePage = ({
                 ))}
                 <Link
                   to={`/${scopePath}/reports`}
-                  className="rounded-lg border border-gray-200 p-4 transition hover:border-primary-300 hover:bg-primary-50"
+                  className="rounded-xl border border-gray-200 p-4 transition-colors hover:border-primary-300 hover:bg-primary-50"
                 >
                   <p className="font-semibold text-gray-900">Reports</p>
                   <p className="mt-1 text-sm text-gray-500">Generate administrative reports</p>
@@ -136,7 +137,7 @@ export const ScopeWorkspacePage = ({
                 {canRollUp && (
                   <Link
                     to="/dashboard/hierarchy"
-                    className="rounded-lg border border-gray-200 p-4 transition hover:border-primary-300 hover:bg-primary-50"
+                    className="rounded-xl border border-gray-200 p-4 transition-colors hover:border-primary-300 hover:bg-primary-50"
                   >
                     <p className="font-semibold text-gray-900">Church roll-up</p>
                     <p className="mt-1 text-sm text-gray-500">Member and attendance counts by church</p>
@@ -160,9 +161,9 @@ const Summary = ({
   value: string;
   icon: typeof Building2;
 }) => (
-  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-    <Icon className="h-5 w-5 text-primary-600" />
+  <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+    <span className="inline-flex rounded-xl bg-primary-50 p-2.5 text-primary-700"><Icon className="h-5 w-5" /></span>
     <p className="mt-4 text-sm text-gray-500">{label}</p>
-    <p className="mt-1 text-xl font-bold text-gray-900">{value}</p>
+    <p className="mt-1 font-display text-xl font-semibold text-gray-950">{value}</p>
   </div>
 );

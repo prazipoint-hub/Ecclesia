@@ -6,10 +6,11 @@ import type { Dashboard } from '@/types/pastoral';
 import { P, Shell, Tag, label, memberName, usePermissions } from './pastoralShared';
 
 const Stat = ({ title, value, hint }: { title: string; value: number | string; hint?: string }) => (
-  <div className={card}>
-    <p className="text-sm text-gray-500">{title}</p>
-    <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
-    {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+  <div className={`${card} relative overflow-hidden`}>
+    <span className="absolute inset-y-0 left-0 w-1 bg-primary-500" />
+    <p className="text-sm font-semibold text-gray-500">{title}</p>
+    <p className="mt-2 font-display text-3xl font-semibold text-gray-950">{value}</p>
+    {hint && <p className="mt-2 text-xs leading-relaxed text-gray-500">{hint}</p>}
   </div>
 );
 
@@ -33,11 +34,12 @@ export const PastoralDashboardPage = () => {
             <Stat title="Not visited" value={d.unvisitedMembers.count} hint={`of ${d.unvisitedMembers.activeMembers} active members, ${d.unvisitedMembers.thresholdDays}+ days`} />
           </div>
           <section className={card}>
-            <h2 className="mb-3 text-lg font-semibold">Priority cases</h2>
+            <h2 className="mb-1 text-lg font-semibold text-gray-950">Priority cases</h2>
+            <p className="mb-4 text-sm text-gray-500">Cases that need the team’s attention first.</p>
             {d.priorityCases.length === 0 ? <EmptyBlock message="No high-priority cases." /> : (
               <ul className="divide-y divide-gray-100">
                 {d.priorityCases.map((c) => (
-                  <li key={c.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <li key={c.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                     <span><Link className="font-medium text-primary-600 hover:underline" to={`/pastoral/members/${c.member?.id ?? ''}`}>{memberName(c.member)}</Link> — {label(c.category)}</span>
                     <Tag value={c.priority} />
                   </li>
@@ -46,11 +48,12 @@ export const PastoralDashboardPage = () => {
             )}
           </section>
           <section className={card}>
-            <h2 className="mb-3 text-lg font-semibold">Follow-ups due this week</h2>
+            <h2 className="mb-1 text-lg font-semibold text-gray-950">Follow-ups due this week</h2>
+            <p className="mb-4 text-sm text-gray-500">Planned care touchpoints for the next seven days.</p>
             {d.followUps.dueThisWeek.length === 0 ? <EmptyBlock message="Nothing due this week." /> : (
               <ul className="divide-y divide-gray-100">
                 {d.followUps.dueThisWeek.map((f) => (
-                  <li key={f.id} className="flex justify-between gap-3 py-2 text-sm"><span>{memberName(f.member)} — {f.reason}</span><span>{formatDate(f.dueDate)}</span></li>
+                  <li key={f.id} className="flex justify-between gap-3 py-3 text-sm"><span className="font-medium text-gray-800">{memberName(f.member)} — {f.reason}</span><span className="whitespace-nowrap text-gray-500">{formatDate(f.dueDate)}</span></li>
                 ))}
               </ul>
             )}

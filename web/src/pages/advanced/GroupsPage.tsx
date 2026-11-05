@@ -31,7 +31,7 @@ export const GroupsPage = () => {
   });
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <AdminHeader title="Small groups" subtitle="Cell groups, Bible study groups and other regular gatherings."
           action={canManage ? <button type="button" className={primaryBtn} onClick={() => setCreating((v) => !v)}>{creating ? 'Close form' : 'New group'}</button> : undefined} />
         {!allowed && <NoAccess permission="group:view" />}

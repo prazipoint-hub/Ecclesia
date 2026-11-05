@@ -60,7 +60,7 @@ export const AssetsPage = () => {
   });
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <AdminHeader title="Assets" subtitle="Equipment and property, with maintenance history."
           action={canManage ? <button type="button" className={primaryBtn} onClick={() => setCreating((v) => !v)}>{creating ? 'Close form' : 'New asset'}</button> : undefined} />
         {!allowed && <NoAccess permission="asset:view" />}

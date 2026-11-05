@@ -14,11 +14,16 @@ import { Sidebar } from '@/components/Layout/Sidebar';
 import { decideCacheAction } from './cachePolicy';
 
 const origin = 'https://app.example.org';
-const decide = (url: string, extra: Record<string, unknown> = {}) => decideCacheAction({ url, origin, method: 'GET', ...extra });
+const decide = (url: string, extra: Record<string, unknown> = {}) =>
+  decideCacheAction({ url, origin, method: 'GET', ...extra });
 
 describe('cache policy (shared with the service worker)', () => {
   test.each([
-    '/api/v2/members', '/api/v2/me/giving', '/api/v1/auth/login', '/api', 'https://app.example.org/api/v2/admin/audit-logs?x=1',
+    '/api/v2/members',
+    '/api/v2/me/giving',
+    '/api/v1/auth/login',
+    '/api',
+    'https://app.example.org/api/v2/admin/audit-logs?x=1',
   ])('never caches API traffic: %s', (url) => expect(decide(url)).toBe('bypass'));
 
   test('never caches a request carrying credentials, even for a static path', () => {
@@ -48,23 +53,35 @@ describe('cache policy (shared with the service worker)', () => {
     expect(sw).not.toMatch(/\/api\//);
   });
   test('manifest is installable', () => {
-    const m = JSON.parse(readFileSync(resolve(__dirname, '../../public/manifest.webmanifest'), 'utf8'));
+    const m = JSON.parse(
+      readFileSync(resolve(__dirname, '../../public/manifest.webmanifest'), 'utf8')
+    );
     expect(m).toMatchObject({ display: 'standalone', start_url: '/' });
     expect(m.icons.length).toBeGreaterThanOrEqual(2);
   });
 });
 
 describe('i18n', () => {
-  beforeEach(async () => { await setLanguage('en'); });
+  beforeEach(async () => {
+    await setLanguage('en');
+  });
 
   test('every language has exactly the English keys', () => {
-    const flat = (o: Record<string, unknown>, p = ''): string[] => Object.entries(o).flatMap(([k, v]) => (typeof v === 'object' && v ? flat(v as Record<string, unknown>, `${p}${k}.`) : [`${p}${k}`]));
+    const flat = (o: Record<string, unknown>, p = ''): string[] =>
+      Object.entries(o).flatMap(([k, v]) =>
+        typeof v === 'object' && v ? flat(v as Record<string, unknown>, `${p}${k}.`) : [`${p}${k}`]
+      );
     expect(flat(sn as never).sort()).toEqual(flat(en as never).sort());
     expect(flat(nd as never).sort()).toEqual(flat(en as never).sort());
   });
 
   test('switching language changes the sidebar and persists the choice', async () => {
-    render(<MemoryRouter><Sidebar isOpen onClose={() => {}} /><LanguageSwitcher /></MemoryRouter>);
+    render(
+      <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Sidebar isOpen onClose={() => {}} />
+        <LanguageSwitcher />
+      </MemoryRouter>
+    );
     expect(screen.getByText('My Account')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Language'), { target: { value: 'sn' } });
     expect(await screen.findByText('Akaunti Yangu')).toBeInTheDocument();
@@ -82,14 +99,20 @@ describe('i18n', () => {
 });
 
 describe('offline and install', () => {
-  beforeEach(async () => { await setLanguage('en'); });
+  beforeEach(async () => {
+    await setLanguage('en');
+  });
 
   test('banner shows only while offline', () => {
     render(<OfflineBanner />);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
-    act(() => { window.dispatchEvent(new Event('offline')); });
+    act(() => {
+      window.dispatchEvent(new Event('offline'));
+    });
     expect(screen.getByRole('status')).toBeInTheDocument();
-    act(() => { window.dispatchEvent(new Event('online')); });
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
@@ -97,7 +120,14 @@ describe('offline and install', () => {
     localStorage.clear();
     render(<InstallPrompt />);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    act(() => { window.dispatchEvent(Object.assign(new Event('beforeinstallprompt', { cancelable: true }), { prompt: async () => {}, userChoice: Promise.resolve({ outcome: 'dismissed' }) })); });
+    act(() => {
+      window.dispatchEvent(
+        Object.assign(new Event('beforeinstallprompt', { cancelable: true }), {
+          prompt: async () => {},
+          userChoice: Promise.resolve({ outcome: 'dismissed' }),
+        })
+      );
+    });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Close'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

@@ -21,9 +21,9 @@ interface Device {
 }
 
 const AUTH = '/api/v1/auth';
-const card = 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm';
-const primaryBtn = 'rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60';
-const secondaryBtn = 'rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60';
+const card = 'rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft sm:p-6';
+const primaryBtn = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
+const secondaryBtn = 'inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60';
 
 const CopyButton = ({ value, label }: { value: string; label: string }) => {
   const [copied, setCopied] = useState(false);
@@ -326,11 +326,11 @@ const TwoFactorSection = () => {
 
 export const SecuritySettingsPage = () => (
   <MainLayout>
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-7">
       <div>
-        <Link to="/settings" className="text-sm font-medium text-primary-600 hover:text-primary-700">← Settings</Link>
-        <h1 className="mt-2 text-3xl font-bold text-gray-900">Security</h1>
-        <p className="mt-2 text-gray-600">Manage your password, signed-in devices and two-factor authentication.</p>
+        <Link to="/settings" className="page-eyebrow hover:text-primary-900">← Settings</Link>
+        <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Security</h1>
+        <p className="mt-2 max-w-2xl text-gray-600">Manage your password, signed-in devices and two-factor authentication.</p>
       </div>
       <ChangePasswordSection />
       <EmailVerificationSection />

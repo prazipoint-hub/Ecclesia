@@ -1,6 +1,12 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { HeartHandshake, Plus, RefreshCw, X } from 'lucide-react';
+import { AlertTriangle, HeartHandshake, Plus, RefreshCw } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { FormField } from '@/components/forms/FormField';
+import { FormSelect } from '@/components/forms/FormSelect';
+import { FormTextarea } from '@/components/forms/FormTextarea';
+import { Modal } from '@/components/forms/Modal';
+import { EmptyBlock, LoadingBlock, primaryBtn, secondaryBtn } from '@/pages/account/shared';
+import { ErrorNotice } from '@/pages/auth/AuthShell';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/utils/api';
 import { PastoralNav } from '@/pages/pastoral/pastoralShared';
@@ -67,7 +73,11 @@ const messageFrom = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-const label = (value: string) => value.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+const label = (value: string) =>
+  value
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (letter: string) => letter.toUpperCase());
 
 const priorityStyle: Record<CasePriority, string> = {
   LOW: 'bg-slate-100 text-slate-700',
@@ -85,18 +95,29 @@ export const PastoralCasesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [form, setForm] = useState({ memberId: '', category: 'SPIRITUAL' as CaseCategory, priority: 'NORMAL' as CasePriority, concern: '', targetFollowUpAt: '' });
+  const [form, setForm] = useState({
+    memberId: '',
+    category: 'SPIRITUAL' as CaseCategory,
+    priority: 'NORMAL' as CasePriority,
+    concern: '',
+    targetFollowUpAt: '',
+  });
 
   const canCreate = Boolean(user?.permissions.includes('pastoral:case:create'));
   const hasViewPermission = Boolean(user?.permissions.includes('pastoral:case:view'));
-  const activeCases = useMemo(() => cases.filter((pastoralCase) => pastoralCase.status !== 'CLOSED').length, [cases]);
+  const activeCases = useMemo(
+    () => cases.filter((pastoralCase) => pastoralCase.status !== 'CLOSED').length,
+    [cases]
+  );
 
   const loadCases = useCallback(async () => {
     if (!hasViewPermission) return;
     setIsLoading(true);
     setError(null);
     try {
-      const { data } = await apiClient.get<PastoralCasesResponse>('/api/v2/pastoral/cases', { params: { take: 50 } });
+      const { data } = await apiClient.get<PastoralCasesResponse>('/api/v2/pastoral/cases', {
+        params: { take: 50 },
+      });
       setCases(data.cases);
       setTotal(data.total);
     } catch (loadError) {
@@ -109,15 +130,21 @@ export const PastoralCasesPage = () => {
   const loadMembers = useCallback(async () => {
     if (!user?.churchId || !canCreate) return;
     try {
-      const { data } = await apiClient.get<{ members: Member[] }>('/api/v2/members', { params: { churchId: user.churchId, take: 100 } });
+      const { data } = await apiClient.get<{ members: Member[] }>('/api/v2/members', {
+        params: { churchId: user.churchId, take: 100 },
+      });
       setMembers(data.members);
     } catch (loadError) {
       setError(messageFrom(loadError, 'Members could not be loaded for a new pastoral case.'));
     }
   }, [canCreate, user?.churchId]);
 
-  useEffect(() => { void loadCases(); }, [loadCases]);
-  useEffect(() => { void loadMembers(); }, [loadMembers]);
+  useEffect(() => {
+    void loadCases();
+  }, [loadCases]);
+  useEffect(() => {
+    void loadMembers();
+  }, [loadMembers]);
 
   const createCase = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -129,9 +156,17 @@ export const PastoralCasesPage = () => {
         category: form.category,
         priority: form.priority,
         concern: form.concern.trim(),
-        ...(form.targetFollowUpAt ? { targetFollowUpAt: new Date(form.targetFollowUpAt).toISOString() } : {}),
+        ...(form.targetFollowUpAt
+          ? { targetFollowUpAt: new Date(form.targetFollowUpAt).toISOString() }
+          : {}),
       });
-      setForm({ memberId: '', category: 'SPIRITUAL', priority: 'NORMAL', concern: '', targetFollowUpAt: '' });
+      setForm({
+        memberId: '',
+        category: 'SPIRITUAL',
+        priority: 'NORMAL',
+        concern: '',
+        targetFollowUpAt: '',
+      });
       setIsCreateOpen(false);
       await loadCases();
     } catch (createError) {
@@ -143,42 +178,222 @@ export const PastoralCasesPage = () => {
 
   return (
     <MainLayout>
-      <div className="mb-6"><PastoralNav /></div>
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-7xl space-y-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-600">Care ministry</p>
-            <h1 className="mt-2 text-3xl font-bold text-gray-900">Pastoral care</h1>
-            <p className="mt-2 max-w-2xl text-gray-600">A confidential queue for follow-up, support, and accountable care.</p>
+            <p className="page-eyebrow">Care ministry</p>
+            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Pastoral care</h1>
+            <p className="mt-2 max-w-2xl text-gray-600">
+              A confidential queue for follow-up, support, and accountable care.
+            </p>
           </div>
           <div className="flex gap-3">
-            <button type="button" onClick={() => void loadCases()} disabled={isLoading || !hasViewPermission} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60">
+            <button
+              type="button"
+              onClick={() => void loadCases()}
+              disabled={isLoading || !hasViewPermission}
+              className={secondaryBtn}
+            >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
             </button>
-            {canCreate && <button type="button" onClick={() => setIsCreateOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"><Plus className="h-4 w-4" /> Open case</button>}
+            {canCreate && (
+              <button type="button" onClick={() => setIsCreateOpen(true)} className={primaryBtn}>
+                <Plus className="h-4 w-4" /> Open case
+              </button>
+            )}
           </div>
         </div>
 
+        <PastoralNav />
         {!hasViewPermission ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900">Your role does not include access to pastoral cases. Ask a church administrator to assign the required pastoral-care permission.</div>
+          <div
+            role="alert"
+            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm"
+          >
+            Your role does not include access to pastoral cases. Ask a church administrator to
+            assign the required pastoral-care permission.
+          </div>
         ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800"><p>{error}</p><button type="button" onClick={() => void loadCases()} className="mt-3 font-semibold underline">Try again</button></div>
+          <div className="space-y-3">
+            <ErrorNotice message={error} />
+            <button type="button" onClick={() => void loadCases()} className={secondaryBtn}>
+              Try again
+            </button>
+          </div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-sm font-medium text-gray-500">Open or active</p><p className="mt-2 text-3xl font-bold text-gray-900">{activeCases}</p></div>
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-sm font-medium text-gray-500">Urgent</p><p className="mt-2 text-3xl font-bold text-red-700">{cases.filter((pastoralCase) => pastoralCase.priority === 'URGENT' && pastoralCase.status !== 'CLOSED').length}</p></div>
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-sm font-medium text-gray-500">Recorded cases</p><p className="mt-2 text-3xl font-bold text-gray-900">{total}</p></div>
+              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+                <p className="text-sm font-medium text-gray-500">Open or active</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{activeCases}</p>
+              </div>
+              <div className="rounded-2xl border border-red-200/80 bg-white p-5 shadow-soft">
+                <p className="text-sm font-medium text-gray-500">Urgent</p>
+                <p className="mt-2 flex items-center gap-2 text-3xl font-semibold text-red-700">
+                  <AlertTriangle className="h-6 w-6" />
+                  {
+                    cases.filter(
+                      (pastoralCase) =>
+                        pastoralCase.priority === 'URGENT' && pastoralCase.status !== 'CLOSED'
+                    ).length
+                  }
+                </p>
+              </div>
+              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+                <p className="text-sm font-medium text-gray-500">Recorded cases</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{total}</p>
+              </div>
             </div>
-            <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex items-center gap-3 border-b border-gray-200 px-5 py-4"><span className="rounded-lg bg-primary-50 p-2 text-primary-700"><HeartHandshake className="h-5 w-5" /></span><div><h2 className="font-semibold text-gray-900">Care queue</h2><p className="text-sm text-gray-500">Only authorised pastoral workers can access these records.</p></div></div>
-              {isLoading ? <div className="p-10 text-center text-gray-500">Loading pastoral cases…</div> : cases.length === 0 ? <div className="p-10 text-center text-gray-500">No pastoral cases have been opened for this church.</div> : <div className="overflow-x-auto"><table className="min-w-full divide-y divide-gray-200 text-left"><thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-3">Member</th><th className="px-5 py-3">Care area</th><th className="px-5 py-3">Priority</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Follow-up</th></tr></thead><tbody className="divide-y divide-gray-100">{cases.map((pastoralCase) => <tr key={pastoralCase.id}><td className="px-5 py-4"><p className="font-semibold text-gray-900">{pastoralCase.memberName ?? 'Member record'}</p><p className="mt-1 max-w-sm truncate text-sm text-gray-500">{pastoralCase.concern}</p></td><td className="px-5 py-4 text-sm text-gray-600">{label(pastoralCase.category)}</td><td className="px-5 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${priorityStyle[pastoralCase.priority]}`}>{label(pastoralCase.priority)}</span></td><td className="px-5 py-4 text-sm font-medium text-gray-700">{label(pastoralCase.status)}</td><td className="px-5 py-4 text-sm text-gray-600">{pastoralCase.targetFollowUpAt ? new Date(pastoralCase.targetFollowUpAt).toLocaleDateString() : 'Not scheduled'}</td></tr>)}</tbody></table></div>}
+            <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
+              <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
+                <span className="rounded-xl bg-primary-50 p-2.5 text-primary-700">
+                  <HeartHandshake className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="font-semibold text-gray-900">Care queue</h2>
+                  <p className="text-sm text-gray-500">
+                    Only authorised pastoral workers can access these records.
+                  </p>
+                </div>
+              </div>
+              {isLoading ? (
+                <div className="p-5">
+                  <LoadingBlock label="Loading pastoral cases…" />
+                </div>
+              ) : cases.length === 0 ? (
+                <div className="p-5">
+                  <EmptyBlock message="No pastoral cases have been opened for this church." />
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 text-left">
+                    <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                      <tr>
+                        <th className="px-5 py-3">Member</th>
+                        <th className="px-5 py-3">Care area</th>
+                        <th className="px-5 py-3">Priority</th>
+                        <th className="px-5 py-3">Status</th>
+                        <th className="px-5 py-3">Follow-up</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {cases.map((pastoralCase) => (
+                        <tr key={pastoralCase.id}>
+                          <td className="px-5 py-4">
+                            <p className="font-semibold text-gray-900">
+                              {pastoralCase.memberName ?? 'Member record'}
+                            </p>
+                            <p className="mt-1 max-w-sm truncate text-sm text-gray-500">
+                              {pastoralCase.concern}
+                            </p>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-600">
+                            {label(pastoralCase.category)}
+                          </td>
+                          <td className="px-5 py-4">
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${priorityStyle[pastoralCase.priority]}`}
+                            >
+                              {label(pastoralCase.priority)}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-sm font-medium text-gray-700">
+                            {label(pastoralCase.status)}
+                          </td>
+                          <td className="px-5 py-4 text-sm text-gray-600">
+                            {pastoralCase.targetFollowUpAt
+                              ? new Date(pastoralCase.targetFollowUpAt).toLocaleDateString()
+                              : 'Not scheduled'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </section>
           </>
         )}
       </div>
 
-      {isCreateOpen && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-xl rounded-xl bg-white shadow-xl"><div className="flex items-center justify-between border-b border-gray-200 px-6 py-4"><div><h2 className="text-lg font-semibold text-gray-900">Open pastoral case</h2><p className="mt-1 text-sm text-gray-500">Keep the record factual and concise.</p></div><button type="button" onClick={() => setIsCreateOpen(false)} aria-label="Close" className="rounded-lg p-2 hover:bg-gray-100"><X className="h-5 w-5" /></button></div><form onSubmit={createCase} className="space-y-4 p-6"><label className="block text-sm font-medium text-gray-700">Member<select required value={form.memberId} onChange={(event) => setForm({ ...form, memberId: event.target.value })} className="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5"><option value="">Select a member</option>{members.map((member) => <option key={member.id} value={member.id}>{member.firstName} {member.lastName} · {member.membershipNumber}</option>)}</select></label><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-gray-700">Care area<select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value as CaseCategory })} className="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5">{categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</select></label><label className="text-sm font-medium text-gray-700">Priority<select value={form.priority} onChange={(event) => setForm({ ...form, priority: event.target.value as CasePriority })} className="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5">{(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as CasePriority[]).map((priority) => <option key={priority} value={priority}>{label(priority)}</option>)}</select></label></div><label className="block text-sm font-medium text-gray-700">Concern<textarea required minLength={10} value={form.concern} onChange={(event) => setForm({ ...form, concern: event.target.value })} rows={4} className="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5" placeholder="Record the concern without unnecessary sensitive detail." /></label><label className="block text-sm font-medium text-gray-700">Target follow-up date <span className="font-normal text-gray-500">(optional)</span><input type="datetime-local" value={form.targetFollowUpAt} onChange={(event) => setForm({ ...form, targetFollowUpAt: event.target.value })} className="mt-1.5 w-full rounded-lg border border-gray-300 px-3 py-2.5" /></label><div className="flex justify-end gap-3 pt-2"><button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-100">Cancel</button><button type="submit" disabled={isSaving || !form.memberId} className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60">{isSaving ? 'Opening…' : 'Open case'}</button></div></form></div></div>}
+      <Modal
+        open={isCreateOpen}
+        title="Open pastoral case"
+        onClose={() => setIsCreateOpen(false)}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(false)}
+              className={secondaryBtn}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="open-pastoral-case-form"
+              disabled={isSaving || !form.memberId}
+              className={primaryBtn}
+            >
+              {isSaving ? 'Opening…' : 'Open case'}
+            </button>
+          </>
+        }
+      >
+        <form id="open-pastoral-case-form" onSubmit={createCase} className="space-y-4">
+          <p className="rounded-xl border border-primary-100 bg-primary-50 p-3 text-sm text-primary-900">
+            Keep the record factual, concise, and limited to information needed for care.
+          </p>
+          <FormSelect
+            label="Member"
+            required
+            value={form.memberId}
+            placeholder="Select a member"
+            options={members.map((member) => ({
+              value: member.id,
+              label: `${member.firstName} ${member.lastName} · ${member.membershipNumber}`,
+            }))}
+            onChange={(event) => setForm({ ...form, memberId: event.target.value })}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormSelect
+              label="Care area"
+              value={form.category}
+              options={categories}
+              onChange={(event) =>
+                setForm({ ...form, category: event.target.value as CaseCategory })
+              }
+            />
+            <FormSelect
+              label="Priority"
+              value={form.priority}
+              options={(['LOW', 'NORMAL', 'HIGH', 'URGENT'] as CasePriority[]).map((priority) => ({
+                value: priority,
+                label: label(priority),
+              }))}
+              onChange={(event) =>
+                setForm({ ...form, priority: event.target.value as CasePriority })
+              }
+            />
+          </div>
+          <FormTextarea
+            label="Concern"
+            required
+            minLength={10}
+            value={form.concern}
+            onChange={(event) => setForm({ ...form, concern: event.target.value })}
+            rows={4}
+            placeholder="Record the concern without unnecessary sensitive detail."
+          />
+          <FormField
+            label="Target follow-up date (optional)"
+            type="datetime-local"
+            value={form.targetFollowUpAt}
+            onChange={(event) => setForm({ ...form, targetFollowUpAt: event.target.value })}
+          />
+        </form>
+      </Modal>
     </MainLayout>
   );
 };

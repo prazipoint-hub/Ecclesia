@@ -148,15 +148,15 @@ export const LeadershipPage = () => {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <AdminHeader title="Leadership" subtitle="Appointments and their terms of service." />
         {!allowed ? (
           <NoAccess permission="leadership:term:manage" />
         ) : (
           <>
-            <div role="tablist" aria-label="Leadership views" className="flex gap-2 border-b border-gray-200">
+            <div role="tablist" aria-label="Leadership views" className="inline-flex gap-1 rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-sm">
               {(['appointments', 'terms'] as Tab[]).map((t) => (
-                <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => switchTab(t)} className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${tab === t ? 'border-primary-600 text-primary-700' : 'border-transparent text-gray-600 hover:text-gray-900'}`}>
+                <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => switchTab(t)} className={`min-h-10 rounded-lg px-4 py-2 text-sm font-semibold ${tab === t ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
                   {t === 'appointments' ? 'Appointments' : 'Terms'}
                 </button>
               ))}
@@ -164,7 +164,7 @@ export const LeadershipPage = () => {
 
             {tab === 'appointments' ? (
               <>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label className="inline-flex min-h-11 items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm">
                   <input type="checkbox" checked={activeOnly} onChange={(e) => { setActiveOnly(e.target.checked); setPage(1); }} /> Current appointments only
                 </label>
                 {appointments.isLoading ? <LoadingBlock label="Loading appointments…" /> : appointments.isError ? <ErrorBlock error={appointments.error} onRetry={() => void appointments.refetch()} /> : appointments.data && appointments.data.items.length === 0 ? <EmptyBlock message="No appointments found." /> : appointments.data && (
@@ -224,8 +224,8 @@ export const LeadershipPage = () => {
           </>
         )}
       </div>
-      <StartTermModal key={starting?.id ?? 'none'} target={starting} onClose={() => setStarting(null)} />
-      <EndTermModal key={ending?.termId ?? 'none'} target={ending} onClose={() => setEnding(null)} />
+      <StartTermModal key={`start-${starting?.id ?? 'none'}`} target={starting} onClose={() => setStarting(null)} />
+      <EndTermModal key={`end-${ending?.termId ?? 'none'}`} target={ending} onClose={() => setEnding(null)} />
     </MainLayout>
   );
 };

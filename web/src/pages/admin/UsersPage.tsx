@@ -99,11 +99,11 @@ export const UsersPage = () => {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-5xl space-y-6">
+      <div className="mx-auto max-w-[1200px] space-y-6">
         <AdminHeader title="Users" subtitle="Manage sign-in accounts, their roles, and whether they can sign in." />
         {!allowed && <NoAccess permission={PERMISSION} />}
         {allowed && (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 rounded-2xl border border-gray-200/80 bg-white p-4 shadow-soft">
             <FormField className="flex-1" label="Search" value={q} placeholder="Name or email" onChange={(e) => setQ(e.target.value)} />
             <FormSelect label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={[{ value: '', label: 'All' }, { value: 'ACTIVE', label: 'Active' }, { value: 'DISABLED', label: 'Switched off' }]} />
           </div>
@@ -114,7 +114,7 @@ export const UsersPage = () => {
         {users.data && users.data.items.length > 0 && (
           <ul className="space-y-2">
             {users.data.items.map((u) => (
-              <li key={u.id} className={card}>
+              <li key={u.id} className={`${card} transition-shadow hover:shadow-lift`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="font-semibold text-gray-900">{u.name ?? u.email}{u.disabled && <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Switched off</span>}</p>

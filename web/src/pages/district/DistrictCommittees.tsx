@@ -11,20 +11,20 @@ const committees = [
 
 export const DistrictCommittees = () => (
   <MainLayout>
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl space-y-7">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
             <ScopeBadge type="DISTRICT" />
             <span className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">Governance</span>
           </div>
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">Committees</h1>
+          <h1 className="mt-3 text-3xl font-semibold text-gray-950 sm:text-4xl">Committees</h1>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {committees.map(({ name, reports, scope }) => (
-          <div key={name} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div key={name} className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lift">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">{name}</h2>
               <Briefcase className="h-5 w-5 text-primary-600" />
@@ -36,7 +36,7 @@ export const DistrictCommittees = () => (
         ))}
       </div>
 
-      <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Committee oversight</h2>
           <button className="inline-flex items-center gap-1 text-sm font-medium text-primary-600">

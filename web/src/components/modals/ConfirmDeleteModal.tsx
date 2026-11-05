@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
+import { Modal } from '@/components/forms/Modal';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -20,33 +21,35 @@ export const ConfirmDeleteModal = ({
   isDangerous = false,
 }: ConfirmDeleteModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) setError(null);
+  }, [isOpen]);
 
   const handleConfirm = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       await onConfirm();
       onCancel();
+    } catch (confirmError) {
+      setError(
+        confirmError instanceof Error ? confirmError.message : 'The action could not be completed.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-lg">
-        <div className="flex items-center gap-3 border-b border-gray-200 px-6 py-4">
-          <Trash2 className={`h-5 w-5 ${isDangerous ? 'text-red-600' : 'text-gray-600'}`} />
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        </div>
-
-        <div className="px-6 py-4">
-          <p className="text-sm text-gray-600">{message}</p>
-        </div>
-
-        <div className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
-          <Button variant="secondary" onClick={onCancel} type="button">
+    <Modal
+      open={isOpen}
+      title={title}
+      onClose={onCancel}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel} type="button" disabled={isLoading}>
             Cancel
           </Button>
           <Button
@@ -56,8 +59,27 @@ export const ConfirmDeleteModal = ({
           >
             {isDangerous ? 'Delete' : 'Confirm'}
           </Button>
+        </>
+      }
+    >
+      <div className="flex items-start gap-3">
+        <span
+          className={`rounded-xl p-2.5 ${isDangerous ? 'bg-red-50 text-red-600' : 'bg-primary-50 text-primary-700'}`}
+        >
+          <Trash2 className="h-5 w-5" />
+        </span>
+        <div className="space-y-3 pt-1">
+          <p className="text-sm leading-relaxed text-gray-600">{message}</p>
+          {error && (
+            <p
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            >
+              {error}
+            </p>
+          )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };

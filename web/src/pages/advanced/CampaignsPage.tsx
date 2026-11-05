@@ -55,7 +55,7 @@ export const CampaignsPage = () => {
   const list = useQuery({ queryKey: KEY, enabled: allowed, queryFn: async () => (await apiClient.get<CampaignList>('/api/v2/campaigns', { params: { take: 100 } })).data });
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-7">
         <AdminHeader title="Fundraising campaigns" subtitle="Each campaign has its own fund; progress is the completed gifts into it."
           action={allowed ? <button type="button" className={primaryBtn} onClick={() => setCreating((v) => !v)}>{creating ? 'Close form' : 'New campaign'}</button> : undefined} />
         {!allowed && <NoAccess permission={CAMPAIGN_PERMISSION} />}

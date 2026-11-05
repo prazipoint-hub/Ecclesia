@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Inbox, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getApiErrorMessage } from '@/utils/apiError';
 
-export const card = 'rounded-xl border border-gray-200 bg-white p-6 shadow-sm';
+export const card = 'rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft sm:p-6';
 export const primaryBtn =
-  'rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
 export const secondaryBtn =
-  'rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:cursor-not-allowed disabled:opacity-60';
 
 export const formatMoney = (amount: number, currency: string): string => {
   try {
@@ -27,27 +27,27 @@ export const titleCase = (value: string | null | undefined): string =>
   value ? value.toLowerCase().replace(/_/g, ' ').replace(/^\w/, (char) => char.toUpperCase()) : '—';
 
 export const PageHeader = ({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) => (
-  <div className="flex flex-wrap items-start justify-between gap-4">
+  <div className="flex flex-wrap items-end justify-between gap-4">
     <div>
-      <Link to="/my-account" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+      <Link to="/my-account" className="page-eyebrow hover:text-primary-900">
         My Account
       </Link>
-      <h1 className="mt-1 text-3xl font-bold text-gray-900">{title}</h1>
-      {subtitle && <p className="mt-2 text-gray-600">{subtitle}</p>}
+      <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">{title}</h1>
+      {subtitle && <p className="mt-2 max-w-2xl text-gray-600">{subtitle}</p>}
     </div>
     {action}
   </div>
 );
 
 export const LoadingBlock = ({ label = 'Loading…' }: { label?: string }) => (
-  <div role="status" className="flex items-center gap-2 py-8 text-sm text-gray-500">
-    <Loader2 className="h-4 w-4 animate-spin" /> {label}
+  <div role="status" className="flex min-h-32 items-center justify-center gap-3 rounded-2xl border border-gray-200/80 bg-white py-8 text-sm font-medium text-gray-500 shadow-soft">
+    <Loader2 className="h-5 w-5 animate-spin text-primary-600" /> {label}
   </div>
 );
 
 export const ErrorBlock = ({ error, onRetry }: { error: unknown; onRetry?: () => void }) => (
-  <div role="alert" className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+  <div role="alert" className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-sm">
+    <span className="rounded-lg bg-red-100 p-2"><AlertTriangle className="h-4 w-4 shrink-0" /></span>
     <div className="flex-1">
       <p>{getApiErrorMessage(error)}</p>
       {onRetry && (
@@ -60,7 +60,10 @@ export const ErrorBlock = ({ error, onRetry }: { error: unknown; onRetry?: () =>
 );
 
 export const EmptyBlock = ({ message }: { message: string }) => (
-  <p className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">{message}</p>
+  <div className="flex min-h-36 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/60 p-6 text-center">
+    <span className="mb-3 rounded-xl bg-gray-100 p-2.5 text-gray-500"><Inbox className="h-5 w-5" /></span>
+    <p className="max-w-md text-sm leading-relaxed text-gray-500">{message}</p>
+  </div>
 );
 
 export const Pagination = ({
@@ -77,15 +80,15 @@ export const Pagination = ({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   return (
-    <nav aria-label="Pagination" className="mt-4 flex items-center justify-between text-sm text-gray-600">
+    <nav aria-label="Pagination" className="mt-4 flex items-center justify-between rounded-xl border border-gray-200/80 bg-white p-2 text-sm text-gray-600 shadow-sm">
       <button type="button" className={secondaryBtn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
-        Previous
+        <ChevronLeft className="h-4 w-4" /> Previous
       </button>
       <span>
         Page {page} of {pages}
       </span>
       <button type="button" className={secondaryBtn} disabled={page >= pages} onClick={() => onPage(page + 1)}>
-        Next
+        Next <ChevronRight className="h-4 w-4" />
       </button>
     </nav>
   );

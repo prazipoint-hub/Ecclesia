@@ -24,12 +24,12 @@ export const ReportsPage = () => {
             if (entries.length === 0) return null;
             return (
               <section key={category} className="space-y-3">
-                <h2 className="text-lg font-semibold text-gray-900">{CATEGORY_TITLES[category]}</h2>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="flex items-center gap-3"><span className="h-px flex-1 bg-gray-200" /><h2 className="text-sm font-bold uppercase tracking-[0.12em] text-gray-500">{CATEGORY_TITLES[category]}</h2><span className="h-px flex-1 bg-gray-200" /></div>
+                <div className="grid gap-4 md:grid-cols-2">
                   {entries.map((entry) => (
-                    <article key={entry.type} aria-disabled={!entry.allowed} className={`${card} flex items-start justify-between gap-4 ${entry.allowed ? '' : 'opacity-60'}`}>
+                    <article key={entry.type} aria-disabled={!entry.allowed} className={`${card} flex items-start justify-between gap-4 transition-all ${entry.allowed ? 'hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lift' : 'bg-gray-50/70 opacity-70'}`}>
                       <div>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4 text-primary-600" /><h3 className="font-semibold text-gray-900">{entry.label}</h3></div>
+                        <div className="flex items-center gap-3"><span className="rounded-xl bg-primary-50 p-2 text-primary-700"><FileText className="h-4 w-4" /></span><h3 className="font-semibold text-gray-900">{entry.label}</h3></div>
                         <p className="mt-1 text-xs text-gray-500">{label(entry.type)}{entry.needsDates ? ' · needs a period' : ''}</p>
                         {!entry.allowed && <p className="mt-2 text-sm text-gray-600">Needs <code className="rounded bg-gray-100 px-1">{entry.permission}</code></p>}
                       </div>

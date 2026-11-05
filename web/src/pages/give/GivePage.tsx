@@ -1,6 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { HeartHandshake, LockKeyhole, Repeat2 } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
 import { FormField } from '@/components/forms/FormField';
 import { FormSelect } from '@/components/forms/FormSelect';
@@ -92,14 +93,19 @@ export const GivePage = () => {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto max-w-3xl space-y-7">
         <PageHeader title="Give" subtitle="Give your tithes and offerings securely from your phone." />
 
         {funds.isLoading && <LoadingBlock />}
         {funds.isError && <ErrorBlock error={funds.error} onRetry={() => funds.refetch()} />}
 
         {funds.data && (
-          <form onSubmit={submit} noValidate className={`${card} space-y-4`} aria-label="Give">
+          <form onSubmit={submit} noValidate className={`${card} overflow-hidden p-0`} aria-label="Give">
+            <div className="flex items-center gap-4 border-b border-gray-100 bg-gradient-to-r from-primary-50 to-amber-50/70 p-5 sm:p-6">
+              <span className="rounded-2xl bg-white p-3 text-primary-700 shadow-sm"><HeartHandshake className="h-6 w-6" /></span>
+              <div><h2 className="text-lg font-semibold text-gray-950">Make a secure gift</h2><p className="text-sm text-gray-600">Choose where your gift goes and how you would like to pay.</p></div>
+            </div>
+            <div className="space-y-5 p-5 sm:p-6">
             {pay.isError && <ErrorNotice message={getApiErrorMessage(pay.error, 'The payment could not be started.')} />}
 
             <FormSelect
@@ -167,9 +173,11 @@ export const GivePage = () => {
             <button type="submit" className={`${primaryBtn} w-full`} disabled={pay.isPending}>
               {pay.isPending ? 'Starting payment…' : 'Give'}
             </button>
-            <p className="text-center text-xs text-gray-500">
-              Want to give regularly? <Link to="/my-account/recurring" className="font-medium text-primary-600">Set up recurring giving</Link>
-            </p>
+            <div className="grid gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:grid-cols-2">
+              <p className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-green-600" /> Payments are securely processed.</p>
+              <p className="flex items-center gap-2 sm:justify-end"><Repeat2 className="h-4 w-4 text-primary-600" /> <Link to="/my-account/recurring" className="font-semibold text-primary-700 hover:text-primary-900">Set up recurring giving</Link></p>
+            </div>
+            </div>
           </form>
         )}
       </div>

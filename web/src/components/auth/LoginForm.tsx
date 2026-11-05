@@ -34,11 +34,11 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+    <div className="w-full max-w-md rounded-2xl border border-gray-200/80 bg-white p-7 shadow-lift sm:p-9">
       <div className="mb-4 flex justify-end"><LanguageSwitcher /></div>
       <div className="mb-8">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary-600">Ecclesia</p>
-        <h1 className="text-3xl font-bold text-gray-900">{requiresTwoFactor ? t('login.twoFactorTitle') : t('login.welcome')}</h1>
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary-700">Welcome to Ecclesia</p>
+        <h1 className="text-3xl font-semibold text-gray-950">{requiresTwoFactor ? t('login.twoFactorTitle') : t('login.welcome')}</h1>
         <p className="mt-2 text-gray-600">
           {requiresTwoFactor ? t('login.twoFactorSubtitle') : t('login.subtitle')}
         </p>
@@ -71,11 +71,11 @@ export const LoginForm = () => {
           <>
             <label className="block text-sm font-medium text-gray-700">
               {t('login.email')}
-              <input className="mt-1 block w-full rounded-lg border-gray-300" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
+              <input className="mt-2 block w-full rounded-xl border-gray-200" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
             </label>
             <label className="block text-sm font-medium text-gray-700">
               {t('login.password')}
-              <input className="mt-1 block w-full rounded-lg border-gray-300" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isSubmitting} />
+              <input className="mt-2 block w-full rounded-xl border-gray-200" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isSubmitting} />
             </label>
             <div className="text-right">
               <Link to="/auth/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-700">
@@ -84,7 +84,7 @@ export const LoginForm = () => {
             </div>
           </>
         )}
-        <button className="w-full rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting}>
+        <button className="min-h-12 w-full rounded-xl bg-primary-600 px-4 py-3 font-semibold text-white shadow-md shadow-primary-600/20 hover:bg-primary-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting}>
           {isSubmitting ? t('login.signingIn') : requiresTwoFactor ? t('login.verify') : t('login.signIn')}
         </button>
         {requiresTwoFactor && (
