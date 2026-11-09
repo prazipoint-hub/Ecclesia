@@ -7,6 +7,7 @@ import { Modal } from '@/components/forms/Modal';
 import { ErrorBlock, LoadingBlock, card, formatDate, primaryBtn, secondaryBtn } from '@/pages/account/shared';
 import { ErrorNotice } from '@/pages/auth/AuthShell';
 import { useAuthStore } from '@stores/authStore';
+import { startPreview } from '@/utils/preview';
 import { apiClient } from '@/utils/api';
 import { getApiErrorMessage } from '@/utils/apiError';
 import { can } from '@/types/notifications';
@@ -20,6 +21,7 @@ export const RoleDetailPage = () => {
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const canPreview = Boolean(useAuthStore((s) => s.user?.permissions)?.includes('access:preview'));
   const allowed = can(useAuthStore((s) => s.user?.permissions), PERMISSION);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -69,7 +71,7 @@ export const RoleDetailPage = () => {
   return (
     <MainLayout>
       <div className="mx-auto max-w-4xl space-y-6">
-        <AdminHeader title={role.data?.name ?? 'Role'} subtitle="Change what this role allows. People holding it are signed out when permissions are removed." action={<Link to="/admin/roles" className={secondaryBtn}>All roles</Link>} />
+        <AdminHeader title={role.data?.name ?? 'Role'} subtitle="Change what this role allows. People holding it are signed out when permissions are removed." action={<div className="flex gap-2">{canPreview && id && <button type="button" className={secondaryBtn} onClick={() => void startPreview(id).catch(() => undefined)}>View as this role</button>}<Link to="/admin/roles" className={secondaryBtn}>All roles</Link></div>} />
         {!allowed && <NoAccess permission={PERMISSION} />}
         {allowed && (role.isLoading || permissions.isLoading) && <LoadingBlock />}
         {role.isError && <ErrorBlock error={role.error} onRetry={() => role.refetch()} />}

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { InstallPrompt } from '@/components/common/InstallPrompt';
+import { PreviewBanner } from '@/components/common/PreviewBanner';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 
 interface MainLayoutProps {
@@ -21,6 +22,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         Skip to main content
       </a>
       <OfflineBanner />
+      <PreviewBanner />
       <Header onMenuClick={() => setSidebarOpen(true)} />
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main id="main-content" tabIndex={-1} className="lg:ml-72">

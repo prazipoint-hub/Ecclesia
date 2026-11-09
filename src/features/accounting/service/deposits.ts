@@ -40,10 +40,17 @@ export class DepositService {
       const prior = await prisma.deposit.findFirst({ where: { churchId: user.churchId, idempotencyKey } });
       if (prior) return { ...this.view(prior), replayed: true };
     }
-    if (input.cashSessionId) await this.checkSession(user.churchId, input.cashSessionId, input.currency, D(input.amount));
     try {
-      const row = await prisma.deposit.create({
+      // With a session link, the check and the insert share one transaction that first takes the session row's lock,
+      // so two simultaneous deposits against one session are serialised and cannot together exceed its cash.
+      const row = await prisma.$transaction(async (tx) => {
+        if (input.cashSessionId) {
+          await tx.cashSession.updateMany({ where: { id: input.cashSessionId, churchId: user.churchId, status: 'RECONCILED' }, data: { status: 'RECONCILED' } });
+          await this.checkSession(tx, user.churchId, input.cashSessionId, input.currency, D(input.amount));
+        }
+        return tx.deposit.create({
         data: { churchId: user.churchId, cashSessionId: input.cashSessionId ?? null, currency: input.currency, amount: D(input.amount), depositDate: input.depositDate, bankReference: input.bankReference, bankName: input.bankName ?? null, notes: input.notes ?? null, idempotencyKey: idempotencyKey ?? null, recordedBy: user.id },
+        });
       });
       await this.audit(user, 'DEPOSIT_RECORDED', row.id, { currency: row.currency, amount: toNumber(row.amount) });
       return this.view(row);
@@ -60,13 +67,13 @@ export class DepositService {
   }
 
   /** A deposit may only bank cash a reviewer has approved, and never more than that session's cash receipts in that currency. */
-  private async checkSession(churchId: string, sessionId: string, cur: string, amount: Prisma.Decimal) {
-    const session = await prisma.cashSession.findUnique({ where: { id: sessionId }, select: { churchId: true, status: true, snapshotJson: true } });
+  private async checkSession(tx: Prisma.TransactionClient, churchId: string, sessionId: string, cur: string, amount: Prisma.Decimal) {
+    const session = await tx.cashSession.findUnique({ where: { id: sessionId }, select: { churchId: true, status: true, snapshotJson: true } });
     if (!session || session.churchId !== churchId) throw new NotFoundError('Cash session');
     if (session.status !== 'RECONCILED') throw new ConflictError('Only an approved cash session can be deposited');
     const available = D(parse<Snap>(session.snapshotJson)?.cashReceipts?.[cur] ?? 0);
     if (available.lte(0)) throw new ValidationError(`That session holds no ${cur} cash receipts`);
-    const taken = await prisma.deposit.findMany({ where: { churchId, cashSessionId: sessionId, currency: cur, status: { in: ['PENDING', 'VERIFIED'] } }, select: { amount: true } });
+    const taken = await tx.deposit.findMany({ where: { churchId, cashSessionId: sessionId, currency: cur, status: { in: ['PENDING', 'VERIFIED'] } }, select: { amount: true } });
     const already = taken.reduce((a, d) => a.plus(d.amount), D(0));
     if (already.plus(amount).gt(available)) throw new ConflictError(`This would deposit more than the session's ${cur} cash receipts (${available.toFixed(2)}, already deposited ${already.toFixed(2)})`);
   }
