@@ -6,6 +6,7 @@ import { prisma } from '@/database';
 import type { AuthorizedUser } from '@/types';
 import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '@/types/errors';
 import { require } from './ledger';
+import { fundService } from './funds';
 import { D, toNumber } from './money';
 
 /**
@@ -21,6 +22,7 @@ export const RecordDepositSchema = z.object({
   bankReference: z.string().trim().min(3).max(100),
   bankName: z.string().trim().max(100).optional(),
   notes: z.string().trim().max(1000).optional(),
+  cashSessionId: z.string().trim().min(1).max(64).optional(),
 }).strict();
 export const RejectDepositSchema = z.object({ reason: z.string().trim().min(5).max(1000) }).strict();
 
@@ -38,9 +40,10 @@ export class DepositService {
       const prior = await prisma.deposit.findFirst({ where: { churchId: user.churchId, idempotencyKey } });
       if (prior) return { ...this.view(prior), replayed: true };
     }
+    if (input.cashSessionId) await this.checkSession(user.churchId, input.cashSessionId, input.currency, D(input.amount));
     try {
       const row = await prisma.deposit.create({
-        data: { churchId: user.churchId, currency: input.currency, amount: D(input.amount), depositDate: input.depositDate, bankReference: input.bankReference, bankName: input.bankName ?? null, notes: input.notes ?? null, idempotencyKey: idempotencyKey ?? null, recordedBy: user.id },
+        data: { churchId: user.churchId, cashSessionId: input.cashSessionId ?? null, currency: input.currency, amount: D(input.amount), depositDate: input.depositDate, bankReference: input.bankReference, bankName: input.bankName ?? null, notes: input.notes ?? null, idempotencyKey: idempotencyKey ?? null, recordedBy: user.id },
       });
       await this.audit(user, 'DEPOSIT_RECORDED', row.id, { currency: row.currency, amount: toNumber(row.amount) });
       return this.view(row);
@@ -54,6 +57,18 @@ export class DepositService {
       }
       throw error;
     }
+  }
+
+  /** A deposit may only bank cash a reviewer has approved, and never more than that session's cash receipts in that currency. */
+  private async checkSession(churchId: string, sessionId: string, cur: string, amount: Prisma.Decimal) {
+    const session = await prisma.cashSession.findUnique({ where: { id: sessionId }, select: { churchId: true, status: true, snapshotJson: true } });
+    if (!session || session.churchId !== churchId) throw new NotFoundError('Cash session');
+    if (session.status !== 'RECONCILED') throw new ConflictError('Only an approved cash session can be deposited');
+    const available = D(parse<Snap>(session.snapshotJson)?.cashReceipts?.[cur] ?? 0);
+    if (available.lte(0)) throw new ValidationError(`That session holds no ${cur} cash receipts`);
+    const taken = await prisma.deposit.findMany({ where: { churchId, cashSessionId: sessionId, currency: cur, status: { in: ['PENDING', 'VERIFIED'] } }, select: { amount: true } });
+    const already = taken.reduce((a, d) => a.plus(d.amount), D(0));
+    if (already.plus(amount).gt(available)) throw new ConflictError(`This would deposit more than the session's ${cur} cash receipts (${available.toFixed(2)}, already deposited ${already.toFixed(2)})`);
   }
 
   async list(user: AuthorizedUser, status?: string) {
@@ -123,9 +138,10 @@ export class DepositService {
    */
   async overview(user: AuthorizedUser) {
     require(user, 'finance:view');
-    const [sessions, deposits] = await Promise.all([
-      prisma.cashSession.findMany({ where: { churchId: user.churchId, status: { in: ['SUBMITTED', 'RECONCILED'] } }, select: { id: true, status: true, snapshotJson: true }, take: 2000 }),
-      prisma.deposit.findMany({ where: { churchId: user.churchId, status: { in: ['PENDING', 'VERIFIED'] } }, select: { status: true, currency: true, amount: true }, take: 5000 }),
+    const [sessions, deposits, funds] = await Promise.all([
+      prisma.cashSession.findMany({ where: { churchId: user.churchId, status: { in: ['SUBMITTED', 'RECONCILED'] } }, select: { id: true, status: true, snapshotJson: true, sessionDate: true }, take: 2000 }),
+      prisma.deposit.findMany({ where: { churchId: user.churchId, status: { in: ['PENDING', 'VERIFIED'] } }, select: { status: true, currency: true, amount: true, cashSessionId: true }, take: 5000 }),
+      fundService.list(user),
     ]);
     const approved: Record<string, Prisma.Decimal> = {};
     const pending: Record<string, Prisma.Decimal> = {};
@@ -145,12 +161,26 @@ export class DepositService {
     for (const cur of new Set([...Object.keys(approved), ...Object.keys(verified), ...Object.keys(awaiting)])) {
       undeposited[cur] = (approved[cur] ?? D(0)).minus(verified[cur] ?? 0).minus(awaiting[cur] ?? 0);
     }
+    // Per approved session: cash receipts minus what has been deposited against it (pending or verified), per currency.
+    const bySession = new Map<string, Record<string, Prisma.Decimal>>();
+    for (const d of deposits) if (d.cashSessionId) add(bySession.get(d.cashSessionId) ?? bySession.set(d.cashSessionId, {}).get(d.cashSessionId)!, d.currency, d.amount);
+    const sessionsOutstanding = sessions
+      .filter((s) => s.status === 'RECONCILED')
+      .map((s) => {
+        const receipts = parse<Snap>(s.snapshotJson)?.cashReceipts ?? {};
+        const banked = bySession.get(s.id) ?? {};
+        const outstanding = Object.fromEntries(Object.entries(receipts).map(([cur, v]) => [cur, D(v).minus(banked[cur] ?? 0).toFixed(2)]));
+        return { id: s.id, sessionDate: s.sessionDate, outstanding };
+      })
+      .filter((s) => Object.values(s.outstanding).some((v) => !D(v).isZero()));
     return {
+      sessionsOutstanding,
+      funds,
       approvedCash: fix(approved), approvedSessions,
       pendingCash: fix(pending), pendingSessions,
       depositsVerified: fix(verified), depositsAwaitingVerification: fix(awaiting),
       undepositedCash: fix(undeposited),
-      note: 'Cash receipts only; mobile money and bank receipts are reconciled separately. A negative undeposited figure means deposits exceed approved cash sessions and should be investigated.',
+      note: 'Fund balances use the finance dashboard rule (received minus approved/paid spending) and add all currencies together; read them with care in multi-currency churches. Cash figures: cash receipts only; mobile money and bank receipts are reconciled separately. A negative undeposited figure means deposits exceed approved cash sessions and should be investigated.',
     };
   }
 
@@ -162,8 +192,8 @@ export class DepositService {
   private noSelf(user: AuthorizedUser, recordedBy: string) {
     if (recordedBy === user.id) throw new ForbiddenError('You recorded this deposit; a different person must verify it');
   }
-  private view(d: { id: string; currency: string; amount: Prisma.Decimal; depositDate: Date; bankReference: string; bankName: string | null; notes: string | null; status: string; recordedBy: string; verifiedBy: string | null; verifiedAt: Date | null; rejectReason: string | null; journalEntryId: string | null }) {
-    return { id: d.id, currency: d.currency, amount: toNumber(d.amount), depositDate: d.depositDate, bankReference: d.bankReference, bankName: d.bankName, notes: d.notes, status: d.status, recordedBy: d.recordedBy, verifiedBy: d.verifiedBy, verifiedAt: d.verifiedAt, rejectReason: d.rejectReason, journalEntryId: d.journalEntryId };
+  private view(d: { id: string; currency: string; amount: Prisma.Decimal; depositDate: Date; bankReference: string; bankName: string | null; notes: string | null; status: string; recordedBy: string; verifiedBy: string | null; verifiedAt: Date | null; rejectReason: string | null; journalEntryId: string | null; cashSessionId?: string | null }) {
+    return { id: d.id, currency: d.currency, amount: toNumber(d.amount), depositDate: d.depositDate, bankReference: d.bankReference, bankName: d.bankName, notes: d.notes, status: d.status, recordedBy: d.recordedBy, verifiedBy: d.verifiedBy, verifiedAt: d.verifiedAt, rejectReason: d.rejectReason, journalEntryId: d.journalEntryId, cashSessionId: d.cashSessionId ?? null };
   }
   private async audit(user: AuthorizedUser, action: string, entityId: string, details: Record<string, unknown>) {
     try {

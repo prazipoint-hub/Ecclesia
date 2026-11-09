@@ -73,7 +73,9 @@ export class CircuitFinanceService {
     }
 
 
-    const { receipt, receiptNumber } = await createWithNumber('CIR', (receiptNumber) => circuitFinanceRepository.createReceipt({
+    // Receipt and audit row commit together or not at all.
+    const { receipt, receiptNumber } = await createWithNumber('CIR', (receiptNumber) => prisma.$transaction(async (tx) => {
+      const created = await tx.circuitReceipt.create({ data: {
       id: uuidv4(),
       circuitId: data.circuitId,
       memberId: data.memberId || null,
@@ -87,9 +89,8 @@ export class CircuitFinanceService {
       status: 'ISSUED',
       issuedBy: user.id,
       issuedAt: new Date(),
-    }));
-
-    await prisma.auditLog.create({
+      } });
+      await tx.auditLog.create({
       data: {
         id: uuidv4(),
         action: 'CIRCUIT_RECEIPT_CREATED',
@@ -97,10 +98,12 @@ export class CircuitFinanceService {
         entityType: 'CIRCUIT_FINANCE',
         entityId: data.circuitId,
         churchId: user.churchId,
-        changes: JSON.stringify({ receipt }),
+        changes: JSON.stringify({ receipt: created }),
         timestamp: new Date(),
       },
-    });
+      });
+      return created;
+    }));
 
     return receipt;
   }

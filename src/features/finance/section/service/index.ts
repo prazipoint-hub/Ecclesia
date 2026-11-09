@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { createWithNumber } from '../../shared/receiptNumber';
 import { sectionFinanceRepository } from '../repository';
 import { prisma } from '@/database';
@@ -135,41 +136,36 @@ export class SectionFinanceService {
     }
 
 
-    const { receipt, receiptNumber } = await createWithNumber('SEC', (receiptNumber) => sectionFinanceRepository.createReceipt({
-      id: uuidv4(),
-      sectionId: data.sectionId,
-      receiptNumber,
-      memberId: data.memberId || null,
-      amount: data.amount,
-      currency: data.currency,
-      incomeType: data.incomeType,
-      paymentMethod: data.paymentMethod,
-      fundId: data.fundId || null,
-      reference: data.reference || null,
-      status: 'ISSUED',
-      issuedBy: user.id,
-      issuedAt: new Date(),
+    // Receipt, journal entry and audit row commit together or not at all.
+    const { receipt, receiptNumber } = await createWithNumber('SEC', (receiptNumber) => prisma.$transaction(async (tx) => {
+      const created = await tx.sectionReceipt.create({
+        data: {
+          id: uuidv4(),
+          sectionId: data.sectionId,
+          receiptNumber,
+          memberId: data.memberId || null,
+          amount: data.amount,
+          currency: data.currency,
+          incomeType: data.incomeType,
+          paymentMethod: data.paymentMethod,
+          fundId: data.fundId || null,
+          reference: data.reference || null,
+          status: 'ISSUED',
+          issuedBy: user.id,
+          issuedAt: new Date(),
+        },
+      });
+      // DR: Cash / Bank, CR: Income
+      await this.createSectionJournalEntry({
+        sectionId: data.sectionId,
+        receiptId: created.id,
+        debitAmount: data.amount,
+        creditAmount: data.amount,
+        description: `${data.incomeType} from section`,
+      }, tx);
+      await this.logAudit({ sectionId: data.sectionId, action: 'SECTION_RECEIPT_CREATED', actorId: user.id, churchId: user.churchId, changes: { receipt: created } }, tx);
+      return created;
     }));
-
-    // Create journal entry (double-entry accounting)
-    // DR: Cash / Bank
-    // CR: Income
-    await this.createSectionJournalEntry({
-      sectionId: data.sectionId,
-      receiptId: receipt.id,
-      debitAmount: data.amount,
-      creditAmount: data.amount,
-      description: `${data.incomeType} from section`,
-    });
-
-    // Audit log
-    await this.logAudit({
-      sectionId: data.sectionId,
-      action: 'SECTION_RECEIPT_CREATED',
-      actorId: user.id,
-      churchId: user.churchId,
-      changes: { receipt },
-    });
 
     // Notify section leadership of income
     await this.notifySectionLeadership(data.sectionId, `Receipt ${receiptNumber} issued: $${data.amount}`);
@@ -407,12 +403,12 @@ export class SectionFinanceService {
     debitAmount: number;
     creditAmount: number;
     description: string;
-  }) {
+  }, tx?: Prisma.TransactionClient) {
     if (data.debitAmount !== data.creditAmount) {
       throw new Error('Journal entries must balance');
     }
 
-    await prisma.sectionJournalEntry.create({
+    await (tx ?? prisma).sectionJournalEntry.create({
       data: {
         id: uuidv4(),
         sectionId: data.sectionId,
@@ -435,8 +431,8 @@ export class SectionFinanceService {
     actorId: string;
     churchId: string;
     changes: any;
-  }): Promise<void> {
-    await prisma.auditLog.create({
+  }, tx?: Prisma.TransactionClient): Promise<void> {
+    await (tx ?? prisma).auditLog.create({
       data: {
         id: uuidv4(),
         action: data.action,

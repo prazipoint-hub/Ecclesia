@@ -73,7 +73,9 @@ export class DistrictFinanceService {
     }
 
 
-    const { receipt, receiptNumber } = await createWithNumber('DST', (receiptNumber) => districtFinanceRepository.createReceipt({
+    // Receipt and audit row commit together or not at all.
+    const { receipt, receiptNumber } = await createWithNumber('DST', (receiptNumber) => prisma.$transaction(async (tx) => {
+      const created = await tx.districtReceipt.create({ data: {
       id: uuidv4(),
       circuitId: data.circuitId,
       memberId: data.memberId || null,
@@ -87,9 +89,8 @@ export class DistrictFinanceService {
       status: 'ISSUED',
       issuedBy: user.id,
       issuedAt: new Date(),
-    }));
-
-    await prisma.auditLog.create({
+      } });
+      await tx.auditLog.create({
       data: {
         id: uuidv4(),
         action: 'DISTRICT_RECEIPT_CREATED',
@@ -97,10 +98,12 @@ export class DistrictFinanceService {
         entityType: 'DISTRICT_FINANCE',
         entityId: data.circuitId,
         churchId: user.churchId,
-        changes: JSON.stringify({ receipt }),
+        changes: JSON.stringify({ receipt: created }),
         timestamp: new Date(),
       },
-    });
+      });
+      return created;
+    }));
 
     return receipt;
   }

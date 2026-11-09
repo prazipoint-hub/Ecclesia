@@ -132,11 +132,41 @@ describe('deposits', () => {
       { status: 'VERIFIED', currency: 'USD', amount: D(250) },
       { status: 'PENDING', currency: 'USD', amount: D(50) },
     ]);
+    prisma.fund.findMany.mockResolvedValue([{ id: 'f1', name: 'General', description: null, isActive: true, isRestricted: false }]);
+    prisma.receipt.groupBy.mockResolvedValue([{ fundId: 'f1', _sum: { amount: D(500) } }]);
+    prisma.expenditure.groupBy.mockResolvedValue([{ fundId: 'f1', _sum: { amount: D(120) } }]);
     const res = await request(app).get(`${base}/treasurer/overview`).set(as('u-t', 'finance:view'));
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       approvedCash: { USD: '400.00', ZWG: '30.00' }, approvedSessions: 2, pendingCash: { USD: '75.00' }, pendingSessions: 1,
-      depositsVerified: { USD: '250.00' }, depositsAwaitingVerification: { USD: '50.00' }, undepositedCash: { USD: '100.00', ZWG: '30.00' },
+      funds: [{ id: 'f1', balance: 380 }], depositsVerified: { USD: '250.00' }, depositsAwaitingVerification: { USD: '50.00' }, undepositedCash: { USD: '100.00', ZWG: '30.00' },
+    });
+  });
+
+  describe('linking a deposit to an approved session', () => {
+    const rec = (over: Record<string, unknown> = {}) => request(app).post(`${base}/deposits`).set(as('u-rec', 'finance:deposit:record')).send({ ...body, cashSessionId: 'cs1', ...over });
+    const sess = (over: Record<string, unknown> = {}) => ({ churchId: 'church-1', status: 'RECONCILED', snapshotJson: JSON.stringify({ cashReceipts: { USD: '300.00' } }), ...over });
+
+    test('accepts a deposit within the session cash', async () => {
+      prisma.cashSession.findUnique.mockResolvedValue(sess());
+      prisma.deposit.findMany.mockResolvedValue([{ amount: D(40) }]);
+      prisma.deposit.create.mockResolvedValue(dep({ cashSessionId: 'cs1' }));
+      expect((await rec()).status).toBe(201);
+      expect(prisma.deposit.create.mock.calls[0][0].data.cashSessionId).toBe('cs1');
+    });
+    test('refuses more than the session holds, counting earlier deposits', async () => {
+      prisma.cashSession.findUnique.mockResolvedValue(sess());
+      prisma.deposit.findMany.mockResolvedValue([{ amount: D(100) }]);
+      expect((await rec()).status).toBe(409); // 100 + 250 > 300
+      expect(prisma.deposit.create).not.toHaveBeenCalled();
+    });
+    test('refuses an unapproved session, another church, or a currency with no cash', async () => {
+      prisma.cashSession.findUnique.mockResolvedValue(sess({ status: 'SUBMITTED' }));
+      expect((await rec()).status).toBe(409);
+      prisma.cashSession.findUnique.mockResolvedValue(sess({ churchId: 'church-2' }));
+      expect((await rec()).status).toBe(404);
+      prisma.cashSession.findUnique.mockResolvedValue(sess());
+      expect((await rec({ currency: 'ZWG' })).status).toBe(400);
     });
   });
 });

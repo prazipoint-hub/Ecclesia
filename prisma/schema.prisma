@@ -2810,6 +2810,7 @@ model Deposit {
   verifiedAt   DateTime?
   rejectReason String? @db.Text
   journalEntryId String?
+  cashSessionId  String? // the RECONCILED cash session this deposit banks, when known
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -2817,4 +2818,5 @@ model Deposit {
   @@unique([churchId, bankReference])
   @@unique([churchId, idempotencyKey])
   @@index([churchId, status])
+  @@index([cashSessionId])
 }
