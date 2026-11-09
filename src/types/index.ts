@@ -7,6 +7,8 @@ export type AuthorizedUser = {
   permissions: string[];
   memberId?: string | null;
   roleIds?: string[];
+  /** Set only on a read-only "view as" token. */
+  preview?: { roleId: string; roleName: string };
 };
 
 export interface AuthRequest extends Request {

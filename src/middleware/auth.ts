@@ -23,6 +23,7 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       permissions?: string[];
       sessionId?: string;
       tokenId?: string;
+      preview?: { roleId: string; roleName: string };
     };
 
     if (!payload.sub || !payload.sessionId || !payload.tokenId) {
@@ -45,8 +46,15 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       permissions: payload.permissions || [],
       memberId: payload.memberId || null,
       roleIds: payload.roleIds || [],
+      ...(payload.preview ? { preview: payload.preview } : {}),
     };
     req.sessionId = session.id;
+
+    // A preview token may only read. Enforced here, once, for every route that authenticates.
+    if (payload.preview && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) && !req.originalUrl.split('?')[0].endsWith('/access/preview/exit')) {
+      res.status(403).json({ error: 'Forbidden: this is a read-only preview. Exit the preview to make changes.' });
+      return;
+    }
 
     if (session.deviceId) {
       prisma.device

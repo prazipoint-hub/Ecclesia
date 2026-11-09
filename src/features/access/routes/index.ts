@@ -4,6 +4,7 @@ import { AuthRequest } from '@/types';
 import { ValidationError } from '@/types/errors';
 import { handleError } from '@/utils/errorHandler';
 import { AssignSchema, assignmentService } from '../service/assignments';
+import { previewService } from '../service/preview';
 
 const router = Router();
 router.use(authenticate);
@@ -13,6 +14,10 @@ const guarded = (fn: (req: AuthRequest, res: Response) => Promise<void>) => asyn
 };
 
 router.get('/me/contexts', guarded(async (req, res) => { res.json({ contexts: await assignmentService.myContexts(req.user!) }); }));
+
+router.post('/context/verify', guarded(async (req, res) => { res.json(await previewService.verifyContext(req.user!, req.body)); }));
+router.post('/preview', guarded(async (req, res) => { res.status(201).json(await previewService.start(req.user!, req.sessionId, req.body)); }));
+router.post('/preview/exit', guarded(async (req, res) => { res.json(await previewService.exit(req.user!)); }));
 
 router.post('/assignments', guarded(async (req, res) => {
   const body = AssignSchema.safeParse(req.body);
