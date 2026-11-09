@@ -9,6 +9,7 @@ import type { AuthorizedUser } from '@/types';
 import { generateToken, hashToken } from '@/features/auth/crypto';
 import { startSessionForUser, type AuthResponse, type SessionContext } from '@/features/auth/service';
 import { auditAuthEvent } from '@/features/auth/service/audit';
+import { appointmentService } from '@/features/leadership/service/appointments';
 import { sendVerificationEmail } from '@/features/auth/service/verification';
 
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
@@ -195,6 +196,21 @@ export async function acceptInvitation(token: string, password: string, context:
           churchId: invitation.churchId,
           memberId: invitation.memberId,
           emailVerified: true,
+          // A scoped grant carried by the invitation is created in the same statement as the account, so it cannot be half-applied.
+          ...(invitation.grantRoleId && invitation.grantScopeType && invitation.grantScopeId
+            ? {
+                scopedRoles: {
+                  create: {
+                    roleId: invitation.grantRoleId,
+                    scopeType: invitation.grantScopeType,
+                    scopeId: invitation.grantScopeId,
+                    sourceType: 'INVITATION',
+                    sourceId: invitation.id,
+                    createdBy: invitation.invitedBy,
+                  },
+                },
+              }
+            : {}),
         },
       }),
       prisma.invitation.update({ where: { id: invitation.id }, data: { acceptedAt: new Date() } }),
@@ -205,6 +221,13 @@ export async function acceptInvitation(token: string, password: string, context:
       throw new ConflictError('An account already exists for this invitation');
     }
     throw error;
+  }
+
+  // Appointments made before this person had an account start granting access now (no-op when there are none).
+  try {
+    await appointmentService.syncGrantsForMember(invitation.memberId);
+  } catch (error) {
+    logger.error({ err: error, memberId: invitation.memberId }, 'Failed to sync appointment grants');
   }
 
   await auditAuthEvent({

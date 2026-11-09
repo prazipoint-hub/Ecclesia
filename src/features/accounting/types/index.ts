@@ -81,7 +81,7 @@ export const UpdateFundSchema = z
   .refine((v) => Object.keys(v).length > 0, 'Nothing to update');
 
 // ---- cash sessions
-export const OpenCashSessionSchema = z.object({ openingBalance: money }).strict();
+export const OpenCashSessionSchema = z.object({ openingBalance: money, currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).optional() }).strict();
 export const CloseCashSessionSchema = z.object({ countedBalance: money, cashPaidOut: money.default(0), notes: z.string().trim().max(1000).optional() }).strict();
 
 export type CreateAccountInput = z.infer<typeof CreateAccountSchema>;

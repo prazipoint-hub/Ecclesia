@@ -139,6 +139,26 @@ describe('acceptInvitation', () => {
   });
 });
 
+describe('acceptInvitation with a scoped grant', () => {
+  const base = { id: 'inv1', churchId: 'c1', email: 'a@example.com', memberId: 'm1', invitedBy: 'boss', acceptedAt: null, revokedAt: null, expiresAt: future() };
+
+  test('creates the grant in the same statement as the account', async () => {
+    prisma.invitation.findUnique.mockResolvedValue({ ...base, grantRoleId: 'r1', grantScopeType: 'CIRCUIT', grantScopeId: 'ci1' });
+    prisma.user.create.mockResolvedValue({ id: 'u1' });
+    await security.acceptInvitation('t'.repeat(64), 'Password#123', {}).catch(() => undefined); // session start is not under test
+    expect(prisma.user.create.mock.calls[0][0].data.scopedRoles.create).toEqual({
+      roleId: 'r1', scopeType: 'CIRCUIT', scopeId: 'ci1', sourceType: 'INVITATION', sourceId: 'inv1', createdBy: 'boss',
+    });
+  });
+
+  test('an ordinary invitation carries no grant', async () => {
+    prisma.invitation.findUnique.mockResolvedValue(base);
+    prisma.user.create.mockResolvedValue({ id: 'u1' });
+    await security.acceptInvitation('t'.repeat(64), 'Password#123', {}).catch(() => undefined);
+    expect(prisma.user.create.mock.calls[0][0].data.scopedRoles).toBeUndefined();
+  });
+});
+
 describe('devices', () => {
   test('revokeDevice only deletes devices owned by the caller', async () => {
     prisma.device.deleteMany.mockResolvedValue({ count: 0 });

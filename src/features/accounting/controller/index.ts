@@ -3,6 +3,8 @@ import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
 import { budgetService } from '../service/budgets';
 import { cashSessionService } from '../service/cashSessions';
+import { cashReviewService } from '../service/cashReview';
+import { depositService } from '../service/deposits';
 import { fundService } from '../service/funds';
 import { ledgerService } from '../service/ledger';
 import {
@@ -75,7 +77,22 @@ export class AccountingController {
   // cash sessions
   listCashSessions = guarded(async (req, res) => { res.json(await cashSessionService.list(req.user!)); });
   currentCashSession = guarded(async (req, res) => { res.json(await cashSessionService.current(req.user!)); });
-  openCashSession = guarded(async (req, res) => { res.status(201).json(await cashSessionService.open(req.user!, OpenCashSessionSchema.parse(req.body).openingBalance)); });
+  openCashSession = guarded(async (req, res) => { res.status(201).json(await (() => { const b = OpenCashSessionSchema.parse(req.body); return cashSessionService.open(req.user!, b.openingBalance, b.currency); })()); });
+  submitCashSession = guarded(async (req, res) => { res.json(await cashReviewService.submit(req.user!, req.params.sessionId, req.body)); });
+  cashReviewQueue = guarded(async (req, res) => { res.json({ sessions: await cashReviewService.queue(req.user!) }); });
+  cashSessionDetail = guarded(async (req, res) => { res.json(await cashReviewService.detail(req.user!, req.params.sessionId)); });
+  rejectCashSession = guarded(async (req, res) => { res.json(await cashReviewService.reject(req.user!, req.params.sessionId, req.body)); });
+  approveCashSession = guarded(async (req, res) => { res.json(await cashReviewService.approve(req.user!, req.params.sessionId, req.body)); });
+  recordDeposit = guarded(async (req, res) => {
+    const key = req.header('Idempotency-Key')?.trim();
+    if (key !== undefined && !/^[A-Za-z0-9_-]{8,100}$/.test(key)) { res.status(400).json({ error: 'Invalid Idempotency-Key header' }); return; }
+    const out = await depositService.record(req.user!, req.body, key);
+    res.status('replayed' in out ? 200 : 201).json(out);
+  });
+  listDeposits = guarded(async (req, res) => { res.json({ deposits: await depositService.list(req.user!, typeof req.query.status === 'string' ? req.query.status : undefined) }); });
+  verifyDeposit = guarded(async (req, res) => { res.json(await depositService.verify(req.user!, req.params.depositId)); });
+  rejectDeposit = guarded(async (req, res) => { res.json(await depositService.reject(req.user!, req.params.depositId, req.body)); });
+  treasurerOverview = guarded(async (req, res) => { res.json(await depositService.overview(req.user!)); });
   closeCashSession = guarded(async (req, res) => { res.json(await cashSessionService.close(req.user!, req.params.sessionId, CloseCashSessionSchema.parse(req.body))); });
 }
 

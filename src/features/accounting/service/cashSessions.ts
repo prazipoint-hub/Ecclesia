@@ -10,12 +10,13 @@ import { D, toNumber } from './money';
 type Session = NonNullable<Awaited<ReturnType<typeof repository.findCashSession>>>;
 
 export class CashSessionService {
-  async open(user: AuthorizedUser, openingBalance: number) {
+  async open(user: AuthorizedUser, openingBalance: number, currency?: string) {
     require(user, 'finance:cash_session:manage');
     if (!user.memberId) throw new ForbiddenError('Forbidden: a member-linked account is required to handle cash');
-    if (await repository.findOpenCashSession(user.churchId)) throw new ConflictError('A cash session is already open. Close it before opening another.');
+    // One open session per cashier. Other cashiers, and sessions still awaiting review, never block a new one.
+    if (await repository.findOpenCashSession(user.churchId, user.memberId)) throw new ConflictError('You already have an open cash session. Submit it before opening another.');
     const account = (await repository.findFinanceAccount(user.churchId)) ?? (await repository.createFinanceAccount(user.churchId));
-    const session = await repository.createCashSession({ churchId: user.churchId, accountId: account.id, openingBalance: D(openingBalance), handledBy: user.memberId, status: 'OPEN' });
+    const session = await repository.createCashSession({ churchId: user.churchId, accountId: account.id, openingBalance: D(openingBalance), handledBy: user.memberId, status: 'OPEN', ...(currency ? { currency } : {}) });
     await this.audit(user, 'CASH_SESSION_OPENED', session.id, { openingBalance });
     return this.view(session);
   }
@@ -28,6 +29,9 @@ export class CashSessionService {
     require(user, 'finance:cash_session:manage');
     const session = await this.owned(user, id);
     if (session.status !== 'OPEN') throw new ConflictError('This cash session is already closed');
+    // Where the church requires review, a cashier cannot close their own session; they must submit it for approval instead.
+    const rule = await prisma.systemSetting.findUnique({ where: { churchId_key: { churchId: user.churchId, key: 'finance.cash_session.review_required' } } });
+    if (rule?.value === true) throw new ConflictError('This church requires cash sessions to be submitted for review. Use the submit step instead of closing directly.');
     const cashIn = await repository.cashReceiptsSince(user.churchId, session.sessionDate);
     const expected = D(session.openingBalance).plus(cashIn).minus(input.cashPaidOut);
     const variance = D(input.countedBalance).minus(expected);
@@ -46,7 +50,7 @@ export class CashSessionService {
   /** Live view of an open session so the cashier can see what the count should be before counting. */
   async current(user: AuthorizedUser) {
     require(user, 'finance:cash_session:manage');
-    const session = await repository.findOpenCashSession(user.churchId);
+    const session = await repository.findOpenCashSession(user.churchId, user.memberId);
     if (!session) return null;
     const cashIn = await repository.cashReceiptsSince(user.churchId, session.sessionDate);
     return { ...this.view(session), cashReceivedSoFar: toNumber(cashIn), expectedBeforePayouts: toNumber(D(session.openingBalance).plus(cashIn)) };
@@ -65,7 +69,7 @@ export class CashSessionService {
 
   private view(s: Session) {
     return {
-      id: s.id, status: s.status, openedAt: s.sessionDate, handledBy: s.handledBy, openingBalance: toNumber(s.openingBalance),
+      id: s.id, status: s.status, currency: s.currency, submissionNo: s.submissionNo, submittedAt: s.submittedAt, reviewNote: s.reviewNote, openedAt: s.sessionDate, handledBy: s.handledBy, openingBalance: toNumber(s.openingBalance),
       closedAt: s.closedAt, countedBalance: s.closingBalance === null ? null : toNumber(s.closingBalance), cashPaidOut: s.cashPaidOut === null ? null : toNumber(s.cashPaidOut),
       expectedBalance: s.expectedClosing === null ? null : toNumber(s.expectedClosing), variance: s.variance === null ? null : toNumber(s.variance), notes: s.notes,
     };

@@ -21,9 +21,9 @@ export const CreateChurchReceiptSchema = z.object({
   fundId: z.string().min(1),
   incomeType: z.enum(['OFFERING', 'TITHE', 'DONATION', 'FUNDRAISING', 'OTHER']),
   amount: money,
-  currency: z.string().default('USD'),
+  currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, 'use a 3-letter currency code').default('USD'),
   paymentMethod: z.enum(['CASH', 'BANK_TRANSFER', 'MOBILE_MONEY', 'CHEQUE', 'OTHER']),
-  reference: z.string().optional(),
+  reference: z.string().trim().max(100).optional(),
 });
 
 export const CreateChurchExpenditureSchema = z.object({

@@ -23,8 +23,13 @@ export class MainChurchFinanceController {
         churchId,
       });
 
-      const receipt = await mainChurchFinanceService.createChurchReceipt(validated, req.user!);
-      res.status(201).json(receipt);
+      const header = req.header('Idempotency-Key');
+      if (header !== undefined && !/^[A-Za-z0-9._\-]{8,128}$/.test(header)) {
+        res.status(400).json({ error: 'Idempotency-Key must be 8-128 letters, digits, ".", "_" or "-"' });
+        return;
+      }
+      const receipt = await mainChurchFinanceService.createChurchReceipt(validated, req.user!, header);
+      res.status((receipt as { replayed?: boolean }).replayed ? 200 : 201).json(receipt);
     } catch (error) {
       handleError(error, res);
     }

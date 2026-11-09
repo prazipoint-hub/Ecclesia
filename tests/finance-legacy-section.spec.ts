@@ -105,7 +105,8 @@ describe('section finance: receipts', () => {
 
   beforeEach(() => {
     prisma.sectionFinancialAccount.findUnique.mockResolvedValue({ sectionId: SEC, openingBalance: 0 });
-    prisma.sectionReceipt.count.mockResolvedValue(4);
+    prisma.$transaction.mockImplementation((async (fn: any) => fn(prisma)) as never);
+    prisma.receiptSequence.upsert.mockResolvedValue({ last: 5 });
     prisma.sectionReceipt.create.mockImplementation((async ({ data }: any) => data) as never);
   });
 
@@ -129,7 +130,7 @@ describe('section finance: receipts', () => {
     const created = prisma.sectionReceipt.create.mock.calls[0][0].data;
     expect(created).toMatchObject({ sectionId: SEC, status: 'ISSUED', issuedBy: USER, amount: 25.5, memberId: null });
     expect(created.receiptNumber).toBe(`SEC-${new Date().getFullYear()}-000005`);
-    expect(prisma.sectionReceipt.count.mock.calls[0][0].where).toEqual({ sectionId: SEC });
+    expect(prisma.receiptSequence.upsert.mock.calls[0][0].where.churchId_year.churchId).toBe('GLOBAL:SEC');
     const journal = prisma.sectionJournalEntry.create.mock.calls[0][0].data;
     expect(journal.debitAmount).toBe(journal.creditAmount);
     expect(journal).toMatchObject({ sectionId: SEC, receiptId: created.id, debitAmount: 25.5 });

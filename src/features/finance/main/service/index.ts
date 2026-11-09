@@ -1,5 +1,7 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/database';
 import { AuthorizedUser } from '@/types';
+import { ConflictError } from '@/types/errors';
 import { v4 as uuidv4 } from 'uuid';
 import { mainChurchFinanceRepository } from '../repository';
 
@@ -40,7 +42,8 @@ export class MainChurchFinanceService {
       paymentMethod: string;
       reference?: string;
     },
-    user: AuthorizedUser
+    user: AuthorizedUser,
+    idempotencyKey?: string
   ) {
     if (!user.permissions.includes('finance:receipt:create')) {
       throw new Error('Unauthorized: finance:receipt:create permission required');
@@ -70,39 +73,84 @@ export class MainChurchFinanceService {
       });
     }
 
-    const count = await mainChurchFinanceRepository.countReceipts(data.churchId);
+    // A retry or double-click with the same key returns the receipt already issued instead of a second one.
+    // The same key with a different payment is a client bug and is refused rather than silently ignored.
+    if (idempotencyKey) {
+      const prior = await prisma.receipt.findFirst({ where: { churchId: data.churchId, idempotencyKey } });
+      if (prior) return this.replay(prior, data);
+    }
+
+    // A cash receipt belongs to the cashier's own open session, so each session owns exactly the cash it took.
+    // No open session (or a non-cash method) leaves it unattached, as before.
+    let cashSessionId: string | null = null;
+    if (data.paymentMethod === 'CASH' && user.memberId) {
+      const open = await prisma.cashSession.findFirst({ where: { churchId: data.churchId, handledBy: user.memberId, status: 'OPEN' }, select: { id: true } });
+      cashSessionId = open?.id ?? null;
+    }
+
     const year = new Date().getFullYear();
-    const receiptNumber = `CH-${year}-${String(count + 1).padStart(6, '0')}`;
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        // Number, receipt and audit entry commit together or not at all: no gaps from a failed insert, no receipt without its audit row.
+        return await prisma.$transaction(async (tx) => {
+          const last = await tx.receipt.findFirst({ where: { churchId: data.churchId, receiptNumber: { startsWith: `CH-${year}-` } }, orderBy: { receiptNumber: 'desc' }, select: { receiptNumber: true } });
+          const floor = Number(last?.receiptNumber.slice(`CH-${year}-`.length)) || 0; // continues existing numbering the first time only
+          const seq = await tx.receiptSequence.upsert({
+            where: { churchId_year: { churchId: data.churchId, year } },
+            create: { churchId: data.churchId, year, last: floor + 1 },
+            update: { last: { increment: 1 } },
+          });
+          const receipt = await tx.receipt.create({
+            data: {
+              id: uuidv4(),
+              churchId: data.churchId,
+              fundId: data.fundId,
+              memberId: data.memberId || null,
+              amount: data.amount,
+              currency: data.currency,
+              incomeType: data.incomeType,
+              paymentMethod: data.paymentMethod,
+              receiptNumber: `CH-${year}-${String(seq.last).padStart(6, '0')}`,
+              reference: data.reference ?? null,
+              idempotencyKey: idempotencyKey ?? null,
+              cashSessionId,
+              status: 'ISSUED',
+              recordedAt: new Date(),
+              recordedBy: user.id,
+            },
+          });
+          await tx.auditLog.create({
+            data: {
+              id: uuidv4(),
+              action: 'CHURCH_RECEIPT_CREATED',
+              actorId: user.id,
+              entityType: 'FINANCE',
+              entityId: data.churchId,
+              churchId: data.churchId,
+              changes: JSON.stringify({ receipt }),
+              timestamp: new Date(),
+            },
+          });
+          return receipt;
+        });
+      } catch (error) {
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error;
+        // Lost a race. If it was the same request arriving twice, return the winner; if it was the number, draw again.
+        if (idempotencyKey) {
+          const winner = await prisma.receipt.findFirst({ where: { churchId: data.churchId, idempotencyKey } });
+          if (winner) return this.replay(winner, data);
+        }
+        if (attempt >= 5) throw new ConflictError('Could not allocate a receipt number; please try again');
+      }
+    }
+  }
 
-    const receipt = await mainChurchFinanceRepository.createReceipt({
-      id: uuidv4(),
-      churchId: data.churchId,
-      fundId: data.fundId,
-      memberId: data.memberId || null,
-      amount: data.amount,
-      currency: data.currency,
-      incomeType: data.incomeType,
-      paymentMethod: data.paymentMethod,
-      receiptNumber,
-      status: 'ISSUED',
-      recordedAt: new Date(),
-      recordedBy: user.id,
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        id: uuidv4(),
-        action: 'CHURCH_RECEIPT_CREATED',
-        actorId: user.id,
-        entityType: 'FINANCE',
-        entityId: data.churchId,
-        churchId: data.churchId,
-        changes: JSON.stringify({ receipt }),
-        timestamp: new Date(),
-      },
-    });
-
-    return receipt;
+  private replay(prior: { fundId: string; amount: unknown; currency: string; paymentMethod: string; incomeType: string; memberId: string | null }, data: { fundId: string; amount: number; currency: string; paymentMethod: string; incomeType: string; memberId?: string }) {
+    const same =
+      prior.fundId === data.fundId && Number(prior.amount) === data.amount && prior.currency === data.currency &&
+      prior.paymentMethod === data.paymentMethod && prior.incomeType === data.incomeType && (prior.memberId ?? null) === (data.memberId ?? null);
+    if (!same) throw new ConflictError('This idempotency key was already used for a different receipt');
+    return { ...prior, replayed: true };
   }
 
   async createChurchExpenditure(

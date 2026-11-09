@@ -1,3 +1,4 @@
+import { createWithNumber } from '../../shared/receiptNumber';
 import { sectionFinanceRepository } from '../repository';
 import { prisma } from '@/database';
 import { AuthorizedUser } from '@/types';
@@ -133,13 +134,8 @@ export class SectionFinanceService {
       });
     }
 
-    // Generate receipt number: SEC-{YYYY}-{COUNTER}
-    const count = await sectionFinanceRepository.countSectionReceipts(data.sectionId);
-    const year = new Date().getFullYear();
-    const receiptNumber = `SEC-${year}-${String(count + 1).padStart(6, '0')}`;
 
-    // Create receipt
-    const receipt = await sectionFinanceRepository.createReceipt({
+    const { receipt, receiptNumber } = await createWithNumber('SEC', (receiptNumber) => sectionFinanceRepository.createReceipt({
       id: uuidv4(),
       sectionId: data.sectionId,
       receiptNumber,
@@ -153,7 +149,7 @@ export class SectionFinanceService {
       status: 'ISSUED',
       issuedBy: user.id,
       issuedAt: new Date(),
-    });
+    }));
 
     // Create journal entry (double-entry accounting)
     // DR: Cash / Bank

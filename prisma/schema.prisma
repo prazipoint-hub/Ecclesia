@@ -37,6 +37,7 @@ model User {
   emailVerifications EmailVerification[]
   twoFactorSecret    TwoFactorSecret?
   calendarFeeds      CalendarFeed[]
+  scopedRoles        ScopedRoleAssignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -85,6 +86,11 @@ model Invitation {
   expiresAt  DateTime
   acceptedAt DateTime?
   revokedAt  DateTime?
+
+  // Optional scoped grant applied only when the invitation is accepted (e.g. a new Circuit's Secretary)
+  grantRoleId    String?
+  grantScopeType String?
+  grantScopeId   String?
 
   createdAt DateTime @default(now())
 
@@ -179,6 +185,17 @@ model Circuit {
   name       String
   churches   Church[]
 
+  // Registration metadata (all nullable so circuits created before registration existed stay valid)
+  identificationNumber String?   @unique
+  location             String?
+  status               String    @default("ACTIVE") // PENDING, ACTIVE, SUSPENDED, CLOSED
+  registeredAt         DateTime?
+  registeredBy         String? // user id
+  registrationKey      String?   @unique // client idempotency key so a retried submit cannot create a second circuit
+  onboardedAt          DateTime? // set only when every mandatory onboarding step passes
+  onboardedBy          String?
+  onboardingSteps      CircuitOnboardingStep[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -209,6 +226,7 @@ model Church {
   receipts         Receipt[]
   expenditures     Expenditure[]
   cashSessions     CashSession[]
+  deposits         Deposit[]
 
   // Leadership
   roles                 Role[]
@@ -243,6 +261,9 @@ model Church {
   // People & governance
   visitors          Visitor[]
   memberImports     MemberImport[]
+  memberImportJobs  MemberImportJob[]
+  positionDefinitions PositionDefinition[]
+  appointments      Appointment[]
   committeeMeetings CommitteeMeeting[]
   leadershipTerms   LeadershipTerm[]
 
@@ -382,6 +403,7 @@ model Member {
   // Leadership & Permissions
   leadershipAssignments LeadershipAssignment[]
   organizationRoles     OrganizationRoleAssignment[]
+  appointments          Appointment[]
 
   // Family relationships
   asPartner1 FamilyRelationship[] @relation("Partner1")
@@ -579,6 +601,7 @@ model Role {
 
   permissions RolePermission[]
   assignments LeadershipAssignment[]
+  scopedGrants ScopedRoleAssignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -991,7 +1014,9 @@ model Receipt {
   incomeType    String // OFFERING, TITHE, DONATION, FUNDRAISING
   paymentMethod String // CASH, BANK_TRANSFER, MOBILE_MONEY, CHEQUE
 
-  receiptNumber String @unique
+  receiptNumber String // unique per church (see @@unique below); numbers come from ReceiptSequence
+  reference     String? // payment/transaction reference typed by the cashier (cheque no., mobile money id...)
+  idempotencyKey String? // client key so a retried or double-clicked submit returns the same receipt
   status        String @default("ISSUED") // ISSUED, VOIDED, REVERSED
 
   recordedAt DateTime @default(now())
@@ -1002,6 +1027,10 @@ model Receipt {
   FinancialAccount   FinancialAccount? @relation(fields: [financialAccountId], references: [id])
   financialAccountId String?
 
+  // The cashier's open session when a CASH receipt was recorded, so each session owns its own cash
+  cashSessionId String?
+  cashSession   CashSession? @relation(fields: [cashSessionId], references: [id])
+
   updatedAt DateTime @default(now()) @updatedAt
   payment   Payment?
 
@@ -1009,6 +1038,9 @@ model Receipt {
   @@index([fundId])
   @@index([memberId])
   @@index([financialAccountId])
+  @@index([cashSessionId])
+  @@unique([churchId, receiptNumber])
+  @@unique([churchId, idempotencyKey])
 }
 
 model Expenditure {
@@ -1065,6 +1097,19 @@ model CashSession {
 
   handledBy   String // Member ID
   sessionDate DateTime @default(now())
+
+  // Review workflow (status: OPEN, SUBMITTED, REJECTED, RECONCILED; CLOSED = legacy single-step close)
+  currency        String    @default("USD") // currency of the opening float and cash payouts
+  submittedAt     DateTime?
+  submittedBy     String? // user id
+  submissionNo    Int       @default(0)
+  countsJson      String?   @db.Text // latest submission: per-currency counted cash + denominations
+  snapshotJson    String?   @db.Text // totals frozen at submission, re-verified at approval
+  reviewedAt      DateTime?
+  reviewedBy      String? // user id
+  reviewNote      String?   @db.Text
+  receipts        Receipt[]
+  events          CashSessionEvent[]
 
   createdAt DateTime @default(now())
 
@@ -2568,4 +2613,208 @@ model CalendarFeed {
 
   @@index([userId])
   @@index([churchId])
+}
+
+/// A Role's permission bundle granted to one account at one place in the hierarchy.
+/// The grant covers its scope and everything beneath it (a DISTRICT grant covers that
+/// district's circuits and churches), never anything above. Expiry/revocation is checked
+/// on every request, so a stale JWT cannot keep revoked authority.
+model ScopedRoleAssignment {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  scopeType String // CONFERENCE, DISTRICT, CIRCUIT, CHURCH, SECTION, ORGANIZATION
+  scopeId   String
+
+  // Where the grant came from, so removing one appointment removes only its own grants.
+  sourceType String @default("MANUAL") // MANUAL, APPOINTMENT
+  sourceId   String  @default("") // appointment id; empty for MANUAL (non-null so the unique key dedupes)
+
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime? // exclusive: access stops AT this instant
+  revokedAt DateTime?
+  revokedBy String?
+  createdBy String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId, scopeType, scopeId, sourceType, sourceId])
+  @@index([userId, revokedAt])
+  @@index([scopeType, scopeId])
+}
+
+/// A Secretary's explicit confirmation of an onboarding step. Whether a step counts as done is
+/// recomputed from live data every time; the confirmation alone never completes it.
+model CircuitOnboardingStep {
+  id          String   @id @default(cuid())
+  circuitId   String
+  circuit     Circuit  @relation(fields: [circuitId], references: [id], onDelete: Cascade)
+  step        String // DETAILS, MEMBERSHIP, LEADERSHIP, ACCESS
+  confirmedBy String // user id
+  confirmedAt DateTime @default(now())
+
+  @@unique([circuitId, step])
+}
+
+/// A staged, reviewable membership import (template-based flow). Preview writes only here, never to Member.
+model MemberImportJob {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  kind            String    @default("MEMBERS") // MEMBERS | LEADERSHIP (same staging tables, different processor)
+  fileName        String
+  templateVersion String
+  contentHash     String // sha256 of the uploaded text, so re-uploading identical content reuses this job
+  status          String    @default("PREVIEWED") // PREVIEWED, PROCESSING, PARTIAL, COMPLETED, CANCELLED
+  totalRows       Int
+  createdBy       String
+  startedAt       DateTime?
+  heartbeatAt     DateTime? // lets a crashed run be resumed after a timeout
+  finishedAt      DateTime?
+  rows            MemberImportRow[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId, contentHash])
+  @@index([churchId, createdAt])
+}
+
+model MemberImportRow {
+  id        String          @id @default(cuid())
+  jobId     String
+  job       MemberImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  rowNumber Int // 1-based file row; the header is row 1
+
+  raw      String  @db.Text // original cell values, JSON
+  parsed   String? @db.Text // normalised values used to create the member, JSON
+  status   String // VALID, REJECTED, REVIEW, IMPORTED, SKIPPED, FAILED
+  reason   String? // for REVIEW: DUPLICATE_IN_FILE | POSSIBLE_MATCH
+  errors   String? @db.Text // JSON string[]
+  warnings String? @db.Text // JSON string[]
+  matches  String? @db.Text // JSON [{memberId, membershipNumber, name, why}]
+  decision String? // CREATE | SKIP, set by a reviewer
+  memberId String? // the member this row created
+
+  @@unique([jobId, rowNumber])
+  @@index([jobId, status])
+}
+
+/// A named office (Lay Leader, Treasurer, Organisation Secretary...). A position is NOT a permission set:
+/// access exists only if an administrator maps it to a Role (mappedRoleId). Unmapped positions grant nothing.
+model PositionDefinition {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  code          String // stable, e.g. LAY_LEADER
+  name          String
+  groupName     String
+  scopeKind     String  @default("CHURCH") // CHURCH | ORGANIZATION
+  aliases       String? @db.Text // JSON string[]
+  allowMultiple Boolean @default(true)
+  active        Boolean @default(true)
+  mappedRoleId  String? // permission bundle derived grants use; NULL = no system access
+
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, code])
+  @@index([churchId, groupName])
+}
+
+/// One person holding one position for a term. History is kept: revoking or ending never deletes the row.
+model Appointment {
+  id         String             @id @default(cuid())
+  churchId   String
+  church     Church             @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member             @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  positionId String
+  position   PositionDefinition @relation(fields: [positionId], references: [id], onDelete: Restrict)
+
+  scopeType String // CHURCH | ORGANIZATION
+  scopeId   String // churchId or organizationId
+  sectionId   String?
+  committeeId String?
+  department  String?
+
+  termStart DateTime
+  termEnd   DateTime? // EXCLUSIVE instant: access and "current" stop at this moment (inclusive end date + 1 day, UTC)
+  status    String    @default("ACTIVE") // PENDING | ACTIVE | REVOKED | ENDED
+
+  createdBy  String
+  approvedBy String?
+  approvedAt DateTime?
+  revokedBy  String?
+  revokedAt  DateTime?
+  revokeReason String?
+  importJobId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([memberId, positionId, scopeType, scopeId, termStart])
+  @@index([churchId, status])
+  @@index([memberId])
+}
+
+/// Append-only history of a cash session's review: every submission and every outcome is kept.
+model CashSessionEvent {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  action    String // SUBMITTED, REJECTED, APPROVED
+  actorId   String // user id
+  note      String?     @db.Text
+  data      String?     @db.Text // JSON snapshot of what was submitted / confirmed
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+/// Atomic per-church, per-year counter behind church receipt numbers (CH-YYYY-NNNNNN).
+model ReceiptSequence {
+  id       String @id @default(cuid())
+  churchId String
+  year     Int
+  last     Int
+
+  @@unique([churchId, year])
+}
+
+/// Cash moved from the till/safe to the bank. NOT income: it only moves value between two asset accounts
+/// (debit 1100 Bank, credit 1000 Cash) once a second person verifies it against the bank evidence.
+model Deposit {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  currency      String
+  amount        Decimal  @db.Decimal(14, 2)
+  depositDate   DateTime
+  bankReference String
+  bankName      String?
+  notes         String?  @db.Text
+  status        String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  idempotencyKey String?
+
+  recordedBy   String // user id
+  verifiedBy   String? // user id
+  verifiedAt   DateTime?
+  rejectReason String? @db.Text
+  journalEntryId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, bankReference])
+  @@unique([churchId, idempotencyKey])
+  @@index([churchId, status])
 }

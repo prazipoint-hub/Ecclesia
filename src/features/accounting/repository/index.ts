@@ -201,8 +201,8 @@ export class AccountingRepository {
   }
 
   // ---- cash sessions
-  findOpenCashSession(churchId: string) {
-    return prisma.cashSession.findFirst({ where: { churchId, status: 'OPEN' } });
+  findOpenCashSession(churchId: string, handledBy?: string | null) {
+    return prisma.cashSession.findFirst({ where: { churchId, status: 'OPEN', ...(handledBy ? { handledBy } : {}) } });
   }
   findCashSession(id: string) {
     return prisma.cashSession.findUnique({ where: { id } });

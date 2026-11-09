@@ -50,8 +50,18 @@ router.put('/funds/:fundId', authorize('finance:fund:manage'), c.updateFund);
 router.post('/receipts/:receiptId/void', authorize('finance:journal:reverse'), c.voidReceipt);
 
 router.get('/cash-sessions', view, c.listCashSessions);
+router.get('/cash-sessions/review-queue', authorize('finance:cash_session:review'), c.cashReviewQueue);
 router.get('/cash-sessions/current', authorize('finance:cash_session:manage'), c.currentCashSession);
 router.post('/cash-sessions', authorize('finance:cash_session:manage'), c.openCashSession);
+router.get('/cash-sessions/:sessionId/detail', c.cashSessionDetail);
+router.post('/cash-sessions/:sessionId/submit', authorize('finance:cash_session:manage'), c.submitCashSession);
+router.post('/cash-sessions/:sessionId/reject', authorize('finance:cash_session:review'), c.rejectCashSession);
+router.post('/cash-sessions/:sessionId/approve', authorize('finance:cash_session:review'), c.approveCashSession);
+router.get('/treasurer/overview', view, c.treasurerOverview);
+router.get('/deposits', view, c.listDeposits);
+router.post('/deposits', authorize('finance:deposit:record'), c.recordDeposit);
+router.post('/deposits/:depositId/verify', authorize('finance:deposit:verify'), c.verifyDeposit);
+router.post('/deposits/:depositId/reject', authorize('finance:deposit:verify'), c.rejectDeposit);
 router.post('/cash-sessions/:sessionId/close', authorize('finance:cash_session:manage'), c.closeCashSession);
 
 export default router;

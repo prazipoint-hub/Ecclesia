@@ -101,7 +101,8 @@ describe.each(suites)('$name finance', (s) => {
     const post = (payload: unknown = body) => request(app).post(`${s.base}/receipts`).set(as(s.perms.receipt)).send(payload as object);
     beforeEach(() => {
       s.account().findUnique.mockResolvedValue({ circuitId: CIR });
-      s.receipts().count.mockResolvedValue(9);
+      prisma.$transaction.mockImplementation((async (fn: any) => fn(prisma)) as never);
+      prisma.receiptSequence.upsert.mockResolvedValue({ last: 10 });
       s.receipts().create.mockImplementation((async ({ data }: any) => data) as never);
     });
 
@@ -122,7 +123,7 @@ describe.each(suites)('$name finance', (s) => {
       const data = s.receipts().create.mock.calls[0][0].data;
       expect(data).toMatchObject({ circuitId: CIR, status: 'ISSUED', issuedBy: USER, amount: 75, reference: 'REF1', description: 'from church' });
       expect(data.receiptNumber).toBe(`${s.prefix}-${new Date().getFullYear()}-000010`);
-      expect(s.receipts().count.mock.calls[0][0].where).toEqual({ circuitId: CIR });
+      expect(prisma.receiptSequence.upsert.mock.calls[0][0].where.churchId_year.churchId).toBe(`GLOBAL:${s.prefix}`);
       expect(actions()).toEqual([`${s.audit}_RECEIPT_CREATED`]);
       expect(prisma.auditLog.create.mock.calls[0][0].data).toMatchObject({ entityType: s.entity, entityId: CIR, churchId: 'church-1', actorId: USER });
     });
@@ -340,7 +341,8 @@ describe('district finance over HTTP', () => {
   });
   test('a receipt can be created over HTTP, scoped to the unit in the URL', async () => {
     prisma.districtFinancialAccount.findUnique.mockResolvedValue({});
-    prisma.districtReceipt.count.mockResolvedValue(0);
+    prisma.$transaction.mockImplementation((async (fn: any) => fn(prisma)) as never);
+    prisma.receiptSequence.upsert.mockResolvedValue({ last: 1 });
     prisma.districtReceipt.create.mockImplementation((async ({ data }: any) => data) as never);
     const res = await request(app).post(`${root}/receipts`).set(as('district_receipt:create')).send({ incomeType: 'TRANSFER', amount: 5, paymentMethod: 'CASH' });
     expect(res.status).toBe(201);
@@ -391,7 +393,8 @@ describe('district finance service (called directly, since the HTTP layer cannot
   test('receipt: numbered, scoped, audited; first receipt creates the account', async () => {
     prisma.districtFinancialAccount.findUnique.mockResolvedValue(null);
     prisma.districtFinancialAccount.create.mockResolvedValue({});
-    prisma.districtReceipt.count.mockResolvedValue(0);
+    prisma.$transaction.mockImplementation((async (fn: any) => fn(prisma)) as never);
+    prisma.receiptSequence.upsert.mockResolvedValue({ last: 1 });
     prisma.districtReceipt.create.mockImplementation((async ({ data }: any) => data) as never);
     const r: any = await svc.createDistrictReceipt({ circuitId: CIR, incomeType: 'TRANSFER', amount: 12, currency: 'USD', paymentMethod: 'CASH' }, u);
     expect(r).toMatchObject({ circuitId: CIR, status: 'ISSUED', issuedBy: USER });

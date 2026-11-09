@@ -2,7 +2,10 @@ import { Response } from 'express';
 import { AuthRequest } from '@/types';
 import { ValidationError } from '@/types/errors';
 import { handleError } from '@/utils/errorHandler';
+import { z } from 'zod';
 import { directoryService } from '../service/directory';
+import { importJobService } from '../service/importJobs';
+import { TEMPLATE_SPEC } from '../service/importTemplate';
 import { DirectoryQuerySchema, ImportQuerySchema } from '../types/directory';
 
 type Handler = (req: AuthRequest, res: Response) => Promise<void>;
@@ -54,4 +57,45 @@ export class DirectoryController {
   });
 }
 
+const RowsQuery = z.object({
+  status: z.enum(['VALID', 'REJECTED', 'REVIEW', 'IMPORTED', 'SKIPPED', 'FAILED']).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(200).default(50),
+});
+const DecisionsBody = z.object({ decisions: z.array(z.object({ row: z.number().int().min(2), decision: z.enum(['CREATE', 'SKIP']) })).min(1).max(5000) });
+const ConfirmBody = z.object({ skipUnresolved: z.boolean().default(false) }).default({});
+const parse = <T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, value: unknown): T => {
+  const r = schema.safeParse(value);
+  if (!r.success) throw new ValidationError(r.error.issues.map((i) => `${i.path.join('.') || 'request'}: ${i.message}`).join('; '));
+  return r.data;
+};
+
+export class ImportJobController {
+  templateCsv = guarded(async (_req, res) => {
+    const t = importJobService.template();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${t.filename}"`);
+    res.setHeader('X-Template-Version', t.version);
+    res.send(t.csv);
+  });
+  templateSpec = guarded(async (_req, res) => { res.json(TEMPLATE_SPEC); });
+  stage = guarded(async (req, res) => {
+    const { fileName } = ImportQuerySchema.parse(req.query);
+    const out = await importJobService.stage(req.user!, csvBody(req), fileName);
+    res.status(out.reused ? 200 : 201).json(out);
+  });
+  get = guarded(async (req, res) => { res.json(await importJobService.get(req.user!, req.params.jobId)); });
+  rows = guarded(async (req, res) => { res.json(await importJobService.rows(req.user!, req.params.jobId, parse(RowsQuery, req.query))); });
+  problems = guarded(async (req, res) => {
+    const { filename, csv } = await importJobService.errorReport(req.user!, req.params.jobId);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
+  });
+  decide = guarded(async (req, res) => { res.json(await importJobService.decide(req.user!, req.params.jobId, parse(DecisionsBody, req.body).decisions)); });
+  confirm = guarded(async (req, res) => { res.json(await importJobService.confirm(req.user!, req.params.jobId, parse(ConfirmBody, req.body ?? {}))); });
+  cancel = guarded(async (req, res) => { res.json(await importJobService.cancel(req.user!, req.params.jobId)); });
+}
+
+export const importJobController = new ImportJobController();
 export const directoryController = new DirectoryController();

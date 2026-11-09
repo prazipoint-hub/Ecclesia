@@ -1,3 +1,4 @@
+import { createWithNumber } from '../../shared/receiptNumber';
 import { prisma } from '@/database';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,11 +75,8 @@ export class CircuitFinanceService {
       });
     }
 
-    const count = await circuitFinanceRepository.countReceipts(data.circuitId);
-    const year = new Date().getFullYear();
-    const receiptNumber = `CIR-${year}-${String(count + 1).padStart(6, '0')}`;
 
-    const receipt = await circuitFinanceRepository.createReceipt({
+    const { receipt, receiptNumber } = await createWithNumber('CIR', (receiptNumber) => circuitFinanceRepository.createReceipt({
       id: uuidv4(),
       circuitId: data.circuitId,
       memberId: data.memberId || null,
@@ -92,7 +90,7 @@ export class CircuitFinanceService {
       status: 'ISSUED',
       issuedBy: user.id,
       issuedAt: new Date(),
-    });
+    }));
 
     await prisma.auditLog.create({
       data: {

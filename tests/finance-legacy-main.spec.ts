@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { Prisma } from '@prisma/client';
 import request from 'supertest';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { createMockPrisma } from './helpers/mockPrisma';
@@ -105,6 +106,9 @@ describe('church finance: receipts', () => {
     prisma.receipt.count.mockResolvedValue(2);
     prisma.receipt.create.mockImplementation((async ({ data }: any) => data) as never);
     prisma.member.findFirst.mockResolvedValue({ id: 'member-9', churchId: 'church-1' });
+    prisma.$transaction.mockImplementation((async (arg: unknown) => (typeof arg === 'function' ? arg(prisma) : Promise.all(arg as unknown[]))) as never);
+    prisma.receipt.findFirst.mockResolvedValue({ receiptNumber: `CH-${new Date().getFullYear()}-000002` });
+    prisma.receiptSequence.upsert.mockResolvedValue({ last: 3 });
   });
 
   test.each([
@@ -125,6 +129,110 @@ describe('church finance: receipts', () => {
     expect(data).toMatchObject({ churchId: 'church-1', fundId: 'fund-1', memberId: 'member-9', status: 'ISSUED', recordedBy: 'user-1', amount: 80, currency: 'USD' });
     expect(data.receiptNumber).toBe(`CH-${new Date().getFullYear()}-000003`);
     expect(actions()).toEqual(['CHURCH_RECEIPT_CREATED']);
+  });
+
+  test("a CASH receipt joins the cashier's own open session; other methods and sessions never get it", async () => {
+    prisma.cashSession.findFirst.mockResolvedValue({ id: 'cs9' });
+    await post({ ...body, paymentMethod: 'CASH' });
+    expect(prisma.cashSession.findFirst.mock.calls[0][0].where).toEqual({ churchId: 'church-1', handledBy: 'member-1', status: 'OPEN' });
+    expect(prisma.receipt.create.mock.calls[0][0].data.cashSessionId).toBe('cs9');
+
+    prisma.receipt.create.mockClear();
+    prisma.cashSession.findFirst.mockClear();
+    await post({ ...body, paymentMethod: 'MOBILE_MONEY' });
+    expect(prisma.cashSession.findFirst).not.toHaveBeenCalled();
+    expect(prisma.receipt.create.mock.calls[0][0].data.cashSessionId).toBeNull();
+
+    prisma.receipt.create.mockClear();
+    prisma.cashSession.findFirst.mockResolvedValue(null); // no open session: recorded as before, unattached
+    expect((await post({ ...body, paymentMethod: 'CASH' })).status).toBe(201);
+    expect(prisma.receipt.create.mock.calls[0][0].data.cashSessionId).toBeNull();
+  });
+
+  describe('numbering and retries', () => {
+    const year = new Date().getFullYear();
+    const key = 'retry-key-0001';
+    const issued = (over: Record<string, unknown> = {}) => ({ id: 'r1', fundId: 'fund-1', amount: 80, currency: 'USD', paymentMethod: 'MOBILE_MONEY', incomeType: 'TITHE', memberId: null, receiptNumber: `CH-${year}-000007`, ...over });
+    const withKey = (payload: object = body, k = key) => request(app).post(`${base}/receipts`).set(as('finance:receipt:create')).set('Idempotency-Key', k).send(payload);
+
+    test('numbers come from an atomic per-church counter that starts after the highest existing number', async () => {
+      prisma.receipt.findFirst.mockResolvedValue({ receiptNumber: `CH-${year}-000041` });
+      prisma.receiptSequence.upsert.mockResolvedValue({ last: 42 });
+      const res = await post();
+      expect(res.body.receiptNumber).toBe(`CH-${year}-000042`);
+      expect(prisma.receiptSequence.upsert.mock.calls[0][0]).toEqual({
+        where: { churchId_year: { churchId: 'church-1', year } },
+        create: { churchId: 'church-1', year, last: 42 },
+        update: { last: { increment: 1 } },
+      });
+      expect(prisma.receipt.count).not.toHaveBeenCalled(); // no more count+1
+    });
+
+    test('the receipt and its audit row commit in one transaction; a failed insert issues no number and leaves no audit row', async () => {
+      prisma.receipt.create.mockRejectedValue(new Error('db down'));
+      expect((await post()).status).toBe(500);
+      expect(prisma.auditLog.create).not.toHaveBeenCalled();
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+
+    test('a number collision between two cashiers draws a fresh number', async () => {
+      const dup = new Prisma.PrismaClientKnownRequestError('dup', { code: 'P2002', clientVersion: 't' });
+      prisma.receipt.create.mockRejectedValueOnce(dup).mockImplementation((async ({ data }: any) => data) as never);
+      prisma.receiptSequence.upsert.mockResolvedValueOnce({ last: 3 }).mockResolvedValueOnce({ last: 4 });
+      const res = await post();
+      expect(res.status).toBe(201);
+      expect(res.body.receiptNumber).toBe(`CH-${year}-000004`);
+    });
+
+    test('the same key returns the original receipt and issues nothing new', async () => {
+      prisma.receipt.findFirst.mockReset();
+      prisma.receipt.findFirst.mockResolvedValue(issued());
+      const res = await withKey();
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({ receiptNumber: `CH-${year}-000007`, replayed: true });
+      expect(prisma.receipt.findFirst.mock.calls[0][0].where).toEqual({ churchId: 'church-1', idempotencyKey: key });
+      expect(prisma.receipt.create).not.toHaveBeenCalled();
+      expect(prisma.receiptSequence.upsert).not.toHaveBeenCalled();
+      expect(prisma.auditLog.create).not.toHaveBeenCalled();
+    });
+
+    test('the same key for a different payment is refused, not quietly replayed', async () => {
+      prisma.receipt.findFirst.mockReset();
+      prisma.receipt.findFirst.mockResolvedValue(issued());
+      expect((await withKey({ ...body, amount: 81 })).status).toBe(409);
+      expect(prisma.receipt.create).not.toHaveBeenCalled();
+    });
+
+    test('two simultaneous submits with one key: the loser returns the winner\'s receipt', async () => {
+      prisma.receipt.findFirst.mockReset();
+      prisma.receipt.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null).mockResolvedValue(issued());
+      prisma.receipt.create.mockRejectedValue(new Prisma.PrismaClientKnownRequestError('dup', { code: 'P2002', clientVersion: 't' }));
+      const res = await withKey();
+      expect(res.status).toBe(200);
+      expect(res.body.replayed).toBe(true);
+    });
+
+    test('stores the key and the payment reference; a new key issues a new receipt', async () => {
+      prisma.receipt.findFirst.mockReset();
+      prisma.receipt.findFirst.mockResolvedValue(null);
+      const res = await withKey({ ...body, reference: ' CHQ 00123 ' });
+      expect(res.status).toBe(201);
+      expect(prisma.receipt.create.mock.calls[0][0].data).toMatchObject({ idempotencyKey: key, reference: 'CHQ 00123' });
+    });
+
+    test('rejects a malformed key and an invalid currency code', async () => {
+      expect((await withKey(body, 'x')).status).toBe(400);
+      expect((await post({ ...body, currency: 'DOLLARS' })).status).toBe(400);
+      expect((await post({ ...body, currency: 'zwg' })).status).toBe(201);
+      expect(prisma.receipt.create.mock.calls.at(-1)![0].data.currency).toBe('ZWG');
+    });
+
+    test('each church has its own counter, so two churches can both issue number 1', async () => {
+      prisma.receiptSequence.upsert.mockResolvedValue({ last: 1 });
+      await post();
+      expect(prisma.receiptSequence.upsert.mock.calls[0][0].where.churchId_year.churchId).toBe('church-1');
+      expect(prisma.receipt.create.mock.calls[0][0].data.receiptNumber).toBe(`CH-${year}-000001`);
+    });
   });
 
   test('the fund must belong to this church', async () => {
