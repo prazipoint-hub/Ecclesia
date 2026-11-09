@@ -19,6 +19,8 @@ const LINKS: Array<{ to: string; label: string }> = [
   { to: '/finance/budgets', label: 'Budgets' },
   { to: '/finance/funds', label: 'Funds' },
   { to: '/finance/cash-sessions', label: 'Cash sessions' },
+  { to: '/finance/cash-review', label: 'Cash review' },
+  { to: '/finance/deposits', label: 'Deposits' },
   { to: '/finance/reports', label: 'Reports' },
 ];
 

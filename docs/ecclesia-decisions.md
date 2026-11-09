@@ -69,3 +69,13 @@ A cash deposit debits 1100 Bank and credits 1000 Cash. Income was already recogn
 
 ## Global receipt counters reuse ReceiptSequence
 Circuit/district/section receipt numbers stay globally unique, so their counter is global per prefix and year, stored in `ReceiptSequence` with `churchId = 'GLOBAL:CIR|DST|SEC'` (the column has no foreign key). Avoids a migration; accepted trade-off: a failed insert burns a number.
+
+## Preview is a reduced copy of the admin's own session
+View-As returns a token for the same user and session with only read permissions and no member link, valid 15 minutes. It never signs in as another person. Read-only is enforced in `authenticate`, so no route can forget it. A role's read permissions are those ending `:view`, `:view:all`, `:report`, `:read`; other GET routes (for example exports) are not granted.
+
+## Sensitive profile fields go through review
+Date of birth, gender and marital status change only after a different person approves, and only if the stored value is unchanged since the request. Contact details stay self-service. Which fields need review is fixed in code (`REVIEWED_FIELDS`), not configurable yet.
+
+## Fund balances mix currencies
+`fundService.list` (existing rule) adds all currencies together. The Treasurer overview shows it with a warning rather than hiding it. Fixing this needs a per-currency fund model.
+

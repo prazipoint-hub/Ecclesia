@@ -39,3 +39,14 @@ import/catalogue, POS session state machine, accounting scope work, dashboards/p
 
 ## Not verified
 Migration 0014 was **not** applied to a MySQL instance (none available here). No browser/UI check was possible because no UI was added.
+
+## Later work (this branch)
+- Real-MySQL concurrency script `tests/integration/mysql-concurrency.ts` (deposits, cash approval): passes.
+- Circuit/district finance bound to the caller's circuit (`access/service/scope.ts` `allowedAt/assertAt`, `authorizeOrScoped` route middleware, `tests/circuit-finance-scope.spec.ts`). Closes an existing hole where the token permission worked on every circuit.
+- Circuit/district/section receipt + audit (+ section journal) now commit in one transaction.
+- Deposits can link to an approved cash session with an over-deposit check; Treasurer overview adds per-session outstanding and fund balances (migration 0023). Over-deposit check is not atomic (two simultaneous deposits could together exceed a session; the verifier is the control).
+- Profile: configurable completion rule (`profile.required_fields` setting), next of kin, reviewed changes for date of birth / gender / marital status (approver must differ, stale values refused), counts-only completion report (migration 0024, `members/service/profileCompletion.ts`, 13 tests).
+- View-As: `POST /api/v2/access/preview` issues a 15-minute read-only token (read permissions only, no member link, admin's own session); `authenticate` rejects every non-read request made with it; exit and start are audited. `POST /access/context/verify` re-checks a remembered context against the database. 6 tests.
+- Reports added to the catalog: PROFILE_COMPLETION, LEADERSHIP_REGISTER_ASOF, MEMBERSHIP_DISTINCT, CASH_SESSIONS, DEPOSITS, TREASURER_OVERVIEW (7 tests); runs are audited.
+- Web: Cash review (`/finance/cash-review`), Deposits and Treasurer overview (`/finance/deposits`), Complete your profile (`/my-account/completion`), Profile reviews (`/admin/profile-review`); 6 component tests. Not run in a browser.
+

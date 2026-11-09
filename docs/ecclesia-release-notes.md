@@ -29,6 +29,8 @@ Hand out `access:assign:global` only to the platform owner; everyone else is gra
 Grant `circuit:register` (and `circuit:view` / `circuit:view:all`) only to the Conference/District-level role that may register circuits. Permission rows are created by `prisma/seed.ts` for local use; in production add them via the admin role tools.
 
 ## Recovery
+0024: drop `ProfileChangeRequest` then `MemberNextOfKin` (pending corrections and next of kin are lost).
+0023: drop `Deposit.cashSessionId` and its index.
 0022: drop `Deposit` only if none is VERIFIED; verified ones have `source = 'DEPOSIT'` journal entries that must be reversed first.
 0021: recreate the global unique index on receiptNumber (fails if two churches now share a number), drop the new indexes/columns and `ReceiptSequence`.
 0020: drop `CashSessionEvent`, the new CashSession columns and `Receipt.cashSessionId` (review history is lost).
@@ -38,6 +40,17 @@ Grant `circuit:register` (and `circuit:view` / `circuit:view:all`) only to the C
 0016: drop the three columns (pending secretary grants are lost).
 0015: `DROP TABLE ScopedRoleAssignment` (loses scoped grants made after release).
 Migration is additive. To roll back, drop the two indexes then the six columns; circuits registered after the migration lose their registration metadata.
+
+10. Then `0023_deposit_cash_session` (one nullable column + index on `Deposit`).
+11. Then `0024_profile_kin_and_changes` (two new tables). New permissions to seed and grant: `member:profile:review`, `member:profile:report`, `member:profile:configure`, `access:preview` (give `access:preview` only to Super Administrator).
+
+## Behaviour changes to announce
+- Circuit and district finance endpoints: the token permissions `circuit_*` / `district_*` now apply only to the user's OWN circuit (before, they worked on any circuit id). Scoped grants apply to the circuit they cover. A user who relied on cross-circuit access via a token permission must be given a scoped grant.
+- Unknown circuit ids on those endpoints now answer 403 instead of 404.
+- Circuit/district/section receipts: numbers now come from a global counter (`GLOBAL:CIR|DST|SEC` rows in `ReceiptSequence`), continuing after the highest existing number.
+
+## Verified on real MySQL 8.0 (scratch database)
+Migrations 0001-0024 apply from empty and `prisma migrate diff` against `schema.prisma` is empty. `tests/integration/mysql-concurrency.ts` (opt-in) shows one winner among 10 racing deposit verifiers and 10 racing cash-session approvers. Not verified: a copy of production data; imports and other concurrent paths on MySQL.
 
 ## Not production-verified
 Migration not run against MySQL in this session.

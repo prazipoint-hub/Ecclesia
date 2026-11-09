@@ -15,6 +15,8 @@ import { BudgetsPage } from '@/pages/finance/BudgetsPage';
 import { BudgetDetailPage } from '@/pages/finance/BudgetDetailPage';
 import { FundsPage } from '@/pages/finance/FundsPage';
 import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
+import { CashReviewPage } from '@/pages/finance/CashReviewPage';
+import { DepositsPage } from '@/pages/finance/DepositsPage';
 import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { ReportBuilderPage } from '@/pages/reports/ReportBuilderPage';
@@ -51,6 +53,8 @@ import { AcceptInvitationPage } from '@/pages/auth/AcceptInvitationPage';
 import { SecuritySettingsPage } from '@/pages/settings/SecuritySettingsPage';
 import { MyAccountPage } from '@/pages/account/MyAccountPage';
 import { MyProfilePage } from '@/pages/account/MyProfilePage';
+import { ProfileCompletionPage } from '@/pages/account/ProfileCompletionPage';
+import { ProfileReviewPage } from '@/pages/admin/ProfileReviewPage';
 import { MyGivingPage } from '@/pages/account/MyGivingPage';
 import { MyFamilyPage } from '@/pages/account/MyFamilyPage';
 import { NotificationsPage } from '@/pages/account/NotificationsPage';
@@ -633,6 +637,22 @@ function App() {
           }
         />
         <Route
+          path="/finance/cash-review"
+          element={
+            <ProtectedRoute>
+              <CashReviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/deposits"
+          element={
+            <ProtectedRoute>
+              <DepositsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/finance/reports"
           element={
             <ProtectedRoute>
@@ -669,6 +689,22 @@ function App() {
           element={
             <ProtectedRoute>
               <MyProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/completion"
+          element={
+            <ProtectedRoute>
+              <ProfileCompletionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/profile-review"
+          element={
+            <ProtectedRoute>
+              <ProfileReviewPage />
             </ProtectedRoute>
           }
         />
