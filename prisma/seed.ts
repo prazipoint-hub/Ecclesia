@@ -17,7 +17,7 @@ async function main() {
   const account = await prisma.financialAccount.upsert({ where: { churchId: church.id }, update: {}, create: { churchId: church.id, openingBalance: 5000, currentBalance: 5000 } });
   await prisma.fund.upsert({ where: { churchId_name: { churchId: church.id, name: 'General Fund' } }, update: {}, create: { churchId: church.id, accountId: account.id, name: 'General Fund', description: 'General operating fund', balance: 5000 } });
   const permissionNames = [
-    'member:view', 'member:create', 'member:update', 'family:create', 'family:update',
+    'member:view', 'member:profile:review', 'member:profile:report', 'member:profile:configure', 'member:create', 'member:update', 'family:create', 'family:update',
     'section:create', 'section:manage', 'organization:create', 'organization:manage', 'organization:view',
     'membership:status:request', 'membership:status:approve',
     'pastoral:case:view', 'pastoral:case:create', 'pastoral:case:update', 'pastoral:case:close',

@@ -20,6 +20,7 @@ import leadershipRoutes from '@/features/leadership/routes';
 import leadershipRegisterRoutes from '@/features/leadership/routes/register';
 import accountingRoutes from '@/features/accounting/routes';
 import myAccountRoutes from '@/features/members/routes/me';
+import { mine as profileMineRoutes, admin as profileAdminRoutes } from '@/features/members/routes/profile';
 import familyRoutes from '@/features/families/routes';
 import sectionRoutes from '@/features/sections/routes';
 import organizationRoutes from '@/features/organizations/routes';
@@ -84,7 +85,9 @@ export function createApp(): Application {
   mount('/api/v2/committees', committeeMeetingRoutes);
   mount('/api/v2/committees', committeeRoutes);
 
+  mount('/api/v2/me/profile-completion', profileMineRoutes);
   mount('/api/v2/me', myAccountRoutes);
+  mount('/api/v2/profile-admin', profileAdminRoutes);
   mount('/api/v2/notifications', notificationRoutes);
   mount('/api/v2/visitors', visitorRoutes);
   mount('/api/v2/leadership', leadershipRoutes);

@@ -397,6 +397,9 @@ model Member {
 
   // Authentication
   user                    User?                    @relation("UserMember")
+
+  nextOfKin      MemberNextOfKin?
+  profileChanges ProfileChangeRequest[]
   familyRelationships     FamilyRelationship[]     @relation("FamilyMember")
   membershipStatusChanges MembershipStatusChange[]
 
@@ -2819,4 +2822,42 @@ model Deposit {
   @@unique([churchId, idempotencyKey])
   @@index([churchId, status])
   @@index([cashSessionId])
+}
+
+model MemberNextOfKin {
+  id       String @id @default(cuid())
+  memberId String @unique
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  name         String
+  relationship String
+  phone        String
+  altPhone     String?
+  address      String?
+
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+/// A member's request to change a sensitive field (date of birth, gender, marital status). Applied only when someone
+/// other than the member approves it.
+model ProfileChangeRequest {
+  id       String @id @default(cuid())
+  churchId String
+  memberId String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  field    String  @db.VarChar(40)
+  oldValue String?
+  newValue String
+  status   String  @default("PENDING") @db.VarChar(20) // PENDING, APPROVED, REJECTED
+
+  requestedBy String // user id
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNote  String?   @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([churchId, status])
+  @@index([memberId])
 }
