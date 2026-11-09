@@ -57,3 +57,5 @@ Migration not run against MySQL in this session.
 
 
 Note: 0015_scoped_role_assignments was edited before first deployment (narrower VARCHAR columns, index named to match Prisma). If any environment already applied the older version, it must be rolled back (`DROP TABLE ScopedRoleAssignment`) and reapplied; the old version cannot have succeeded on MySQL 8 (key too long), so none should exist.
+
+- New permission `report:view:hierarchy` (seed) for conference/district/circuit consolidated reports. Not auto-assigned to existing roles in production; grant it deliberately.

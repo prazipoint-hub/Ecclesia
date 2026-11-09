@@ -25,6 +25,7 @@ router.post('/saved/:id/run', c.runSaved);
 router.get('/executions', c.executions);
 router.get('/dashboards/church', c.churchDashboard);
 router.get('/dashboards/section/:sectionId', c.sectionDashboard);
+router.get('/hierarchy', c.hierarchyReport);
 router.get('/dashboards/hierarchy/:level', c.hierarchyDashboard);
 
 /**

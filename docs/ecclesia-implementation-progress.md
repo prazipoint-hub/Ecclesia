@@ -51,3 +51,5 @@ Migration 0014 was **not** applied to a MySQL instance (none available here). No
 - Reports added to the catalog: PROFILE_COMPLETION, LEADERSHIP_REGISTER_ASOF, MEMBERSHIP_DISTINCT, CASH_SESSIONS, DEPOSITS, TREASURER_OVERVIEW (7 tests); runs are audited.
 - Web: Cash review (`/finance/cash-review`), Deposits and Treasurer overview (`/finance/deposits`), Complete your profile (`/my-account/completion`), Profile reviews (`/admin/profile-review`); 6 component tests. Not run in a browser.
 
+
+- Hierarchy consolidation: `GET /api/v2/reports/hierarchy?kind=MEMBERSHIP|INCOME|DEPOSITS|ATTENDANCE&scopeType=CONFERENCE|DISTRICT|CIRCUIT&scopeId=...&from&to`. Needs `report:view:hierarchy` AT that unit (token permission only for the caller's own circuit/district/conference, or a scoped grant). Per-church rows plus roll-up; money totals per currency only; counts, no member data; capped at 500 churches (`truncated` flag); audited as REPORT_GENERATED. Backend only: no web page, not in the saved-report catalog, no export formats, no ledger drill-down. Role holders need `report:view:hierarchy` added to their role (new seed permission).

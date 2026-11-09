@@ -27,7 +27,7 @@ async function main() {
     'section_finance:view', 'section_receipt:create', 'section_expenditure:create', 'section_expenditure:approve', 'section_payment:create',
     'circuit_finance:view', 'circuit_receipt:create', 'circuit_expenditure:create', 'circuit_expenditure:approve', 'circuit_payment:create',
     'district_finance:view', 'district_receipt:create', 'district_expenditure:create', 'district_expenditure:approve', 'district_payment:create',
-    'report:view:financial', 'report:view:administrative', 'report:view:audit', 'report:view:all_churches',
+    'report:view:financial', 'report:view:administrative', 'report:view:audit', 'report:view:all_churches', 'report:view:hierarchy',
     'report:view:section_finance', 'report:view:organization_finance',
     'auth:invite:create', 'auth:invite:revoke',
     'member:import', 'member:export', 'member:archive', 'visitor:view', 'visitor:create', 'visitor:manage',

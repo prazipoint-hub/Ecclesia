@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '@/types';
 import { handleError } from '@/utils/errorHandler';
+import { hierarchyReportService } from '../service/hierarchyReports';
 import { dashboardService } from '../service/dashboards';
 import { savedReportService } from '../service/saved';
 import * as T from '../types/saved';
@@ -42,6 +43,7 @@ export class SavedReportController {
 
   churchDashboard = guarded(async (req, res) => { res.json(await dashboardService.church(req.user!)); });
   sectionDashboard = guarded(async (req, res) => { res.json(await dashboardService.section(req.user!, T.SectionDashboardParamsSchema.parse(req.params).sectionId)); });
+  hierarchyReport = guarded(async (req, res) => { res.json(await hierarchyReportService.run(req.user!, req.query)); });
   hierarchyDashboard = guarded(async (req, res) => { res.json(await dashboardService.hierarchy(req.user!, T.HierarchyLevelSchema.parse(req.params.level.toUpperCase()))); });
 }
 
