@@ -62,6 +62,14 @@ router.get('/deposits', view, c.listDeposits);
 router.post('/deposits', authorize('finance:deposit:record'), c.recordDeposit);
 router.post('/deposits/:depositId/verify', authorize('finance:deposit:verify'), c.verifyDeposit);
 router.post('/deposits/:depositId/reject', authorize('finance:deposit:verify'), c.rejectDeposit);
+router.get('/reconciliations', view, c.listReconciliations);
+router.post('/reconciliations', authorize('finance:reconcile:manage'), c.startReconciliation);
+router.get('/reconciliations/:recId', view, c.getReconciliation);
+router.post('/reconciliations/:recId/statement', authorize('finance:reconcile:manage'), c.importStatement);
+router.post('/reconciliations/:recId/match', authorize('finance:reconcile:manage'), c.matchLine);
+router.post('/reconciliations/:recId/auto-match', authorize('finance:reconcile:manage'), c.autoMatch);
+router.post('/reconciliations/:recId/lines/:lineId/unmatch', authorize('finance:reconcile:manage'), c.unmatchLine);
+router.post('/reconciliations/:recId/complete', authorize('finance:reconcile:complete'), c.completeReconciliation);
 router.post('/cash-sessions/:sessionId/close', authorize('finance:cash_session:manage'), c.closeCashSession);
 
 export default router;

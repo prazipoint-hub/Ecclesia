@@ -4,6 +4,7 @@ import { handleError } from '@/utils/errorHandler';
 import { budgetService } from '../service/budgets';
 import { cashSessionService } from '../service/cashSessions';
 import { cashReviewService } from '../service/cashReview';
+import { bankReconciliationService } from '../service/bankReconciliation';
 import { depositService } from '../service/deposits';
 import { fundService } from '../service/funds';
 import { ledgerService } from '../service/ledger';
@@ -92,6 +93,14 @@ export class AccountingController {
   listDeposits = guarded(async (req, res) => { res.json({ deposits: await depositService.list(req.user!, typeof req.query.status === 'string' ? req.query.status : undefined) }); });
   verifyDeposit = guarded(async (req, res) => { res.json(await depositService.verify(req.user!, req.params.depositId)); });
   rejectDeposit = guarded(async (req, res) => { res.json(await depositService.reject(req.user!, req.params.depositId, req.body)); });
+  startReconciliation = guarded(async (req, res) => { res.status(201).json(await bankReconciliationService.create(req.user!, req.body)); });
+  listReconciliations = guarded(async (req, res) => { res.json({ reconciliations: await bankReconciliationService.list(req.user!) }); });
+  getReconciliation = guarded(async (req, res) => { res.json(await bankReconciliationService.detail(req.user!, req.params.recId)); });
+  importStatement = guarded(async (req, res) => { res.json(await bankReconciliationService.importLines(req.user!, req.params.recId, req.body)); });
+  matchLine = guarded(async (req, res) => { res.json(await bankReconciliationService.match(req.user!, req.params.recId, req.body)); });
+  unmatchLine = guarded(async (req, res) => { res.json(await bankReconciliationService.unmatch(req.user!, req.params.recId, req.params.lineId)); });
+  autoMatch = guarded(async (req, res) => { res.json(await bankReconciliationService.autoMatch(req.user!, req.params.recId)); });
+  completeReconciliation = guarded(async (req, res) => { res.json(await bankReconciliationService.complete(req.user!, req.params.recId)); });
   treasurerOverview = guarded(async (req, res) => { res.json(await depositService.overview(req.user!)); });
   closeCashSession = guarded(async (req, res) => { res.json(await cashSessionService.close(req.user!, req.params.sessionId, CloseCashSessionSchema.parse(req.body))); });
 }

@@ -302,6 +302,7 @@ model Church {
   updatedAt DateTime @updatedAt
 
   @@index([circuitId])
+  bankReconciliations BankReconciliation[]
 }
 
 model Section {
@@ -2860,4 +2861,56 @@ model ProfileChangeRequest {
 
   @@index([churchId, status])
   @@index([memberId])
+}
+
+/// One bank reconciliation: a statement period for the Bank ledger account (1100), matched line by line against posted
+/// journal lines. Completing it needs a second person and a zero difference. Cash counts are NOT bank reconciliation.
+model BankReconciliation {
+  id       String @id @default(cuid())
+  churchId String
+  church   Church @relation(fields: [churchId], references: [id], onDelete: Cascade)
+
+  currency         String
+  periodStart      DateTime
+  periodEnd        DateTime
+  statementOpening Decimal  @db.Decimal(14, 2)
+  statementClosing Decimal  @db.Decimal(14, 2)
+  notes            String?  @db.Text
+  status           String   @default("DRAFT") // DRAFT, COMPLETED
+
+  createdBy     String // user id
+  completedBy   String?
+  completedAt   DateTime?
+  summaryJson   String?   @db.LongText // frozen figures at completion
+
+  lines BankStatementLine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([churchId, status])
+}
+
+model BankStatementLine {
+  id               String             @id @default(cuid())
+  reconciliationId String
+  reconciliation   BankReconciliation @relation(fields: [reconciliationId], references: [id], onDelete: Cascade)
+  churchId         String
+
+  lineDate    DateTime
+  description String
+  reference   String?
+  amount      Decimal  @db.Decimal(14, 2) // + money into the bank, - money out
+  lineHash    String
+
+  status              String    @default("UNMATCHED") // UNMATCHED, MATCHED
+  matchedJournalLineId String?  @unique // one journal line can be matched to one statement line, ever
+  matchedBy           String?
+  matchedAt           DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([reconciliationId, lineHash])
+  @@index([reconciliationId, status])
+  @@index([churchId])
 }

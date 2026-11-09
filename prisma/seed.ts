@@ -32,7 +32,7 @@ async function main() {
     'auth:invite:create', 'auth:invite:revoke',
     'member:import', 'member:export', 'member:archive', 'visitor:view', 'visitor:create', 'visitor:manage',
     'finance:coa:manage', 'finance:journal:create', 'finance:journal:approve', 'finance:journal:reverse', 'finance:budget:create', 'finance:budget:approve',
-    'finance:period:manage', 'finance:fund:manage', 'finance:opening:set', 'finance:cash_session:manage', 'finance:cash_session:review', 'finance:deposit:record', 'finance:deposit:verify',
+    'finance:period:manage', 'finance:fund:manage', 'finance:opening:set', 'finance:cash_session:manage', 'finance:cash_session:review', 'finance:deposit:record', 'finance:deposit:verify', 'finance:reconcile:manage', 'finance:reconcile:complete',
     'pastoral:visit:view', 'pastoral:visit:create', 'pastoral:visit:update',
     'pastoral:counseling:view', 'pastoral:counseling:create', 'pastoral:counseling:update', 'pastoral:counseling:confidential',
     'pastoral:prayer:view', 'pastoral:prayer:manage', 'pastoral:referral:view', 'pastoral:referral:create', 'pastoral:referral:update',

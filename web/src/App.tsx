@@ -16,6 +16,7 @@ import { BudgetDetailPage } from '@/pages/finance/BudgetDetailPage';
 import { FundsPage } from '@/pages/finance/FundsPage';
 import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
 import { CashReviewPage } from '@/pages/finance/CashReviewPage';
+import { BankReconciliationPage } from '@/pages/finance/BankReconciliationPage';
 import { DepositsPage } from '@/pages/finance/DepositsPage';
 import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
@@ -650,6 +651,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CashReviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/reconciliation"
+          element={
+            <ProtectedRoute>
+              <BankReconciliationPage />
             </ProtectedRoute>
           }
         />
