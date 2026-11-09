@@ -23,6 +23,7 @@ import { ReportBuilderPage } from '@/pages/reports/ReportBuilderPage';
 import { SavedReportsPage } from '@/pages/reports/SavedReportsPage';
 import { ChurchDashboardPage } from '@/pages/reports/ChurchDashboardPage';
 import { SectionDashboardPage } from '@/pages/reports/SectionDashboardPage';
+import { HierarchyReportPage } from '@/pages/reports/HierarchyReportPage';
 import { HierarchyDashboardPage } from '@/pages/reports/HierarchyDashboardPage';
 import { ScopeWorkspacePage } from '@/pages/ScopeWorkspacePage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -473,6 +474,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SectionDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports/consolidated"
+          element={
+            <ProtectedRoute>
+              <HierarchyReportPage />
             </ProtectedRoute>
           }
         />

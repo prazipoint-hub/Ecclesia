@@ -23,6 +23,7 @@ const LINKS: Array<{ to: string; label: string; permission?: string; end?: boole
   { to: '/reports/build', label: 'Build a report' },
   { to: '/reports/saved', label: 'Saved reports' },
   { to: '/dashboard/church', label: 'Church dashboard' },
+  { to: '/reports/consolidated', label: 'Consolidated reports' },
   { to: '/dashboard/hierarchy', label: 'Circuit / district / conference', permission: 'report:view:all_churches' },
 ];
 
