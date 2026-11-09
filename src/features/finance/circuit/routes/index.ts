@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { circuitFinanceController } from '../controller';
 import { authenticate } from '@/middleware/auth';
-import { authorize } from '@/middleware/authorization';
+import { authorizeOrScoped as authorize } from '@/middleware/authorization';
 
 const router = Router({ mergeParams: true });
 

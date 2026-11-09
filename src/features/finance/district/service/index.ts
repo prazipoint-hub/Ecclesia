@@ -1,5 +1,6 @@
 import { createWithNumber } from '../../shared/receiptNumber';
 import { prisma } from '@/database';
+import { assertAt } from '@/features/access/service/scope';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { districtFinanceRepository } from '../repository';
@@ -27,9 +28,7 @@ export class DistrictFinanceService {
       throw new Error('District (Circuit) not found');
     }
 
-    if (!user.permissions.includes('district_finance:view')) {
-      throw new Error('Unauthorized: district_finance:view permission required');
-    }
+    await assertAt(user, 'district_finance:view', { type: 'CIRCUIT', id: circuitId });
 
     const summary = await districtFinanceRepository.getFinancialSummary(circuitId);
     const { receipts } = await districtFinanceRepository.listReceiptsByDistrict(circuitId, { take: 10 });
@@ -56,9 +55,7 @@ export class DistrictFinanceService {
     },
     user: AuthorizedUser
   ) {
-    if (!user.permissions.includes('district_receipt:create')) {
-      throw new Error('Unauthorized: district_receipt:create permission required');
-    }
+    await assertAt(user, 'district_receipt:create', { type: 'CIRCUIT', id: data.circuitId });
 
     const circuit = await prisma.circuit.findUnique({ where: { id: data.circuitId } });
     if (!circuit) {
@@ -119,9 +116,7 @@ export class DistrictFinanceService {
     },
     user: AuthorizedUser
   ) {
-    if (!user.permissions.includes('district_expenditure:create')) {
-      throw new Error('Unauthorized: district_expenditure:create permission required');
-    }
+    await assertAt(user, 'district_expenditure:create', { type: 'CIRCUIT', id: data.circuitId });
 
     const circuit = await prisma.circuit.findUnique({ where: { id: data.circuitId } });
     if (!circuit) {
@@ -170,9 +165,7 @@ export class DistrictFinanceService {
       throw new Error('District (Circuit) not found');
     }
 
-    if (!user.permissions.includes('district_expenditure:approve')) {
-      throw new Error('Unauthorized: district_expenditure:approve permission required');
-    }
+    await assertAt(user, 'district_expenditure:approve', { type: 'CIRCUIT', id: circuitId });
 
     const { expenditures, total } = await districtFinanceRepository.listPendingExpenditures(circuitId, options);
 
@@ -192,10 +185,6 @@ export class DistrictFinanceService {
     user: AuthorizedUser,
     circuitId?: string
   ) {
-    if (!user.permissions.includes('district_expenditure:approve')) {
-      throw new Error('Unauthorized: district_expenditure:approve permission required');
-    }
-
     const expenditure = await prisma.districtExpenditure.findUnique({
       where: { id: expenditureId },
     });
@@ -203,10 +192,10 @@ export class DistrictFinanceService {
     if (!expenditure) {
       throw new Error('Expenditure not found');
     }
-
     if (circuitId && expenditure.circuitId !== circuitId) {
       throw new Error('Expenditure does not belong to the provided district');
     }
+    await assertAt(user, 'district_expenditure:approve', { type: 'CIRCUIT', id: expenditure.circuitId });
 
     if (expenditure.status !== 'SUBMITTED') {
       throw new Error(`Cannot approve: expenditure status is ${expenditure.status}`);
@@ -249,18 +238,14 @@ export class DistrictFinanceService {
     user: AuthorizedUser,
     circuitId?: string
   ) {
-    if (!user.permissions.includes('district_payment:create')) {
-      throw new Error('Unauthorized: district_payment:create permission required');
-    }
-
     const expenditure = await prisma.districtExpenditure.findUnique({ where: { id: expenditureId } });
     if (!expenditure) {
       throw new Error('Expenditure not found');
     }
-
     if (circuitId && expenditure.circuitId !== circuitId) {
       throw new Error('Expenditure does not belong to the provided district');
     }
+    await assertAt(user, 'district_payment:create', { type: 'CIRCUIT', id: expenditure.circuitId });
 
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');

@@ -32,6 +32,8 @@ beforeEach(() => {
   prisma.session.findFirst.mockResolvedValue({ id: 's1', deviceId: null });
   prisma.auditLog.create.mockResolvedValue({});
   prisma.circuit.findUnique.mockResolvedValue({ id: CIR, name: 'North' });
+  prisma.church.findUnique.mockResolvedValue({ circuitId: CIR }); // the signed-in user's church sits in this circuit
+  prisma.scopedRoleAssignment.findMany.mockResolvedValue([]);
 });
 
 // Circuit and district finance share one design (and nearly one body of code); the same scenarios run against both.
@@ -136,9 +138,9 @@ describe.each(suites)('$name finance', (s) => {
       expect(s.account().create.mock.calls[0][0].data).toMatchObject({ circuitId: CIR, openingBalance: 0, status: 'ACTIVE' });
     });
 
-    test('unknown unit gets nothing issued', async () => {
+    test('unknown unit is refused and nothing is issued', async () => {
       prisma.circuit.findUnique.mockResolvedValue(null);
-      expect((await post()).status).toBe(404);
+      expect((await post()).status).toBe(403);
       expect(s.receipts().create).not.toHaveBeenCalled();
     });
 
@@ -180,9 +182,9 @@ describe.each(suites)('$name finance', (s) => {
       expect(over.body.error).toContain('Insufficient');
     });
 
-    test('unknown unit is 404 and nothing is created', async () => {
+    test('unknown unit is refused and nothing is created', async () => {
       prisma.circuit.findUnique.mockResolvedValue(null);
-      expect((await post()).status).toBe(404);
+      expect((await post()).status).toBe(403);
       expect(s.exps().create).not.toHaveBeenCalled();
     });
 
@@ -315,6 +317,7 @@ describe.each(suites)('$name finance', (s) => {
 // /api/v2/districts/:districtId but its controller reads req.params.circuitId, so over HTTP the id never arrives.
 describe('district finance over HTTP', () => {
   const D = '66666666-6666-4666-8666-666666666666';
+  beforeEach(() => { prisma.church.findUnique.mockResolvedValue({ circuitId: D }); });
   const root = `/api/v2/districts/${D}/finance`;
 
   test('every route still needs sign-in and its permission', async () => {
@@ -369,6 +372,7 @@ describe('district finance over HTTP', () => {
 });
 
 describe('district finance service (called directly, since the HTTP layer cannot pass the id)', () => {
+  beforeEach(() => { prisma.church.findUnique.mockResolvedValue({ circuitId: CIR }); });
   const svc = districtFinanceService;
   const u = user('district_finance:view', 'district_receipt:create', 'district_expenditure:create', 'district_expenditure:approve', 'district_payment:create');
   const wire = (opening: number, income = 0, committed = 0) => {
@@ -443,6 +447,7 @@ describe('district finance service (called directly, since the HTTP layer cannot
     await expect(svc.approveDistrictExpenditure(EXP, true, undefined, u, CIR)).rejects.toThrow(/does not belong/);
     prisma.districtExpenditure.findUnique.mockResolvedValue(null);
     await expect(svc.approveDistrictExpenditure(EXP, true, undefined, u, CIR)).rejects.toThrow(/not found/);
+    prisma.districtExpenditure.findUnique.mockResolvedValue(exp());
     await expect(svc.approveDistrictExpenditure(EXP, true, undefined, user(), CIR)).rejects.toThrow(/district_expenditure:approve/);
     expect(prisma.districtExpenditure.updateMany).not.toHaveBeenCalled();
   });
@@ -458,6 +463,7 @@ describe('district finance service (called directly, since the HTTP layer cannot
     await expect(svc.paymentDistrictExpenditure(EXP, 'CASH', u, CIR)).rejects.toThrow(/approved/);
     prisma.districtExpenditure.findUnique.mockResolvedValue(exp({ status: 'APPROVED', circuitId: 'other' }));
     await expect(svc.paymentDistrictExpenditure(EXP, 'CASH', u, CIR)).rejects.toThrow(/does not belong/);
+    prisma.districtExpenditure.findUnique.mockResolvedValue(exp({ status: 'APPROVED' }));
     await expect(svc.paymentDistrictExpenditure(EXP, 'CASH', user(), CIR)).rejects.toThrow(/district_payment:create/);
     expect(prisma.districtExpenditure.updateMany).not.toHaveBeenCalled();
   });

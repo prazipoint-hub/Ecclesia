@@ -98,3 +98,21 @@ export async function can(user: AuthorizedUser, permission: string, scope: Scope
   if (!chain) return false;
   return permissionsAt(await activeGrants(user.id), chain).has(permission);
 }
+
+/**
+ * Permission check for a record that belongs to `scope`. Passes when
+ *  - the user holds the permission in their token AND their own church sits inside that scope (the legacy rule, now
+ *    bounded to the user's own circuit/district instead of working on every circuit), or
+ *  - an active scoped grant gives the permission at or above that scope.
+ */
+export async function allowedAt(user: AuthorizedUser, permission: string, scope: Scope): Promise<boolean> {
+  if (user.permissions.includes(permission)) {
+    const mine = await scopeChain({ type: 'CHURCH', id: user.churchId });
+    if (mine?.some((s) => s.type === scope.type && s.id === scope.id)) return true;
+  }
+  return can(user, permission, scope);
+}
+
+export async function assertAt(user: AuthorizedUser, permission: string, scope: Scope): Promise<void> {
+  if (!(await allowedAt(user, permission, scope))) throw new Error(`Unauthorized: ${permission} permission required for this ${scope.type.toLowerCase()}`);
+}
