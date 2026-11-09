@@ -18,6 +18,12 @@ export const REPORT_CATALOG = [
   { type: 'ATTENDANCE_SUMMARY', category: 'ATTENDANCE', label: 'Attendance summary', permission: 'report:view:administrative', needsDates: true },
   { type: 'ATTENDANCE_DETAIL', category: 'ATTENDANCE', label: 'Attendance detail', permission: 'report:view:administrative', needsDates: true },
   { type: 'ATTENDANCE_ANALYTICS', category: 'ATTENDANCE', label: 'Attendance analytics', permission: 'attendance:analytics:view', needsDates: false },
+  { type: 'PROFILE_COMPLETION', category: 'MEMBERSHIP', label: 'Profile completion (counts only)', permission: 'member:profile:report', needsDates: false },
+  { type: 'LEADERSHIP_REGISTER_ASOF', category: 'MEMBERSHIP', label: 'Leadership register as at a date (end date, default today)', permission: 'leadership:appointment:view', needsDates: false },
+  { type: 'MEMBERSHIP_DISTINCT', category: 'MEMBERSHIP', label: 'Membership (each person counted once)', permission: 'report:view:administrative', needsDates: false },
+  { type: 'CASH_SESSIONS', category: 'POS', label: 'Cash sessions, counts and discrepancies', permission: 'finance:cash_session:review', needsDates: true },
+  { type: 'DEPOSITS', category: 'POS', label: 'Cash deposits to bank', permission: 'finance:view', needsDates: true },
+  { type: 'TREASURER_OVERVIEW', category: 'POS', label: 'Treasurer: approved vs pending cash and deposits', permission: 'finance:view', needsDates: false },
   { type: 'AUDIT_TRAIL', category: 'AUDIT', label: 'Audit trail', permission: 'report:view:audit', needsDates: true },
   { type: 'EXCEPTION_REPORT', category: 'AUDIT', label: 'Exception report', permission: 'report:view:audit', needsDates: true },
 ] as const;

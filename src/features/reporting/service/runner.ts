@@ -1,9 +1,11 @@
+import { prisma } from '@/database';
 import type { AuthorizedUser } from '@/types';
 import { attendanceAnalyticsService } from '@/features/events/service/analytics';
 import { ledgerService } from '@/features/accounting/service/ledger';
 import { ForbiddenError, ValidationError } from '@/types/errors';
 import { REPORT_CATALOG, type CatalogType, type ReportParams } from '../types/saved';
 import { reportingService } from './index';
+import { extraReports } from './extraReports';
 
 const DAY = 24 * 60 * 60 * 1000;
 const MAX_RANGE_DAYS = 800;
@@ -59,7 +61,19 @@ export class ReportRunner {
     const base = { churchId: user.churchId, reportType, format, organizationId: params.organizationId, sectionId: params.sectionId };
     let report: RunResult['report'];
 
-    if (entry.category === 'FINANCIAL') {
+    const extra: Partial<Record<CatalogType, () => Promise<Record<string, unknown>[]>>> = {
+      PROFILE_COMPLETION: () => extraReports.profileCompletion(user),
+      LEADERSHIP_REGISTER_ASOF: () => extraReports.leadershipRegister(user, end),
+      MEMBERSHIP_DISTINCT: () => extraReports.membershipDistinct(user),
+      CASH_SESSIONS: () => extraReports.cashSessions(user, start!, end!),
+      DEPOSITS: () => extraReports.deposits(user, start!, end!),
+      TREASURER_OVERVIEW: () => extraReports.treasurer(user),
+    };
+
+    if (extra[reportType]) {
+      report = await reportingService.formatReport(reportType, await extra[reportType]!(), format);
+      await prisma.auditLog.create({ data: { churchId: user.churchId, action: 'REPORT_GENERATED', entityType: 'REPORT', entityId: reportType, actorId: user.memberId ?? user.id, changes: JSON.stringify({ reportType, format }) } }).catch(() => undefined);
+    } else if (entry.category === 'FINANCIAL') {
       report = await reportingService.generateFinancialReport(
         { ...base, startDate: start!, endDate: end!, scope: params.organizationId ? 'ORGANIZATION' : params.sectionId ? 'SECTION' : 'CHURCH' },
         user
