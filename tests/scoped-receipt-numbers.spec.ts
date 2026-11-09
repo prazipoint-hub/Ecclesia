@@ -43,6 +43,12 @@ describe('circuit/district/section receipt numbers', () => {
     expect(prisma.circuitReceipt.findFirst).not.toHaveBeenCalled();
   });
 
+  test('losing the counter-row creation race retries and succeeds', async () => {
+    prisma.circuitReceipt.findFirst.mockResolvedValue(undefined);
+    prisma.receiptSequence.upsert.mockRejectedValueOnce(clash()).mockResolvedValueOnce({ last: 2 });
+    expect(await nextReceiptNumber('CIR')).toBe(`CIR-${year}-000002`);
+  });
+
   test('a number clash takes the next number; other errors surface', async () => {
     prisma.circuitReceipt.findFirst.mockResolvedValue(undefined);
     prisma.receiptSequence.upsert.mockResolvedValueOnce({ last: 1 }).mockResolvedValueOnce({ last: 2 });

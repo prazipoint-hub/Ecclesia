@@ -41,3 +41,6 @@ Migration is additive. To roll back, drop the two indexes then the six columns; 
 
 ## Not production-verified
 Migration not run against MySQL in this session.
+
+
+Note: 0015_scoped_role_assignments was edited before first deployment (narrower VARCHAR columns, index named to match Prisma). If any environment already applied the older version, it must be rolled back (`DROP TABLE ScopedRoleAssignment`) and reapplied; the old version cannot have succeeded on MySQL 8 (key too long), so none should exist.

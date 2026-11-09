@@ -1,12 +1,13 @@
+-- Narrow columns keep the 6-column unique key under MySQL's 3072-byte index limit (utf8mb4).
 -- Additive: scoped role grants. Existing church-level roles/JWT permissions are untouched.
 CREATE TABLE `ScopedRoleAssignment` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `roleId` VARCHAR(191) NOT NULL,
-    `scopeType` VARCHAR(191) NOT NULL,
-    `scopeId` VARCHAR(191) NOT NULL,
-    `sourceType` VARCHAR(191) NOT NULL DEFAULT 'MANUAL',
-    `sourceId` VARCHAR(191) NOT NULL DEFAULT '',
+    `scopeType` VARCHAR(20) NOT NULL,
+    `scopeId` VARCHAR(64) NOT NULL,
+    `sourceType` VARCHAR(20) NOT NULL DEFAULT 'MANUAL',
+    `sourceId` VARCHAR(64) NOT NULL DEFAULT '',
     `startsAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `endsAt` DATETIME(3) NULL,
     `revokedAt` DATETIME(3) NULL,
@@ -16,7 +17,7 @@ CREATE TABLE `ScopedRoleAssignment` (
 
     INDEX `ScopedRoleAssignment_userId_revokedAt_idx`(`userId`, `revokedAt`),
     INDEX `ScopedRoleAssignment_scopeType_scopeId_idx`(`scopeType`, `scopeId`),
-    UNIQUE INDEX `ScopedRoleAssignment_grant_key`(`userId`, `roleId`, `scopeType`, `scopeId`, `sourceType`, `sourceId`),
+    UNIQUE INDEX `ScopedRoleAssignment_userId_roleId_scopeType_scopeId_sourceT_key`(`userId`, `roleId`, `scopeType`, `scopeId`, `sourceType`, `sourceId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

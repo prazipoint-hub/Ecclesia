@@ -15,7 +15,20 @@ const lastNumber = async (tx: Prisma.TransactionClient, prefix: ReceiptPrefix, l
   return row?.receiptNumber;
 };
 
+const transient = (e: unknown) => e instanceof Prisma.PrismaClientKnownRequestError && (e.code === 'P2002' || e.code === 'P2034');
+
+/** Two requests creating a counter row at once make one fail its insert (seen on MySQL); the loser simply retries and increments. */
 export async function nextReceiptNumber(prefix: ReceiptPrefix, now = new Date()): Promise<string> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await allocate(prefix, now);
+    } catch (error) {
+      if (!transient(error) || attempt >= 6) throw error;
+    }
+  }
+}
+
+async function allocate(prefix: ReceiptPrefix, now: Date): Promise<string> {
   const year = now.getFullYear();
   const like = `${prefix}-${year}-`;
   return prisma.$transaction(async (tx) => {

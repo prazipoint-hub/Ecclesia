@@ -2626,12 +2626,12 @@ model ScopedRoleAssignment {
   roleId String
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  scopeType String // CONFERENCE, DISTRICT, CIRCUIT, CHURCH, SECTION, ORGANIZATION
-  scopeId   String
+  scopeType String @db.VarChar(20) // CONFERENCE, DISTRICT, CIRCUIT, CHURCH, SECTION, ORGANIZATION
+  scopeId   String @db.VarChar(64)
 
   // Where the grant came from, so removing one appointment removes only its own grants.
-  sourceType String @default("MANUAL") // MANUAL, APPOINTMENT
-  sourceId   String  @default("") // appointment id; empty for MANUAL (non-null so the unique key dedupes)
+  sourceType String @default("MANUAL") @db.VarChar(20) // MANUAL, APPOINTMENT
+  sourceId   String  @default("") @db.VarChar(64) // appointment id; empty for MANUAL (non-null so the unique key dedupes)
 
   startsAt  DateTime  @default(now())
   endsAt    DateTime? // exclusive: access stops AT this instant
