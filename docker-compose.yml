@@ -12,6 +12,13 @@ services:
       REFRESH_TOKEN_EXPIRY: 7d
       CORS_ORIGIN: ${PUBLIC_URL}
       LOG_LEVEL: info
+      APP_URL: ${PUBLIC_URL}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-Ecclesia <no-reply@example.com>}
     networks:
       - app
 

@@ -65,3 +65,4 @@ Note: 0015_scoped_role_assignments was edited before first deployment (narrower 
 - Migration 0026 (additive): `ExpenditureApproval`. New permission `finance:policy:manage`. Default policy changes nothing until set.
 - Migration 0027 (additive): `MemberPhoto`, `GuardianLink`, `ProfileFieldDefinition`, `ProfileFieldValue`. New use of `member:profile:configure`. Not auto-assigned to existing roles; grant deliberately.
 - Run `prisma migrate deploy` only after a backup; migrations were verified on a scratch MySQL 8.0 only.
+- Migration 0028 (data only, idempotent): inserts the permissions added since 0013 and grants them to the seeded `Church Administrator` role. Other roles are untouched. Compose now passes `APP_URL`, `TRUST_PROXY` and SMTP settings to the API.
