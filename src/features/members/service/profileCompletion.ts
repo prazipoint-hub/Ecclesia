@@ -64,26 +64,46 @@ export class ProfileCompletionService {
     const member = await prisma.member.findUnique({ where: { id: user.memberId }, include: { nextOfKin: true } });
     if (!member || member.churchId !== user.churchId) throw new NotFoundError('Member profile');
     const { fields, source } = await this.rule(user.churchId);
-    const missing = this.missing(fields, member as unknown as Check);
-    return { required: fields, ruleSource: source, missing, percent: Math.round(((fields.length - missing.length) / fields.length) * 100), nextOfKin: member.nextOfKin ? { name: member.nextOfKin.name, relationship: member.nextOfKin.relationship, phone: member.nextOfKin.phone, altPhone: member.nextOfKin.altPhone, address: member.nextOfKin.address } : null };
+    return this.completionFor(user.churchId, member as unknown as Check & { id: string; nextOfKin: { name: string; relationship: string; phone: string; altPhone: string | null; address: string | null } | null }, fields, source);
+  }
+
+  /** Percent = satisfied required items / required items, where items are the church's rule fields plus its required extra fields. */
+  async completionFor(churchId: string, member: Check & { id: string; nextOfKin: { name: string; relationship: string; phone: string; altPhone: string | null; address: string | null } | null }, fields: RuleField[], source: string) {
+    const extras = await prisma.profileFieldDefinition.findMany({ where: { churchId, active: true, required: true } });
+    const have = extras.length ? await prisma.profileFieldValue.findMany({ where: { memberId: member.id, fieldId: { in: extras.map((e) => e.id) } }, select: { fieldId: true, value: true } }) : [];
+    const filled = new Set(have.filter((h) => h.value.trim() !== '').map((h) => h.fieldId));
+    const missingExtra = extras.filter((e) => !filled.has(e.id)).map((e) => `extra:${e.key}`);
+    const missing = [...this.missing(fields, member), ...missingExtra];
+    const total = fields.length + extras.length;
+    return { required: [...fields, ...extras.map((e) => `extra:${e.key}`)], ruleSource: source, missing, percent: Math.round(((total - missing.length) / total) * 100), nextOfKin: member.nextOfKin ? { name: member.nextOfKin.name, relationship: member.nextOfKin.relationship, phone: member.nextOfKin.phone, altPhone: member.nextOfKin.altPhone, address: member.nextOfKin.address } : null };
   }
 
   async setNextOfKin(user: AuthorizedUser, raw: unknown) {
     if (!user.memberId) throw new ForbiddenError('Forbidden: your account is not linked to a member profile');
-    const data = NextOfKinSchema.parse(raw);
-    const member = await prisma.member.findUnique({ where: { id: user.memberId }, select: { churchId: true } });
-    if (!member || member.churchId !== user.churchId) throw new NotFoundError('Member profile');
-    await prisma.memberNextOfKin.upsert({ where: { memberId: user.memberId }, create: { memberId: user.memberId, ...data }, update: { ...data, altPhone: data.altPhone ?? null, address: data.address ?? null } });
-    await this.audit(user.churchId, user.id, 'NEXT_OF_KIN_UPDATED', 'MEMBER', user.memberId, { fields: Object.keys(data) }); // values are not logged
+    await this.setNextOfKinFor(user, user.memberId, raw);
     return this.mine(user);
+  }
+
+  /** Callers must already have established they may act for `memberId` (themselves or a minor in their care). */
+  async setNextOfKinFor(user: AuthorizedUser, memberId: string, raw: unknown) {
+    const data = NextOfKinSchema.parse(raw);
+    const member = await prisma.member.findUnique({ where: { id: memberId }, select: { churchId: true } });
+    if (!member || member.churchId !== user.churchId) throw new NotFoundError('Member profile');
+    await prisma.memberNextOfKin.upsert({ where: { memberId }, create: { memberId, ...data }, update: { ...data, altPhone: data.altPhone ?? null, address: data.address ?? null } });
+    await this.audit(user.churchId, user.id, 'NEXT_OF_KIN_UPDATED', 'MEMBER', memberId, { fields: Object.keys(data), onBehalf: memberId !== user.memberId }); // values are not logged
   }
 
   // ---------------------------------------------------------------- reviewed changes
 
   async requestChange(user: AuthorizedUser, raw: unknown) {
     if (!user.memberId) throw new ForbiddenError('Forbidden: your account is not linked to a member profile');
+    return this.requestChangeFor(user, user.memberId, raw);
+  }
+
+  /** Same review queue, filed for `memberId`; the reviewer must be neither the requester nor the member. */
+  async requestChangeFor(user: AuthorizedUser, memberId: string, raw: unknown) {
     const input = ChangeRequestSchema.parse(raw);
-    const member = await prisma.member.findUnique({ where: { id: user.memberId } });
+    const member = await prisma.member.findUnique({ where: { id: memberId } });
     if (!member || member.churchId !== user.churchId) throw new NotFoundError('Member profile');
     const raw0: unknown = member[input.field];
     const current = raw0 instanceof Date ? raw0.toISOString().slice(0, 10) : ((raw0 as string | null) ?? null);
@@ -91,7 +111,7 @@ export class ProfileCompletionService {
     const open = await prisma.profileChangeRequest.findFirst({ where: { memberId: member.id, field: input.field, status: 'PENDING' } });
     if (open) throw new ConflictError('You already have a pending request for this field');
     const row = await prisma.profileChangeRequest.create({ data: { churchId: user.churchId, memberId: member.id, field: input.field, oldValue: current, newValue: input.value, requestedBy: user.id } });
-    await this.audit(user.churchId, user.id, 'PROFILE_CHANGE_REQUESTED', 'MEMBER', member.id, { field: input.field });
+    await this.audit(user.churchId, user.id, 'PROFILE_CHANGE_REQUESTED', 'MEMBER', member.id, { field: input.field, onBehalf: member.id !== user.memberId });
     return this.view(row);
   }
 
@@ -140,17 +160,21 @@ export class ProfileCompletionService {
   async report(user: AuthorizedUser) {
     this.need(user, 'member:profile:report');
     const { fields } = await this.rule(user.churchId);
-    const members = await prisma.member.findMany({ where: { churchId: user.churchId, archivedAt: null, membershipStatus: 'ACTIVE' }, select: { firstName: true, lastName: true, phone: true, email: true, dateOfBirth: true, gender: true, maritalStatus: true, address: true, sectionId: true, nextOfKin: { select: { id: true } } }, take: 20000 });
-    const missingBy: Record<string, number> = Object.fromEntries(fields.map((f) => [f, 0]));
+    const members = await prisma.member.findMany({ where: { churchId: user.churchId, archivedAt: null, membershipStatus: 'ACTIVE' }, select: { id: true, firstName: true, lastName: true, phone: true, email: true, dateOfBirth: true, gender: true, maritalStatus: true, address: true, sectionId: true, nextOfKin: { select: { id: true } } }, take: 20000 });
+    const extras = await prisma.profileFieldDefinition.findMany({ where: { churchId: user.churchId, active: true, required: true } });
+    const values = extras.length && members.length ? await prisma.profileFieldValue.findMany({ where: { fieldId: { in: extras.map((e) => e.id) }, memberId: { in: members.map((m) => m.id) } }, select: { memberId: true, fieldId: true, value: true } }) : [];
+    const has = new Set(values.filter((v) => v.value.trim() !== '').map((v) => `${v.memberId}:${v.fieldId}`));
+    const missingBy: Record<string, number> = Object.fromEntries([...fields, ...extras.map((e) => `extra:${e.key}`)].map((f) => [f, 0]));
     let complete = 0;
     let percentSum = 0;
+    const total = fields.length + extras.length;
     for (const m of members) {
-      const miss = this.missing(fields, m as unknown as Check);
+      const miss: string[] = [...this.missing(fields, m as unknown as Check), ...extras.filter((e) => !has.has(`${m.id}:${e.id}`)).map((e) => `extra:${e.key}`)];
       miss.forEach((f) => { missingBy[f] += 1; });
       if (miss.length === 0) complete += 1;
-      percentSum += ((fields.length - miss.length) / fields.length) * 100;
+      percentSum += ((total - miss.length) / total) * 100;
     }
-    return { required: fields, activeMembers: members.length, complete, averagePercent: members.length ? Math.round(percentSum / members.length) : 0, missingByField: missingBy, truncated: members.length === 20000 };
+    return { required: [...fields, ...extras.map((e) => `extra:${e.key}`)], activeMembers: members.length, complete, averagePercent: members.length ? Math.round(percentSum / members.length) : 0, missingByField: missingBy, truncated: members.length === 20000 };
   }
 
   private need(user: AuthorizedUser, perm: string) {

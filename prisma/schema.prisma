@@ -401,6 +401,8 @@ model Member {
 
   nextOfKin      MemberNextOfKin?
   profileChanges ProfileChangeRequest[]
+  photo          MemberPhoto?
+  profileValues  ProfileFieldValue[]
   familyRelationships     FamilyRelationship[]     @relation("FamilyMember")
   membershipStatusChanges MembershipStatusChange[]
 
@@ -2928,4 +2930,72 @@ model ExpenditureApproval {
 
   @@unique([kind, expenditureId, approverId])
   @@index([kind, expenditureId])
+}
+
+/// One small profile photo per member, stored in the database so it follows the same tenant and access rules as the profile.
+model MemberPhoto {
+  id       String @id @default(cuid())
+  memberId String @unique
+  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  mimeType  String // image/jpeg, image/png, image/webp (checked against the file's own bytes)
+  data      Bytes  @db.LongBlob
+  sizeBytes Int
+  sha256    String
+  updatedBy String // user id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+/// An adult who may manage a minor's profile. Ends by itself when the minor turns 18 (checked on use) or when revoked.
+model GuardianLink {
+  id               String    @id @default(cuid())
+  churchId         String
+  guardianMemberId String
+  minorMemberId    String
+  relationship     String // PARENT, LEGAL_GUARDIAN, OTHER
+  status           String    @default("ACTIVE") // ACTIVE, REVOKED
+  createdBy        String
+  revokedBy        String?
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@unique([guardianMemberId, minorMemberId])
+  @@index([churchId, status])
+  @@index([minorMemberId])
+}
+
+/// A church-defined extra profile field (for example "Baptism date" or "Skills"). Required ones count toward completion.
+model ProfileFieldDefinition {
+  id        String  @id @default(cuid())
+  churchId  String
+  key       String // short stable name, lowercase letters/digits/underscore
+  label     String
+  fieldType String // TEXT, DATE, NUMBER, CHOICE
+  options   Json? // CHOICE only: list of allowed values
+  required  Boolean @default(false)
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  values    ProfileFieldValue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([churchId, key])
+  @@index([churchId, active])
+}
+
+model ProfileFieldValue {
+  id       String                 @id @default(cuid())
+  memberId String
+  member   Member                 @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  fieldId  String
+  field    ProfileFieldDefinition @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  value    String                 @db.Text
+
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([memberId, fieldId])
+  @@index([fieldId])
 }

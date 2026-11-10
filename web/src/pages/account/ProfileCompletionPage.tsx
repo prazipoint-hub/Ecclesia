@@ -5,11 +5,13 @@ import { FormField } from '@/components/forms/FormField';
 import { ApiError } from '@/pages/finance/financeShared';
 import { ErrorBlock, LoadingBlock, PageHeader, card, formatDate, primaryBtn, titleCase } from './shared';
 import { apiClient } from '@/utils/api';
+import { Dependants, ExtraFields, PhotoControl } from '@/components/profile/ProfileExtras';
 import type { ProfileChange, ProfileCompletion } from '@/types/treasury';
 
 const KEY = ['me', 'profile-completion'] as const;
 const CHANGES = ['me', 'profile-completion', 'changes'] as const;
 const base = '/api/v2/me/profile-completion';
+const label = (k: string) => (k.startsWith('extra:') ? titleCase(k.slice(6).replace(/_/g, ' ')) : FIELD_LABEL[k] ?? k);
 const FIELD_LABEL: Record<string, string> = { firstName: 'First name', lastName: 'Last name', phone: 'Phone', email: 'Email', dateOfBirth: 'Date of birth', gender: 'Gender', maritalStatus: 'Marital status', address: 'Address', section: 'Section', nextOfKin: 'Next of kin' };
 
 export const ProfileCompletionPage = () => {
@@ -38,8 +40,11 @@ export const ProfileCompletionPage = () => {
             <section className={card} aria-label="Progress">
               <div className="flex items-baseline justify-between"><h2 className="text-lg font-semibold text-gray-900">{s.percent}% complete</h2><span className="text-xs text-gray-500">{s.ruleSource === 'church' ? 'Your church’s rule' : 'Default rule'}</span></div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-valuenow={s.percent} aria-valuemin={0} aria-valuemax={100}><div className="h-full bg-primary-600" style={{ width: `${s.percent}%` }} /></div>
-              {s.missing.length ? <p className="mt-3 text-sm text-gray-700">Still needed: {s.missing.map((m) => FIELD_LABEL[m] ?? m).join(', ')}.</p> : <p className="mt-3 text-sm text-green-700">Everything your church requires is filled in.</p>}
+              {s.missing.length ? <p className="mt-3 text-sm text-gray-700">Still needed: {s.missing.map(label).join(', ')}.</p> : <p className="mt-3 text-sm text-green-700">Everything your church requires is filled in.</p>}
             </section>
+            <section className={card} aria-label="Photo"><h2 className="mb-3 text-lg font-semibold text-gray-900">Photo</h2><PhotoControl /></section>
+            <ExtraFields />
+            <Dependants />
 
             <section className={card}>
               <h2 className="mb-1 text-lg font-semibold text-gray-900">Next of kin</h2>

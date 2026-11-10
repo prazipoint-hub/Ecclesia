@@ -6,6 +6,7 @@ import { ApiError, td, th, usePermissions } from '@/pages/finance/financeShared'
 import { apiClient } from '@/utils/api';
 import type { CompletionReport, ProfileChange } from '@/types/treasury';
 import { AdminHeader, NoAccess } from './adminShared';
+import { FieldDefinitions, GuardianLinks } from '@/components/profile/ProfileAdminExtras';
 
 const base = '/api/v2/profile-admin';
 const ALL = ['firstName', 'lastName', 'phone', 'email', 'dateOfBirth', 'gender', 'maritalStatus', 'address', 'section', 'nextOfKin'];
@@ -77,6 +78,8 @@ export const ProfileReviewPage = () => {
             <button type="button" className={`${primaryBtn} mt-3`} disabled={rule === null || rule.length === 0 || saveRule.isPending} onClick={() => saveRule.mutate()}>Save rule</button>
           </section>
         )}
+        {canConfigure && <FieldDefinitions />}
+        {has('family:update') && <GuardianLinks />}
       </div>
     </MainLayout>
   );

@@ -8,6 +8,7 @@ import { AppError, ConflictError, ValidationError } from '@/types/errors';
 import { activeAssignments, resolvePermissionNames, type RoleAssignment } from '@/features/auth/permissions';
 import { acceptTwoFactorCode } from '@/features/auth/service/twoFactor';
 import { sendVerificationEmail } from '@/features/auth/service/verification';
+import { auditAuthEvent } from '@/features/auth/service/audit';
 const accessTokenExpiry = (process.env.ACCESS_TOKEN_EXPIRY || process.env.JWT_EXPIRY || '15m') as SignOptions['expiresIn'];
 const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 const refreshTokenTtlMs = (() => {
@@ -233,8 +234,11 @@ export async function register(
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) throw new ConflictError('A user account already exists for this email');
 
-  const member = await prisma.member.findFirst({ where: { email, churchId, user: null } });
-  if (!member) throw new ValidationError('A matching member record was not found in this church');
+  // Claiming is by email only. If more than one unclaimed profile carries this email we cannot tell whose it is, so
+  // nobody gets it automatically; an administrator must link the account. The answer is the same as "not found".
+  const candidates = await prisma.member.findMany({ where: { email, churchId, user: null }, select: { id: true }, take: 2 });
+  if (candidates.length !== 1) throw new ValidationError('A matching member record was not found in this church');
+  const member = candidates[0];
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
@@ -243,6 +247,8 @@ export async function register(
   const authUser = await getAuthUser(user.id);
   if (!authUser) throw new Error('Unable to create an authenticated user');
   await sendVerificationEmail(user.id, user.email);
+  // The profile is linked before the email is verified, so the claim is recorded for review (no personal values logged).
+  await auditAuthEvent({ churchId, action: 'MEMBER_PROFILE_CLAIMED', entityType: 'MEMBER', entityId: member.id, actorId: user.id });
   return issueSession(authUser, context);
 }
 

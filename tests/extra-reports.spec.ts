@@ -25,6 +25,8 @@ const run = (reportType: string, perms: string[], parameters: Record<string, unk
 
 beforeEach(() => {
   vi.resetAllMocks();
+  prisma.profileFieldDefinition.findMany.mockResolvedValue([]);
+  prisma.profileFieldValue.findMany.mockResolvedValue([]);
   prisma.session.findFirst.mockResolvedValue({ id: 's1', deviceId: null });
   prisma.auditLog.create.mockResolvedValue({});
   prisma.systemSetting.findUnique.mockResolvedValue(null);

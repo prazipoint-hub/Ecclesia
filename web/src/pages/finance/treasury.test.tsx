@@ -104,7 +104,9 @@ describe('DepositsPage', () => {
 describe('ProfileCompletionPage', () => {
   test('shows the percentage from the server and names the missing details', async () => {
     signIn([]);
-    routeGets({ '/api/v2/me/profile-completion/changes': { requests: [] }, '/api/v2/me/profile-completion': { required: ['phone', 'dateOfBirth', 'nextOfKin'], ruleSource: 'church', missing: ['dateOfBirth', 'nextOfKin'], percent: 33, nextOfKin: null } });
+    URL.createObjectURL = vi.fn(() => 'blob:x');
+    URL.revokeObjectURL = vi.fn();
+    routeGets({ '/api/v2/me/profile-completion/changes': { requests: [] }, '/api/v2/me/profile-completion/fields': { fields: [] }, '/api/v2/me/profile-completion/dependants': { dependants: [] }, '/api/v2/me/profile-completion/photo': new Blob(), '/api/v2/me/profile-completion': { required: ['phone', 'dateOfBirth', 'nextOfKin'], ruleSource: 'church', missing: ['dateOfBirth', 'nextOfKin'], percent: 33, nextOfKin: null } });
     renderAt('/my-account/completion', '/my-account/completion', <ProfileCompletionPage />);
     expect(await screen.findByText('33% complete')).toBeInTheDocument();
     expect(screen.getByText(/Still needed: Date of birth, Next of kin/)).toBeInTheDocument();
