@@ -87,6 +87,7 @@ export function createMockPrisma() {
     cashSessionEvent: model(),
     receiptSequence: model(),
     deposit: model(),
+    expenditureApproval: model(),
     bankReconciliation: model(),
     bankStatementLine: model(),
     memberNextOfKin: model(),

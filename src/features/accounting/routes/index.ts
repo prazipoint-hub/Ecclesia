@@ -62,6 +62,8 @@ router.get('/deposits', view, c.listDeposits);
 router.post('/deposits', authorize('finance:deposit:record'), c.recordDeposit);
 router.post('/deposits/:depositId/verify', authorize('finance:deposit:verify'), c.verifyDeposit);
 router.post('/deposits/:depositId/reject', authorize('finance:deposit:verify'), c.rejectDeposit);
+router.get('/expenditure-policy', view, c.getExpenditurePolicy);
+router.put('/expenditure-policy', authorize('finance:policy:manage'), c.setExpenditurePolicy);
 router.get('/reconciliations', view, c.listReconciliations);
 router.post('/reconciliations', authorize('finance:reconcile:manage'), c.startReconciliation);
 router.get('/reconciliations/:recId', view, c.getReconciliation);

@@ -50,6 +50,14 @@ export class MainChurchFinanceController {
     }
   }
 
+  async listExpenditures(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      res.json({ expenditures: await mainChurchFinanceService.listExpenditures(req.params.churchId, req.user!, typeof req.query.status === 'string' ? req.query.status : undefined) });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
+
   async listPendingExpenditures(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { churchId } = req.params;

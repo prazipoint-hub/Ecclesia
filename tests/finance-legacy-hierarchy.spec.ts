@@ -29,6 +29,9 @@ const actions = () => prisma.auditLog.create.mock.calls.map((c) => c[0].data.act
 
 beforeEach(() => {
   vi.resetAllMocks();
+  prisma.expenditureApproval.findMany.mockResolvedValue([]);
+  prisma.expenditureApproval.create.mockResolvedValue({});
+  prisma.systemSetting.findUnique.mockResolvedValue(null);
   prisma.session.findFirst.mockResolvedValue({ id: 's1', deviceId: null });
   prisma.auditLog.create.mockResolvedValue({});
   prisma.circuit.findUnique.mockResolvedValue({ id: CIR, name: 'North' });

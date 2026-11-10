@@ -4,6 +4,7 @@ import { sectionFinanceRepository } from '../repository';
 import { prisma } from '@/database';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { gate as approvalGate, assertPayer } from '@/features/finance/shared/approvalPolicy';
 
 /**
  * SECTION FINANCE SERVICE
@@ -289,6 +290,9 @@ export class SectionFinanceService {
     }
 
     // Update status
+    const gated = await approvalGate(user, 'SECTION', expenditureId, expenditure.amount, approved, approverNotes);
+    if (gated.waiting) return { ...expenditure, awaitingSecondApproval: true, approvalsRecorded: gated.approvals, approvalsNeeded: gated.needed };
+
     const updated = await sectionFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { sectionId: expenditure.sectionId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
@@ -362,6 +366,8 @@ export class SectionFinanceService {
     }
 
     // Mark as paid
+    await assertPayer(user, 'SECTION', expenditureId, expenditure.requestedBy);
+
     const updated = await sectionFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { sectionId: expenditure.sectionId }, {
       status: 'PAID',
       paidAt: new Date(),

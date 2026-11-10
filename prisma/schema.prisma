@@ -2914,3 +2914,18 @@ model BankStatementLine {
   @@index([reconciliationId, status])
   @@index([churchId])
 }
+
+/// One approver's decision on one expenditure at any level. A church can require two different approvers above a threshold
+/// (setting `finance.expenditure.policy`); the expenditure only becomes APPROVED when enough distinct people have approved.
+model ExpenditureApproval {
+  id            String   @id @default(cuid())
+  kind          String // CHURCH, SECTION, CIRCUIT, DISTRICT
+  expenditureId String
+  approverId    String // user id
+  decision      String // APPROVED, REJECTED
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@unique([kind, expenditureId, approverId])
+  @@index([kind, expenditureId])
+}

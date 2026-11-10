@@ -17,6 +17,7 @@ import { jwtSecret } from '@/config/secrets';
 
 const prisma = mocked.prisma as ReturnType<typeof createMockPrisma>;
 const app = createApp();
+const D = (v: number) => v;
 const base = '/api/v2/churches/church-1';
 
 const as = (...permissions: string[]) => ({
@@ -35,6 +36,9 @@ function balance(opening: number, income = 0, committed = 0) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  prisma.expenditureApproval.findMany.mockResolvedValue([]);
+  prisma.expenditureApproval.create.mockResolvedValue({});
+  prisma.systemSetting.findUnique.mockResolvedValue(null);
   prisma.session.findFirst.mockResolvedValue({ id: 's1', deviceId: null });
   prisma.auditLog.create.mockResolvedValue({});
   prisma.church.findUnique.mockImplementation((async ({ where }: any) => church(where.id)) as never);
@@ -380,6 +384,34 @@ describe('church finance: approval', () => {
     expect(call.data.approvedAt).toBeInstanceOf(Date);
     expect(actions()).toEqual(['CHURCH_EXPENDITURE_APPROVED']);
     expect(JSON.parse(prisma.auditLog.create.mock.calls[0][0].data.changes)).toMatchObject({ expenditureId: 'e1', approved: true, approverNotes: 'fine' });
+  });
+
+  test('above the church threshold the first approval waits and nothing is decided', async () => {
+    prisma.systemSetting.findUnique.mockResolvedValue({ value: { dualApprovalThreshold: 30 } });
+    const res = await approve({ approved: true });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ status: 'SUBMITTED', awaitingSecondApproval: true, approvalsNeeded: 2 });
+    expect(prisma.expenditure.updateMany).not.toHaveBeenCalled();
+    expect(actions()).toEqual([]);
+  });
+
+  test('the second different approver decides it', async () => {
+    prisma.systemSetting.findUnique.mockResolvedValue({ value: { dualApprovalThreshold: 30 } });
+    prisma.expenditureApproval.findMany.mockResolvedValue([{ approverId: 'someone-else' }]);
+    const res = await approve({ approved: true });
+    expect(prisma.expenditure.updateMany.mock.calls[0][0].data.status).toBe('APPROVED');
+    expect(res.status).toBe(200);
+  });
+
+  test('lists expenditures by status for finance viewers, with approvals so far', async () => {
+    prisma.church.findUnique.mockResolvedValue(church());
+    prisma.expenditure.findMany.mockResolvedValue([exp({ amount: D(75), purpose: 'Roof', category: 'Building', fundId: 'fund-1', requestedAt: new Date(), approvedAt: null, paidAt: null })]);
+    prisma.expenditureApproval.groupBy.mockResolvedValue([{ expenditureId: 'e1', _count: { _all: 1 } }]);
+    const res = await request(app).get(`${base}/expenditures`).query({ status: 'SUBMITTED' }).set(as('finance:view'));
+    expect(res.status).toBe(200);
+    expect(res.body.expenditures[0]).toMatchObject({ id: 'e1', amount: 75, approvalsRecorded: 1 });
+    expect(prisma.expenditure.findMany.mock.calls[0][0].where).toEqual({ churchId: 'church-1', status: 'SUBMITTED' });
+    expect((await request(app).get(`${base}/expenditures`).set(as())).status).toBe(403);
   });
 
   test('rejects', async () => {

@@ -22,6 +22,8 @@ const LINKS: Array<{ to: string; label: string }> = [
   { to: '/finance/cash-review', label: 'Cash review' },
   { to: '/finance/deposits', label: 'Deposits' },
   { to: '/finance/reconciliation', label: 'Bank reconciliation' },
+  { to: '/finance/expenditures', label: 'Expenditures' },
+  { to: '/finance/policy', label: 'Approval rules' },
   { to: '/finance/reports', label: 'Reports' },
 ];
 

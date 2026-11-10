@@ -4,6 +4,7 @@ import { AuthorizedUser } from '@/types';
 import { ConflictError } from '@/types/errors';
 import { v4 as uuidv4 } from 'uuid';
 import { mainChurchFinanceRepository } from '../repository';
+import { gate as approvalGate, assertPayer } from '@/features/finance/shared/approvalPolicy';
 
 export class MainChurchFinanceService {
   async getChurchFinanceDashboard(churchId: string, user: AuthorizedUser) {
@@ -238,6 +239,17 @@ export class MainChurchFinanceService {
     };
   }
 
+  /** Church expenditures by status, with how many people have approved so far (for the two-approver rule). */
+  async listExpenditures(churchId: string, user: AuthorizedUser, status?: string) {
+    if (churchId !== user.churchId) throw new Error('Unauthorized: church not found or user not in same church');
+    if (!user.permissions.includes('finance:view')) throw new Error('Unauthorized: finance:view permission required');
+    const allowed = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'];
+    const rows = await prisma.expenditure.findMany({ where: { churchId, ...(status && allowed.includes(status) ? { status } : {}) }, orderBy: { createdAt: 'desc' }, take: 200 });
+    const approvals = rows.length ? await prisma.expenditureApproval.groupBy({ by: ['expenditureId'], where: { kind: 'CHURCH', expenditureId: { in: rows.map((r) => r.id) }, decision: 'APPROVED' }, _count: { _all: true } }) : [];
+    const n = new Map(approvals.map((a) => [a.expenditureId, a._count._all]));
+    return rows.map((r) => ({ id: r.id, fundId: r.fundId, amount: Number(r.amount), purpose: r.purpose, category: r.category, status: r.status, requestedAt: r.requestedAt, approvedAt: r.approvedAt, paidAt: r.paidAt, approvalsRecorded: n.get(r.id) ?? 0 }));
+  }
+
   async approveChurchExpenditure(
     expenditureId: string,
     approved: boolean,
@@ -274,6 +286,9 @@ export class MainChurchFinanceService {
     if (approved && [user.id, user.memberId].some((id) => id && id === expenditure.requestedBy)) {
       throw new Error('Cannot approve your own request');
     }
+
+    const gated = await approvalGate(user, 'CHURCH', expenditureId, expenditure.amount, approved, approverNotes);
+    if (gated.waiting) return { ...expenditure, awaitingSecondApproval: true, approvalsRecorded: gated.approvals, approvalsNeeded: gated.needed };
 
     const updated = await mainChurchFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { churchId: expenditure.churchId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
@@ -327,6 +342,8 @@ export class MainChurchFinanceService {
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');
     }
+
+    await assertPayer(user, 'CHURCH', expenditureId, expenditure.requestedBy);
 
     const updated = await mainChurchFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { churchId: expenditure.churchId }, {
       status: 'PAID',

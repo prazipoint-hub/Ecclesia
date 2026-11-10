@@ -40,6 +40,9 @@ function balance(opening: number, income = 0, paid = 0) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  prisma.expenditureApproval.findMany.mockResolvedValue([]);
+  prisma.expenditureApproval.create.mockResolvedValue({});
+  prisma.systemSetting.findUnique.mockResolvedValue(null);
   prisma.session.findFirst.mockResolvedValue({ id: 's1', deviceId: null });
   prisma.auditLog.create.mockResolvedValue({});
   prisma.notification.create.mockResolvedValue({});

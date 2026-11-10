@@ -4,6 +4,7 @@ import { assertAt } from '@/features/access/service/scope';
 import { AuthorizedUser } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { circuitFinanceRepository } from '../repository';
+import { gate as approvalGate, assertPayer } from '@/features/finance/shared/approvalPolicy';
 
 /**
  * CIRCUIT FINANCE SERVICE
@@ -209,6 +210,9 @@ export class CircuitFinanceService {
       throw new Error('Cannot approve your own request');
     }
 
+    const gated = await approvalGate(user, 'CIRCUIT', expenditureId, expenditure.amount, approved, approverNotes);
+    if (gated.waiting) return { ...expenditure, awaitingSecondApproval: true, approvalsRecorded: gated.approvals, approvalsNeeded: gated.needed };
+
     const updated = await circuitFinanceRepository.claimExpenditure(expenditureId, 'SUBMITTED', { circuitId: expenditure.circuitId }, {
       status: approved ? 'APPROVED' : 'REJECTED',
       approvedBy: user.id,
@@ -253,6 +257,8 @@ export class CircuitFinanceService {
     if (expenditure.status !== 'APPROVED') {
       throw new Error('Can only pay approved expenditures');
     }
+
+    await assertPayer(user, 'CIRCUIT', expenditureId, expenditure.requestedBy);
 
     const updated = await circuitFinanceRepository.claimExpenditure(expenditureId, 'APPROVED', { circuitId: expenditure.circuitId }, {
       status: 'PAID',

@@ -5,6 +5,7 @@ import { budgetService } from '../service/budgets';
 import { cashSessionService } from '../service/cashSessions';
 import { cashReviewService } from '../service/cashReview';
 import { bankReconciliationService } from '../service/bankReconciliation';
+import { getPolicy, setPolicy } from '@/features/finance/shared/approvalPolicy';
 import { depositService } from '../service/deposits';
 import { fundService } from '../service/funds';
 import { ledgerService } from '../service/ledger';
@@ -101,6 +102,8 @@ export class AccountingController {
   unmatchLine = guarded(async (req, res) => { res.json(await bankReconciliationService.unmatch(req.user!, req.params.recId, req.params.lineId)); });
   autoMatch = guarded(async (req, res) => { res.json(await bankReconciliationService.autoMatch(req.user!, req.params.recId)); });
   completeReconciliation = guarded(async (req, res) => { res.json(await bankReconciliationService.complete(req.user!, req.params.recId)); });
+  getExpenditurePolicy = guarded(async (req, res) => { res.json(await getPolicy(req.user!.churchId)); });
+  setExpenditurePolicy = guarded(async (req, res) => { res.json(await setPolicy(req.user!, req.body)); });
   treasurerOverview = guarded(async (req, res) => { res.json(await depositService.overview(req.user!)); });
   closeCashSession = guarded(async (req, res) => { res.json(await cashSessionService.close(req.user!, req.params.sessionId, CloseCashSessionSchema.parse(req.body))); });
 }

@@ -17,6 +17,8 @@ import { FundsPage } from '@/pages/finance/FundsPage';
 import { CashSessionsPage } from '@/pages/finance/CashSessionsPage';
 import { CashReviewPage } from '@/pages/finance/CashReviewPage';
 import { BankReconciliationPage } from '@/pages/finance/BankReconciliationPage';
+import { ExpensePolicyPage } from '@/pages/finance/ExpensePolicyPage';
+import { ExpendituresPage } from '@/pages/finance/ExpendituresPage';
 import { DepositsPage } from '@/pages/finance/DepositsPage';
 import { FinanceReportsPage } from '@/pages/finance/ReportsPage';
 import { ReportsPage } from '@/pages/ReportsPage';
@@ -704,6 +706,22 @@ function App() {
           element={
             <ProtectedRoute>
               <LeadershipRegisterPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/policy"
+          element={
+            <ProtectedRoute>
+              <ExpensePolicyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/finance/expenditures"
+          element={
+            <ProtectedRoute>
+              <ExpendituresPage />
             </ProtectedRoute>
           }
         />
