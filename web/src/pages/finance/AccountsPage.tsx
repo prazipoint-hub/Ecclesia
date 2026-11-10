@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/Layout/MainLayout';
@@ -43,9 +44,9 @@ const AccountForm = ({ onDone }: { onDone: () => void }) => {
   );
 };
 
-const LedgerView = ({ account }: { account: LedgerAccount }) => {
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+const LedgerView = ({ account, initialFrom = '', initialTo = '' }: { account: LedgerAccount; initialFrom?: string; initialTo?: string }) => {
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const ledger = useQuery({
     queryKey: ['accounting', 'ledger', account.id, from, to],
     queryFn: async () => (await apiClient.get<AccountLedger>(`/api/v2/accounting/accounts/${account.id}/ledger`, { params: { ...(from && { from }), ...(to && { to }) } })).data,
@@ -67,7 +68,7 @@ const LedgerView = ({ account }: { account: LedgerAccount }) => {
               {ledger.data.items.map((row, i) => (
                 <tr key={`${row.entryId}-${i}`}>
                   <td className={td}>{toDateInput(row.postDate)}</td>
-                  <td className={td}>{row.reference} — {row.description}</td>
+                  <td className={td}><Link className="underline" to={`/finance/journals/${row.entryId}`}>{row.reference}</Link> — {row.description}</td>
                   <td className={num}>{row.debit ? money(row.debit) : ''}</td>
                   <td className={num}>{row.credit ? money(row.credit) : ''}</td>
                   <td className={num}>{money(row.balance)}</td>
@@ -126,6 +127,14 @@ export const AccountsPage = () => {
   const [adding, setAdding] = useState(false);
   const [opening, setOpening] = useState(false);
   const [viewing, setViewing] = useState<LedgerAccount | null>(null);
+  // Report drill-down: /finance/accounts?account=<id>&from=&to= opens that account's ledger for the same period.
+  const [params] = useSearchParams();
+  const wanted = params.get('account');
+  useEffect(() => {
+    if (!wanted || !accounts.data) return;
+    const hit = accounts.data.find((a) => a.id === wanted);
+    if (hit) setViewing(hit);
+  }, [wanted, accounts.data]);
 
   const seed = useMutation({
     mutationFn: () => apiClient.post('/api/v2/accounting/accounts/seed-default'),
@@ -206,7 +215,7 @@ export const AccountsPage = () => {
         <OpeningBalancesForm accounts={accounts.data ?? []} onDone={() => setOpening(false)} />
       </Modal>
       <Modal open={viewing !== null} title={viewing ? `${viewing.code} ${viewing.name}` : ''} onClose={() => setViewing(null)}>
-        {viewing && <LedgerView account={viewing} />}
+        {viewing && <LedgerView key={viewing.id} account={viewing} initialFrom={params.get('from') ?? ''} initialTo={params.get('to') ?? ''} />}
       </Modal>
     </MainLayout>
   );

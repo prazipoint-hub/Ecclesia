@@ -98,4 +98,24 @@ describe('new report types', () => {
     await run('PROFILE_COMPLETION', ['member:profile:report']);
     expect(prisma.auditLog.create.mock.calls.some((c) => c[0].data.action === 'REPORT_GENERATED')).toBe(true);
   });
+
+  test('section audit evidence lists records with exception flags and stays inside the church', async () => {
+    const res0 = await run('SECTION_AUDIT_EVIDENCE', ['report:view:section_finance'], { period: 'THIS_YEAR' });
+    expect(res0.status).toBe(400); // no section chosen
+    prisma.section.findUnique.mockResolvedValue({ churchId: 'other', name: 'X' });
+    expect((await run('SECTION_AUDIT_EVIDENCE', ['report:view:section_finance'], { period: 'THIS_YEAR', sectionId: 's1' })).status).toBe(404);
+    prisma.section.findUnique.mockResolvedValue({ churchId: 'church-1', name: 'Youth' });
+    prisma.sectionReceipt.findMany.mockResolvedValue([{ receiptNumber: 'SEC-1', issuedAt: new Date('2026-02-01'), amount: D(20), currency: 'USD', paymentMethod: 'CASH', status: 'ISSUED', issuedBy: 'u9' }]);
+    prisma.sectionExpenditure.findMany.mockResolvedValue([
+      { id: 'x1', requestedAt: new Date('2026-02-02'), amount: D(50), status: 'PAID', requestedBy: 'u5', approvedBy: 'u5', approvedAt: new Date('2026-02-03'), paidAt: new Date('2026-02-04'), purpose: 'Tent', paymentMethod: 'CASH', attachments: null },
+    ]);
+    prisma.expenditureApproval.groupBy.mockResolvedValue([{ expenditureId: 'x1', _count: { _all: 1 } }]);
+    const res = await run('SECTION_AUDIT_EVIDENCE', ['report:view:section_finance'], { period: 'THIS_YEAR', sectionId: 's1' });
+    expect(res.status).toBe(200);
+    const rows = res.body.data ?? res.body.report?.data ?? res.body;
+    const text = JSON.stringify(rows);
+    expect(text).toContain('NO_SUPPORTING_DOCUMENT');
+    expect(text).toContain('REQUESTER_APPROVED_OWN');
+    expect(text).toContain('1 receipts, 1 expenditures, 1 with exceptions');
+  });
 });

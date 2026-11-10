@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Printer } from 'lucide-react';
 import { MainLayout } from '@/components/Layout/MainLayout';
@@ -22,10 +23,12 @@ const Warning = ({ children }: { children: string }) => (
   </div>
 );
 
-const Section = ({ title, rows, total }: { title: string; rows: StatementRow[]; total?: number }) => (
+const drill = (id: string, from?: string, to?: string) => `/finance/accounts?account=${id}${from ? `&from=${from}` : ''}${to ? `&to=${to}` : ''}`;
+
+const Section = ({ title, rows, total, from, to }: { title: string; rows: StatementRow[]; total?: number; from?: string; to?: string }) => (
   <>
     <tr><td colSpan={2} className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-900">{title}</td></tr>
-    {rows.map((r) => <tr key={r.accountId}><td className={td}>{r.code} {r.name}</td><td className={num}>{money(r.amount)}</td></tr>)}
+    {rows.map((r) => <tr key={r.accountId}><td className={td}><Link className="underline" to={drill(r.accountId, from, to)}>{r.code} {r.name}</Link></td><td className={num}>{money(r.amount)}</td></tr>)}
     {total !== undefined && <tr><td className={`${td} font-semibold`}>Total {title.toLowerCase()}</td><td className={`${num} font-semibold`}>{money(total)}</td></tr>}
   </>
 );
@@ -67,7 +70,7 @@ export const FinanceReportsPage = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead><tr><th className={th}>Account</th><th className={`${th} text-right`}>Debit</th><th className={`${th} text-right`}>Credit</th></tr></thead>
                       <tbody className="divide-y divide-gray-100">
-                        {d.rows.map((r) => <tr key={r.accountId}><td className={td}>{r.code} {r.name}</td><td className={num}>{r.debit ? money(r.debit) : ''}</td><td className={num}>{r.credit ? money(r.credit) : ''}</td></tr>)}
+                        {d.rows.map((r) => <tr key={r.accountId}><td className={td}><Link className="underline" to={drill(r.accountId, undefined, to)}>{r.code} {r.name}</Link></td><td className={num}>{r.debit ? money(r.debit) : ''}</td><td className={num}>{r.credit ? money(r.credit) : ''}</td></tr>)}
                         <tr><td className={`${td} font-semibold`}>Total</td><td className={`${num} font-semibold`}>{money(d.totalDebit)}</td><td className={`${num} font-semibold`}>{money(d.totalCredit)}</td></tr>
                       </tbody>
                     </table>
@@ -75,8 +78,8 @@ export const FinanceReportsPage = () => {
                 )}
                 {tab === 'income-statement' && 'netSurplus' in d && (
                   <table className="min-w-full"><tbody>
-                    <Section title="Income" rows={d.revenue} total={d.totalRevenue} />
-                    <Section title="Expenses" rows={d.expenses} total={d.totalExpenses} />
+                    <Section title="Income" rows={d.revenue} total={d.totalRevenue} from={from} to={to} />
+                    <Section title="Expenses" rows={d.expenses} total={d.totalExpenses} from={from} to={to} />
                     <tr><td className={`${td} font-bold`}>Net surplus</td><td className={`${num} font-bold ${d.netSurplus < 0 ? 'text-red-600' : ''}`}>{money(d.netSurplus)}</td></tr>
                   </tbody></table>
                 )}
@@ -84,9 +87,9 @@ export const FinanceReportsPage = () => {
                   <>
                     {!d.balanced && <Warning>Out of balance: assets do not equal liabilities plus equity. Contact your accountant before relying on this report.</Warning>}
                     <table className="min-w-full"><tbody>
-                      <Section title="Assets" rows={d.assets} total={d.totalAssets} />
-                      <Section title="Liabilities" rows={d.liabilities} total={d.totalLiabilities} />
-                      <Section title="Equity" rows={d.equity} total={d.totalEquity} />
+                      <Section title="Assets" rows={d.assets} total={d.totalAssets} to={to} />
+                      <Section title="Liabilities" rows={d.liabilities} total={d.totalLiabilities} to={to} />
+                      <Section title="Equity" rows={d.equity} total={d.totalEquity} to={to} />
                     </tbody></table>
                     <p className="text-xs text-gray-500">Equity includes the current surplus of {money(d.currentSurplus)}.</p>
                   </>

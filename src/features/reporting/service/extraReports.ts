@@ -1,10 +1,12 @@
 import { prisma } from '@/database';
 import type { AuthorizedUser } from '@/types';
+import { NotFoundError, ValidationError } from '@/types/errors';
 import { depositService } from '@/features/accounting/service/deposits';
 import { profileCompletionService } from '@/features/members/service/profileCompletion';
 import { appointmentService } from '@/features/leadership/service/appointments';
 
 type Row = Record<string, unknown>;
+const ts = (d: Date | null | undefined) => (d ? d.toISOString() : '');
 const parse = <T>(s: string | null | undefined): T | null => { try { return s ? (JSON.parse(s) as T) : null; } catch { return null; } };
 
 /** Reports built on the new workflows. Every report re-checks the caller's permission inside the service it calls, and returns flat rows. */
@@ -75,5 +77,38 @@ export const extraReports = {
       ...(bySection as Array<{ sectionId: string | null; _count: { _all: number } }>).map((s) => ({ measure: 'ACTIVE_BY_SECTION', key: s.sectionId ?? 'NO_SECTION', value: s._count._all })),
       ...(orgs as unknown as Array<{ organizationId: string; _count: { memberId: number } }>).map((o) => ({ measure: 'ORGANISATION_MEMBERSHIPS_OVERLAP_ALLOWED', key: o.organizationId, value: o._count.memberId })),
     ];
+  },
+
+  /**
+   * Evidence an auditor needs for one section over a period: every receipt and expenditure with who did what and when, the
+   * number of distinct approvals recorded, supporting attachments, and plain exception flags. Read-only; no member details.
+   */
+  async sectionAuditEvidence(user: AuthorizedUser, sectionId: string | undefined, start: Date, end: Date): Promise<Row[]> {
+    if (!sectionId) throw new ValidationError('Choose a section');
+    const section = await prisma.section.findUnique({ where: { id: sectionId }, select: { churchId: true, name: true } });
+    if (!section || section.churchId !== user.churchId) throw new NotFoundError('Section');
+    const [receipts, spend] = await Promise.all([
+      prisma.sectionReceipt.findMany({ where: { sectionId, issuedAt: { gte: start, lte: end } }, orderBy: { issuedAt: 'asc' }, take: 5000 }),
+      prisma.sectionExpenditure.findMany({ where: { sectionId, requestedAt: { gte: start, lte: end } }, orderBy: { requestedAt: 'asc' }, take: 5000 }),
+    ]);
+    const approvals = spend.length ? await prisma.expenditureApproval.groupBy({ by: ['expenditureId'], where: { kind: 'SECTION', expenditureId: { in: spend.map((x) => x.id) }, decision: 'APPROVED' }, _count: { _all: true } }) : [];
+    const n = new Map(approvals.map((a) => [a.expenditureId, a._count._all]));
+    const rows: Row[] = [];
+    for (const r of receipts) {
+      rows.push({ record: 'RECEIPT', number: r.receiptNumber, date: ts(r.issuedAt), amount: r.amount.toFixed(2), currency: r.currency, method: r.paymentMethod, status: r.status, recordedBy: r.issuedBy ?? '', approvals: '', attachments: '', flags: r.status !== 'ISSUED' ? r.status : '' });
+    }
+    for (const x of spend) {
+      const attachments = Array.isArray(x.attachments) ? x.attachments.length : 0;
+      const flags = [
+        ['APPROVED', 'PAID'].includes(x.status) && !attachments ? 'NO_SUPPORTING_DOCUMENT' : '',
+        x.approvedBy && x.requestedBy && x.approvedBy === x.requestedBy ? 'REQUESTER_APPROVED_OWN' : '',
+        x.status === 'PAID' && !x.approvedBy ? 'PAID_WITHOUT_APPROVAL' : '',
+        x.status === 'PAID' && x.paidAt && x.approvedAt && x.paidAt < x.approvedAt ? 'PAID_BEFORE_APPROVAL' : '',
+      ].filter(Boolean).join(' ');
+      rows.push({ record: 'EXPENDITURE', number: x.id, date: ts(x.requestedAt), amount: x.amount.toFixed(2), currency: '', method: x.paymentMethod ?? '', status: x.status, recordedBy: x.requestedBy ?? '', approvedBy: x.approvedBy ?? '', approvedAt: ts(x.approvedAt), paidAt: ts(x.paidAt), purpose: x.purpose, approvals: n.get(x.id) ?? 0, attachments, flags });
+    }
+    const exceptions = rows.filter((r) => r.flags).length;
+    rows.push({ record: 'SUMMARY', number: `${section.name}`, date: `${start.toISOString().slice(0, 10)} to ${end.toISOString().slice(0, 10)}`, amount: '', status: `${receipts.length} receipts, ${spend.length} expenditures, ${exceptions} with exceptions`, flags: '' });
+    return rows;
   },
 };

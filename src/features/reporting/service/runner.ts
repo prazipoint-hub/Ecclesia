@@ -68,6 +68,7 @@ export class ReportRunner {
       CASH_SESSIONS: () => extraReports.cashSessions(user, start!, end!),
       DEPOSITS: () => extraReports.deposits(user, start!, end!),
       TREASURER_OVERVIEW: () => extraReports.treasurer(user),
+      SECTION_AUDIT_EVIDENCE: () => extraReports.sectionAuditEvidence(user, params.sectionId, start!, end!),
     };
 
     if (extra[reportType]) {

@@ -23,6 +23,7 @@ export const REPORT_CATALOG = [
   { type: 'MEMBERSHIP_DISTINCT', category: 'MEMBERSHIP', label: 'Membership (each person counted once)', permission: 'report:view:administrative', needsDates: false },
   { type: 'CASH_SESSIONS', category: 'POS', label: 'Cash sessions, counts and discrepancies', permission: 'finance:cash_session:review', needsDates: true },
   { type: 'DEPOSITS', category: 'POS', label: 'Cash deposits to bank', permission: 'finance:view', needsDates: true },
+  { type: 'SECTION_AUDIT_EVIDENCE', category: 'FINANCIAL', label: 'Section audit evidence (choose a section)', permission: 'report:view:section_finance', needsDates: true },
   { type: 'TREASURER_OVERVIEW', category: 'POS', label: 'Treasurer: approved vs pending cash and deposits', permission: 'finance:view', needsDates: false },
   { type: 'AUDIT_TRAIL', category: 'AUDIT', label: 'Audit trail', permission: 'report:view:audit', needsDates: true },
   { type: 'EXCEPTION_REPORT', category: 'AUDIT', label: 'Exception report', permission: 'report:view:audit', needsDates: true },
