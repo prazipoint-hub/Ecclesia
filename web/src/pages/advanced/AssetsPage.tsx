@@ -66,8 +66,8 @@ export const AssetsPage = () => {
         {!allowed && <NoAccess permission="asset:view" />}
         {canManage && creating && categories.data && <CreateAsset categories={categories.data} onDone={() => setCreating(false)} />}
         {due.data && due.data.length > 0 && (
-          <section className="rounded-xl border border-amber-200 bg-amber-50 p-4" aria-label="Maintenance due">
-            <h2 className="font-semibold text-amber-900">Maintenance due in the next 30 days</h2>
+          <section className="rounded-md border border-amber-200 bg-amber-50 p-4" aria-label="Maintenance due">
+            <h2 className="font-medium text-amber-900">Maintenance due in the next 30 days</h2>
             <ul className="mt-2 space-y-1 text-sm text-amber-900">
               {due.data.map((d) => <li key={`${d.assetId}-${d.dueDate}`}><Link className="underline" to={`/assets/${d.assetId}`}>{d.tag} · {d.name}</Link> — {d.overdue ? 'overdue since' : 'due'} {formatDate(d.dueDate)}</li>)}
             </ul>

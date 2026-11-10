@@ -47,7 +47,7 @@ export const FollowUpsPage = () => {
       <FormSelect label="Show" value={status} placeholder="All" options={FILTERS} onChange={(e) => setStatus(e.target.value)} className="max-w-xs" />
       <ApiError error={finish.error} />
       <DataState query={list.query} empty="No follow-ups.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Due</th><th className={th}>Member</th><th className={th}>Reason</th><th className={th}>Status</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

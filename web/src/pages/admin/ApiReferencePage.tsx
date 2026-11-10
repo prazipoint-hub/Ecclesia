@@ -21,7 +21,7 @@ export const ApiReferencePage = () => {
   return (
     <MainLayout>
       <div className="mx-auto max-w-6xl space-y-6">
-        <AdminHeader title="API reference" subtitle="Generated from the live route tables. Rules checked inside the service (ownership, business rules) are not listed." action={<a href="/api/docs.json" target="_blank" rel="noreferrer" className="text-sm font-semibold text-primary-600 hover:underline">OpenAPI JSON</a>} />
+        <AdminHeader title="API reference" subtitle="Generated from the live route tables. Rules checked inside the service (ownership, business rules) are not listed." action={<a href="/api/docs.json" target="_blank" rel="noreferrer" className="text-sm font-medium text-primary-600 hover:underline">OpenAPI JSON</a>} />
         {!allowed && <NoAccess permission={PERMISSION} />}
         {allowed && (
           <div className="flex flex-wrap gap-3">
@@ -38,7 +38,7 @@ export const ApiReferencePage = () => {
               <tbody>
                 {rows.map((e) => (
                   <tr key={`${e.method} ${e.path}`} className="border-t border-gray-100">
-                    <td className="p-3 font-mono text-xs font-semibold">{e.method}</td>
+                    <td className="p-3 font-mono text-xs font-medium">{e.method}</td>
                     <td className="p-3 font-mono text-xs">{e.path}</td>
                     <td className="p-3">{e.authenticated ? 'Required' : 'Public'}</td>
                     <td className="p-3">{e.permission ?? '—'}</td>

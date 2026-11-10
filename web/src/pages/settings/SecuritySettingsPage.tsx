@@ -21,9 +21,9 @@ interface Device {
 }
 
 const AUTH = '/api/v1/auth';
-const card = 'rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft sm:p-6';
-const primaryBtn = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
-const secondaryBtn = 'inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60';
+const card = 'rounded-lg border border-gray-200/80 bg-white p-5 shadow-card sm:p-6';
+const primaryBtn = 'inline-flex h-9 items-center justify-center rounded-md bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
+const secondaryBtn = 'inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60';
 
 const CopyButton = ({ value, label }: { value: string; label: string }) => {
   const [copied, setCopied] = useState(false);
@@ -69,7 +69,7 @@ const ChangePasswordSection = () => {
 
   return (
     <section className={card} aria-labelledby="password-heading">
-      <h2 id="password-heading" className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+      <h2 id="password-heading" className="flex items-center gap-2 text-lg font-medium text-gray-900">
         <KeyRound className="h-5 w-5 text-gray-500" /> Change password
       </h2>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
@@ -93,7 +93,7 @@ const EmailVerificationSection = () => {
   });
   return (
     <section className={card} aria-labelledby="email-heading">
-      <h2 id="email-heading" className="text-lg font-semibold text-gray-900">Email verification</h2>
+      <h2 id="email-heading" className="text-lg font-medium text-gray-900">Email verification</h2>
       {verified ? (
         <p className="mt-1 flex items-center gap-2 text-sm text-green-700">
           <Check className="h-4 w-4" /> Your email address is verified.
@@ -125,7 +125,7 @@ const DevicesSection = () => {
 
   return (
     <section className={card} aria-labelledby="devices-heading">
-      <h2 id="devices-heading" className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+      <h2 id="devices-heading" className="flex items-center gap-2 text-lg font-medium text-gray-900">
         <Laptop className="h-5 w-5 text-gray-500" /> Signed-in devices
       </h2>
       <div className="mt-4 space-y-3">
@@ -143,14 +143,14 @@ const DevicesSection = () => {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-gray-900">
                     {device.userAgent ?? 'Unknown device'}
-                    {device.current && <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">This device</span>}
+                    {device.current && <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">This device</span>}
                   </p>
                   <p className="text-xs text-gray-500">
                     {device.ipAddress ?? 'Unknown IP'} · Last active {new Date(device.lastSeenAt).toLocaleString()}
                   </p>
                 </div>
                 {!device.current && (
-                  <button type="button" className="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60" onClick={() => revoke.mutate(device.id)} disabled={revoke.isPending && revoke.variables === device.id} aria-label={`Revoke ${device.userAgent ?? 'unknown device'}`}>
+                  <button type="button" className="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60" onClick={() => revoke.mutate(device.id)} disabled={revoke.isPending && revoke.variables === device.id} aria-label={`Revoke ${device.userAgent ?? 'unknown device'}`}>
                     Revoke
                   </button>
                 )}
@@ -211,7 +211,7 @@ const TwoFactorSection = () => {
 
   return (
     <section className={card} aria-labelledby="twofa-heading">
-      <h2 id="twofa-heading" className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+      <h2 id="twofa-heading" className="flex items-center gap-2 text-lg font-medium text-gray-900">
         <ShieldCheck className="h-5 w-5 text-gray-500" /> Two-factor authentication
       </h2>
       <div className="mt-4 space-y-4">
@@ -225,7 +225,7 @@ const TwoFactorSection = () => {
 
         {backupCodes && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
-            <p className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+            <p className="flex items-center gap-2 text-sm font-medium text-amber-900">
               <AlertTriangle className="h-4 w-4" /> Save your backup codes now
             </p>
             <p className="mt-1 text-sm text-amber-800">They are shown only once. Each code can be used once if you lose access to your authenticator app.</p>
@@ -243,8 +243,8 @@ const TwoFactorSection = () => {
 
         {status.data === true && !setup && (
           <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-gray-700"><span className="font-semibold text-green-700">Enabled.</span> Your account requires a code at sign-in.</p>
-            <button type="button" className="rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50" onClick={() => setDisableOpen(true)}>
+            <p className="text-sm text-gray-700"><span className="font-medium text-green-700">Enabled.</span> Your account requires a code at sign-in.</p>
+            <button type="button" className="rounded-lg border border-red-200 px-4 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50" onClick={() => setDisableOpen(true)}>
               Disable
             </button>
           </div>
@@ -300,7 +300,7 @@ const TwoFactorSection = () => {
         footer={
           <>
             <button type="button" className={secondaryBtn} onClick={closeDisable} disabled={disable.isPending}>Cancel</button>
-            <button type="submit" form="disable-2fa-form" className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60" disabled={disable.isPending}>
+            <button type="submit" form="disable-2fa-form" className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60" disabled={disable.isPending}>
               {disable.isPending ? 'Disabling…' : 'Disable'}
             </button>
           </>
@@ -329,7 +329,7 @@ export const SecuritySettingsPage = () => (
     <div className="mx-auto max-w-4xl space-y-7">
       <div>
         <Link to="/settings" className="page-eyebrow hover:text-primary-900">← Settings</Link>
-        <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Security</h1>
+        <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">Security</h1>
         <p className="mt-2 max-w-2xl text-gray-600">Manage your password, signed-in devices and two-factor authentication.</p>
       </div>
       <ChangePasswordSection />

@@ -7,7 +7,7 @@ import type { Analytics } from '@/types/events';
 import { E, Shell, dateTime, label, td, th, usePermissions } from './eventsShared';
 
 const Tile = ({ title, value }: { title: string; value: number | string }) => (
-  <div className={card}><p className="text-sm text-gray-500">{title}</p><p className="mt-1 text-3xl font-bold text-gray-900">{value}</p></div>
+  <div className={card}><p className="text-sm text-gray-500">{title}</p><p className="mt-1 text-2xl font-medium text-gray-900">{value}</p></div>
 );
 
 const Bar = ({ value, max }: { value: number; max: number }) => (
@@ -44,25 +44,25 @@ export const AnalyticsPage = () => {
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <section className={card}>
-              <h2 className="mb-3 font-semibold text-gray-900">By type</h2>
+              <h2 className="mb-3 font-medium text-gray-900">By type</h2>
               <ul className="space-y-3">{data.byType.map((t) => (
                 <li key={t.eventType}><div className="flex justify-between text-sm"><span>{label(t.eventType)} <span className="text-gray-500">({t.events} events)</span></span><span>{t.present} · avg {t.average}</span></div><Bar value={t.present} max={maxType} /></li>
               ))}</ul>
             </section>
             <section className={card}>
-              <h2 className="mb-3 font-semibold text-gray-900">By month</h2>
+              <h2 className="mb-3 font-medium text-gray-900">By month</h2>
               <ul className="space-y-3">{data.byMonth.map((m) => (
                 <li key={m.month}><div className="flex justify-between text-sm"><span>{m.month} <span className="text-gray-500">({m.events} events)</span></span><span>{m.present} · avg {m.average}</span></div><Bar value={m.present} max={maxMonth} /></li>
               ))}</ul>
             </section>
           </div>
           <section className={card}>
-            <h2 className="mb-3 font-semibold text-gray-900">How people checked in</h2>
+            <h2 className="mb-3 font-medium text-gray-900">How people checked in</h2>
             {Object.keys(data.checkInMethods).length === 0 ? <p className="text-sm text-gray-500">No check-ins recorded.</p> : (
-              <ul className="flex flex-wrap gap-4 text-sm">{Object.entries(data.checkInMethods).map(([method, n]) => <li key={method}><span className="font-semibold">{n}</span> {label(method)}</li>)}</ul>
+              <ul className="flex flex-wrap gap-4 text-sm">{Object.entries(data.checkInMethods).map(([method, n]) => <li key={method}><span className="font-medium">{n}</span> {label(method)}</li>)}</ul>
             )}
           </section>
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
             <table className="min-w-full divide-y divide-gray-200">
               <thead><tr><th className={th}>Event</th><th className={th}>When</th><th className={th}>Present</th><th className={th}>Registered</th><th className={th}>Expected</th><th className={th}>Rate</th></tr></thead>
               <tbody className="divide-y divide-gray-100">

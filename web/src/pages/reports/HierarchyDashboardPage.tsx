@@ -26,7 +26,7 @@ export const HierarchyDashboardPage = () => {
 
   const header = (key: SortKey, text: string) => (
     <th className={th} aria-sort={sort.key === key ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none'}>
-      <button type="button" className="font-semibold uppercase" onClick={() => setSort({ key, dir: sort.key === key && sort.dir === 1 ? -1 : 1 })}>{text}{sort.key === key ? (sort.dir === 1 ? ' ▲' : ' ▼') : ''}</button>
+      <button type="button" className="font-medium uppercase" onClick={() => setSort({ key, dir: sort.key === key && sort.dir === 1 ? -1 : 1 })}>{text}{sort.key === key ? (sort.dir === 1 ? ' ▲' : ' ▼') : ''}</button>
     </th>
   );
 
@@ -43,13 +43,13 @@ export const HierarchyDashboardPage = () => {
           : <><ApiError error={query.error} /><ErrorBlock error={query.error} onRetry={() => void query.refetch()} /></>
       ) : query.data && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">{query.data.name}</h2>
+          <h2 className="text-lg font-medium text-gray-900">{query.data.name}</h2>
           <div className="grid gap-3 sm:grid-cols-3">
             <Tile name="Churches" value={query.data.totals.churches} />
             <Tile name="Active members" value={query.data.totals.activeMembers} />
             <Tile name="Attendance, last 30 days" value={query.data.totals.attendanceLast30Days} />
           </div>
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
             <table className="min-w-full divide-y divide-gray-200">
               <thead><tr>{header('name', 'Church')}{header('activeMembers', 'Active members')}{header('eventsLast30Days', 'Events (30d)')}{header('attendanceLast30Days', 'Attendance (30d)')}</tr></thead>
               <tbody className="divide-y divide-gray-100">

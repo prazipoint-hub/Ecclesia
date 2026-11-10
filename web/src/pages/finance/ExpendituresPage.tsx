@@ -44,7 +44,7 @@ export const ExpendituresPage = () => {
             {policy.data?.dualApprovalThreshold != null && <p className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm text-indigo-900">Requests of {money(policy.data.dualApprovalThreshold)} or more need two different approvers.</p>}
             {has('finance:expenditure:create') && (
               <section className={card}>
-                <h2 className="mb-3 text-lg font-semibold text-gray-900">New request</h2>
+                <h2 className="mb-3 text-lg font-medium text-gray-900">New request</h2>
                 {create.error && <ApiError error={create.error} />}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block text-sm font-medium text-gray-700">Fund

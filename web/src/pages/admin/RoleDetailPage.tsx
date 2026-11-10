@@ -79,7 +79,7 @@ export const RoleDetailPage = () => {
           <>
             {!editable && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">This role carries permissions you do not hold, so you can view it but not change it.</p>}
             <section className={`${card} space-y-4`}>
-              <h2 className="font-semibold text-gray-900">Details</h2>
+              <h2 className="font-medium text-gray-900">Details</h2>
               <FormField label="Name" value={name} maxLength={80} disabled={!editable} onChange={(e) => setName(e.target.value)} />
               <FormField label="Description" value={description} maxLength={300} disabled={!editable} onChange={(e) => setDescription(e.target.value)} />
               {saveDetails.error != null && <ErrorNotice message={getApiErrorMessage(saveDetails.error)} />}
@@ -87,11 +87,11 @@ export const RoleDetailPage = () => {
             </section>
 
             <section className={`${card} space-y-4`}>
-              <h2 className="font-semibold text-gray-900">Permissions ({selected.size})</h2>
+              <h2 className="font-medium text-gray-900">Permissions ({selected.size})</h2>
               <p className="text-xs text-gray-500">You can only grant permissions you hold yourself; others are greyed out.</p>
               {grouped.map(([area, items]) => (
                 <fieldset key={area} className="space-y-1">
-                  <legend className="text-sm font-semibold capitalize text-gray-700">{area}</legend>
+                  <legend className="text-sm font-medium capitalize text-gray-700">{area}</legend>
                   {items.map((p) => (
                     <label key={p.name} className={`flex items-center gap-2 text-sm ${p.grantable ? 'text-gray-800' : 'text-gray-400'}`}>
                       <input type="checkbox" checked={selected.has(p.name)} disabled={!editable || !p.grantable} onChange={() => toggle(p)} />
@@ -106,7 +106,7 @@ export const RoleDetailPage = () => {
             </section>
 
             <section className={card}>
-              <h2 className="mb-2 font-semibold text-gray-900">People holding this role ({role.data.assignees.length})</h2>
+              <h2 className="mb-2 font-medium text-gray-900">People holding this role ({role.data.assignees.length})</h2>
               {role.data.assignees.length === 0 ? <p className="text-sm text-gray-500">Nobody holds this role right now.</p> : (
                 <ul className="divide-y divide-gray-100 text-sm">
                   {role.data.assignees.map((a) => (

@@ -23,7 +23,7 @@ const Members = ({ group, canManage }: { group: GroupDetail; canManage: boolean 
   const remove = useMutation({ mutationFn: async (id: string) => apiClient.delete(`/api/v2/groups/${group.id}/members/${id}`), onSuccess: () => { setRemoving(null); refresh(); } });
   return (
     <section className={`${card} space-y-3`}>
-      <h2 className="text-lg font-semibold">Members ({group.members.length}{group.capacity ? ` of ${group.capacity}` : ''})</h2>
+      <h2 className="text-lg font-medium">Members ({group.members.length}{group.capacity ? ` of ${group.capacity}` : ''})</h2>
       {group.members.length === 0 ? <EmptyBlock message="No members yet." /> : (
         <ul className="divide-y divide-gray-100">
           {group.members.map((m) => (
@@ -70,7 +70,7 @@ const RecordSession = ({ group }: { group: GroupDetail }) => {
   });
   return (
     <form className={`${card} space-y-3`} aria-label="Record session" onSubmit={(e) => { e.preventDefault(); if (topic.trim().length >= 2) record.mutate(); }}>
-      <h2 className="text-lg font-semibold">Record a session</h2>
+      <h2 className="text-lg font-medium">Record a session</h2>
       <div className="grid gap-3 sm:grid-cols-3">
         <Labeled label="Date"><input className={inputCls} type="date" value={heldOn} onChange={(e) => setHeldOn(e.target.value)} /></Labeled>
         <Labeled label="Topic"><input className={inputCls} value={topic} onChange={(e) => setTopic(e.target.value)} /></Labeled>
@@ -110,7 +110,7 @@ export const GroupDetailPage = () => {
         {g && can(permissions, 'group:attendance:record') && g.status !== 'CLOSED' && <RecordSession group={g} />}
         {sessions.data && (
           <section className={card}>
-            <h2 className="text-lg font-semibold">Sessions</h2>
+            <h2 className="text-lg font-medium">Sessions</h2>
             {sessions.data.items.length === 0 ? <EmptyBlock message="No sessions recorded." /> : (
               <ul className="mt-2 divide-y divide-gray-100 text-sm">
                 {sessions.data.items.map((s) => <li key={s.id} className="py-2">{formatDate(s.heldOn)} — {s.topic}{s.lesson ? ` (${s.lesson})` : ''} · {s.present}/{s.recorded} present</li>)}
@@ -120,7 +120,7 @@ export const GroupDetailPage = () => {
         )}
         {summary.data && summary.data.members.length > 0 && (
           <section className={card}>
-            <h2 className="text-lg font-semibold">Attendance summary ({summary.data.sessions} session(s))</h2>
+            <h2 className="text-lg font-medium">Attendance summary ({summary.data.sessions} session(s))</h2>
             <table className="mt-2 w-full text-left text-sm">
               <thead><tr className="text-gray-500"><th className="py-1">Member</th><th>Present</th><th>Rate</th></tr></thead>
               <tbody>{summary.data.members.map((m) => <tr key={m.membershipId}><td className="py-1">{m.name}</td><td>{m.present}/{m.recorded}</td><td>{m.rate === null ? '—' : `${m.rate}%`}</td></tr>)}</tbody>

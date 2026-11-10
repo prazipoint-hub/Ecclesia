@@ -91,7 +91,7 @@ export const HierarchyReportPage = () => {
       {params && (result.isLoading ? <LoadingBlock /> : result.error ? <ErrorBlock error={result.error} onRetry={() => result.refetch()} /> : data && (
         <section className={`${card} space-y-3`} aria-label="Results">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-semibold text-gray-900">{data.scopeName}: {data.churchCount} church(es)</h2>
+            <h2 className="font-medium text-gray-900">{data.scopeName}: {data.churchCount} church(es)</h2>
             <button type="button" className={secondaryBtn} onClick={save}>Download CSV</button>
           </div>
           {data.truncated && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Only the first 500 churches are included, so these figures are incomplete.</p>}
@@ -101,7 +101,7 @@ export const HierarchyReportPage = () => {
                 <thead><tr>{cols.map((c) => <th key={c} className={th}>{label(c)}</th>)}</tr></thead>
                 <tbody className="divide-y divide-gray-100">
                   {data.rows.map((r, i) => (
-                    <tr key={i} className={r.church === 'TOTAL' ? 'bg-gray-50 font-semibold' : ''}>{cols.map((c) => <td key={c} className={td}>{r[c] ?? ''}</td>)}</tr>
+                    <tr key={i} className={r.church === 'TOTAL' ? 'bg-gray-50 font-medium' : ''}>{cols.map((c) => <td key={c} className={td}>{r[c] ?? ''}</td>)}</tr>
                   ))}
                 </tbody>
               </table>

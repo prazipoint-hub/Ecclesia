@@ -33,7 +33,7 @@ export const ProfileReviewPage = () => {
         <AdminHeader title="Profile reviews and completion" subtitle="Approve sensitive corrections and see how complete member profiles are. Counts only; no personal details are listed." />
         {canReview && (
           <section className={card}>
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">Pending corrections</h2>
+            <h2 className="mb-3 text-lg font-medium text-gray-900">Pending corrections</h2>
             {decide.error && <ApiError error={decide.error} />}
             {queue.isLoading ? <LoadingBlock /> : queue.error ? <ErrorBlock error={queue.error} /> : !queue.data?.length ? <EmptyBlock message="Nothing waiting." /> : (
               <>
@@ -58,7 +58,7 @@ export const ProfileReviewPage = () => {
         )}
         {canReport && (
           <section className={card}>
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">Completion</h2>
+            <h2 className="mb-3 text-lg font-medium text-gray-900">Completion</h2>
             {report.isLoading ? <LoadingBlock /> : report.error || !report.data ? <ErrorBlock error={report.error} /> : (
               <>
                 <p className="text-sm text-gray-700">{report.data.complete} of {report.data.activeMembers} active members meet the rule. Average completion {report.data.averagePercent}%.{report.data.truncated && ' (First 20,000 members only.)'}</p>
@@ -69,7 +69,7 @@ export const ProfileReviewPage = () => {
         )}
         {canConfigure && report.data && (
           <section className={card}>
-            <h2 className="mb-1 text-lg font-semibold text-gray-900">Required details</h2>
+            <h2 className="mb-1 text-lg font-medium text-gray-900">Required details</h2>
             <p className="mb-3 text-sm text-gray-600">Tick the details a member must have for their profile to count as complete.</p>
             {saveRule.error && <ApiError error={saveRule.error} />}
             <div className="grid gap-2 sm:grid-cols-3">{ALL.map((f) => (

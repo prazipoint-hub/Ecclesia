@@ -89,7 +89,7 @@ export const MemberImportPage = () => {
           <NoAccess permission="member:import" />
         ) : (
           <>
-            <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section className="space-y-4 rounded-md border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">
                   Required columns: <code>firstName</code>, <code>lastName</code>. Up to 5,000 rows and 5 MB per file.
@@ -106,7 +106,7 @@ export const MemberImportPage = () => {
                   type="file"
                   accept=".csv,text/csv"
                   onChange={(e) => void onFile(e.target.files?.[0])}
-                  className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:font-semibold file:text-primary-700"
+                  className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:font-medium file:text-primary-700"
                 />
               </div>
               {fileError && <ErrorNotice message={fileError} />}
@@ -117,8 +117,8 @@ export const MemberImportPage = () => {
             </section>
 
             {preview && !result && (
-              <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm" aria-label="Preview">
-                <h2 className="text-lg font-semibold text-gray-900">Check results</h2>
+              <section className="space-y-4 rounded-md border border-gray-200 bg-white p-6 shadow-sm" aria-label="Preview">
+                <h2 className="text-lg font-medium text-gray-900">Check results</h2>
                 <p role="status" className="text-sm text-gray-700">
                   {preview.validRows} of {preview.totalRows} rows are ready to import
                   {hasErrors ? `; ${preview.errorCount} ${preview.errorCount === 1 ? 'row has a problem' : 'rows have problems'}.` : '.'}
@@ -161,7 +161,7 @@ export const MemberImportPage = () => {
             )}
 
             <section className="space-y-3">
-              <h2 className="text-lg font-semibold text-gray-900">Recent imports</h2>
+              <h2 className="text-lg font-medium text-gray-900">Recent imports</h2>
               {history.isError ? (
                 <ErrorBlock error={history.error} />
               ) : history.data && history.data.length > 0 ? (

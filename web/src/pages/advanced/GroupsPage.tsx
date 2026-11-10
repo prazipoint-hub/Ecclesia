@@ -55,7 +55,7 @@ export const GroupsPage = () => {
           <ul className="grid gap-3 sm:grid-cols-2">
             {list.data.items.map((g) => (
               <li key={g.id} className={card}>
-                <Link to={`/groups/${g.id}`} className="text-lg font-semibold text-primary-700 hover:underline">{g.name}</Link>
+                <Link to={`/groups/${g.id}`} className="text-lg font-medium text-primary-700 hover:underline">{g.name}</Link>
                 <p className="mt-1 text-sm text-gray-600">{g.meetingDay ? `${titleCase(g.meetingDay)}${g.meetingTime ? ` ${g.meetingTime}` : ''}` : 'No fixed meeting time'}{g.location ? ` · ${g.location}` : ''}</p>
                 <p className="text-sm text-gray-600">{g.memberCount}{g.capacity ? ` / ${g.capacity}` : ''} members · {titleCase(g.status)}</p>
               </li>

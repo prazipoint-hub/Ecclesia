@@ -21,7 +21,7 @@ const METHODS: FollowUpMethod[] = ['CALL', 'VISIT', 'MESSAGE', 'OTHER'];
 
 const Row = ({ label, value }: { label: string; value: string | null | undefined }) => (
   <div>
-    <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</dt>
+    <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</dt>
     <dd className="mt-1 break-words text-gray-900">{value || '—'}</dd>
   </div>
 );
@@ -108,7 +108,7 @@ export const VisitorDetailPage = () => {
                 {joined && v.convertedMemberId && <Link to={`/members/${v.convertedMemberId}`} className="text-sm font-medium text-primary-700 hover:underline">View member record</Link>}
               </div>
               {converted && <SuccessNotice message={`Now a member. Membership number ${converted.membershipNumber}.`} />}
-              <dl className="grid gap-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:grid-cols-2">
+              <dl className="grid gap-5 rounded-md border border-gray-200 bg-white p-6 shadow-sm sm:grid-cols-2">
                 <Row label="Email" value={v.email} />
                 <Row label="Phone" value={v.phone} />
                 <Row label="Heard about us" value={v.source} />
@@ -116,8 +116,8 @@ export const VisitorDetailPage = () => {
               </dl>
 
               {canManage && !joined && (
-                <form onSubmit={submitFollowUp} className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm" aria-label="Log a follow-up">
-                  <h2 className="text-lg font-semibold text-gray-900">Log a follow-up</h2>
+                <form onSubmit={submitFollowUp} className="space-y-4 rounded-md border border-gray-200 bg-white p-6 shadow-sm" aria-label="Log a follow-up">
+                  <h2 className="text-lg font-medium text-gray-900">Log a follow-up</h2>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <FormSelect label="How" value={method} options={METHODS.map((m) => ({ value: m, label: titleCase(m) }))} onChange={(e) => setMethod(e.target.value as FollowUpMethod)} />
                     <FormSelect label="Outcome (optional)" value={outcome} placeholder="No change" options={[{ value: 'CONTACTED', label: 'Contacted' }, { value: 'SCHEDULED', label: 'Visit scheduled' }, { value: 'NOT_INTERESTED', label: 'Not interested' }]} onChange={(e) => setOutcome(e.target.value)} />
@@ -129,7 +129,7 @@ export const VisitorDetailPage = () => {
               )}
 
               <section className="space-y-3" aria-label="Follow-up history">
-                <h2 className="text-lg font-semibold text-gray-900">History</h2>
+                <h2 className="text-lg font-medium text-gray-900">History</h2>
                 {v.followUps.length === 0 ? (
                   <p className="text-sm text-gray-500">No follow-ups logged yet.</p>
                 ) : (

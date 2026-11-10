@@ -43,7 +43,7 @@ const STATUS_STYLES: Record<BroadcastStatus, string> = {
 };
 
 export const StatusBadge = ({ status }: { status: BroadcastStatus }) => (
-  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[status]}`}>{titleCase(status)}</span>
+  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[status]}`}>{titleCase(status)}</span>
 );
 
 const CHANNEL_OPTIONS: Array<{ value: BroadcastChannel; disabledReason?: string }> = [
@@ -134,7 +134,7 @@ const BroadcastForm = ({ initial, onSaved, onCancel }: { initial?: Broadcast; on
 
   return (
     <form onSubmit={submit} noValidate className={`${card} space-y-4`} aria-label={initial ? 'Edit broadcast' : 'New broadcast'}>
-      <h2 className="text-lg font-semibold text-gray-900">{initial ? 'Edit broadcast' : 'New broadcast'}</h2>
+      <h2 className="text-lg font-medium text-gray-900">{initial ? 'Edit broadcast' : 'New broadcast'}</h2>
 
       {canUseTemplates && templates.data && templates.data.items.length > 0 && (
         <FormSelect
@@ -283,7 +283,7 @@ const BroadcastDetail = ({ id, canSend, onEdit, onClose }: { id: string; canSend
         <>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{data.title}</h2>
+              <h2 className="text-lg font-medium text-gray-900">{data.title}</h2>
               <p className="text-sm text-gray-500">
                 {CATEGORY_LABELS[data.category]} · {data.channels.map((c) => CHANNEL_LABELS[c]).join(', ')} ·{' '}
                 {data.audience.type === 'ALL' ? 'All active members' : `${data.audience.ids.length} ${data.audience.type === 'SECTIONS' ? 'sections' : 'organizations'}`}
@@ -310,7 +310,7 @@ const BroadcastDetail = ({ id, canSend, onEdit, onClose }: { id: string; canSend
               ].map(([label, value]) => (
                 <div key={label} className="rounded-lg bg-gray-50 p-3">
                   <dt className="text-xs uppercase tracking-wide text-gray-500">{label}</dt>
-                  <dd className="text-xl font-bold text-gray-900">{value}</dd>
+                  <dd className="text-xl font-medium text-gray-900">{value}</dd>
                 </div>
               ))}
             </dl>

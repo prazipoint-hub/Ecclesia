@@ -57,7 +57,7 @@ export const AbsencesPage = () => {
   return (
     <Shell title="Absence follow-up" subtitle="Members who have stopped coming." permission="absence:followup:manage">
       <section className={`${card} space-y-3`}>
-        <h2 className="font-semibold text-gray-900">Find members who have been away</h2>
+        <h2 className="font-medium text-gray-900">Find members who have been away</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <FormField label="Event type" value={detect.eventType} onChange={(e) => setDetect({ ...detect, eventType: e.target.value.toUpperCase() })} />
           <FormField label="Missed in a row (2–12)" type="number" min={2} max={12} value={detect.threshold} onChange={(e) => setDetect({ ...detect, threshold: e.target.value })} error={thresholdValid ? undefined : 'Choose a number from 2 to 12.'} />
@@ -79,7 +79,7 @@ export const AbsencesPage = () => {
       <FormSelect label="Show" value={status} placeholder="All" options={STATUSES.map((s) => ({ value: s, label: label(s) }))} onChange={(e) => setStatus(e.target.value)} className="max-w-xs" />
       <ApiError error={update.error ?? assign.error} />
       <DataState query={list.query} empty="No absence follow-ups.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Member</th><th className={th}>Missed</th><th className={th}>Detected</th><th className={th}>Assigned to</th><th className={th}>Status</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

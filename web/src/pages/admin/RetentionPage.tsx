@@ -25,7 +25,7 @@ const RuleRow = ({ row }: { row: RetentionEntityRow }) => {
   const remove = useMutation({ mutationFn: async () => apiClient.delete(`/api/v2/admin/retention/${row.entityType}`), onSuccess: refresh });
   return (
     <li className={card}>
-      <p className="font-semibold text-gray-900">{row.label}</p>
+      <p className="font-medium text-gray-900">{row.label}</p>
       <p className="text-xs text-gray-500">Must be kept at least {row.minDays} day(s).{row.rule?.lastRunAt ? ` Last run ${formatDate(row.rule.lastRunAt)}, removed ${row.rule.lastPurged ?? 0}.` : ''}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <label className="text-sm">Keep for (days) <input aria-label={`Days for ${row.label}`} type="number" value={days} onChange={(e) => setDays(e.target.value)} className="ml-1 w-24 rounded-lg border border-gray-300 px-2 py-1.5 text-sm" /></label>
@@ -66,7 +66,7 @@ export const RetentionPage = () => {
             {run.error != null && !confirming && <ErrorNotice message={getApiErrorMessage(run.error)} />}
             {preview && (
               <div role="status" className="text-sm">
-                <p className="font-semibold">{preview.dryRun ? 'Preview (nothing was deleted)' : 'Deleted'}</p>
+                <p className="font-medium">{preview.dryRun ? 'Preview (nothing was deleted)' : 'Deleted'}</p>
                 {preview.results.length === 0 ? <p className="text-gray-500">No active rules.</p> : (
                   <ul>{preview.results.map((r) => <li key={r.entityType}>{r.entityType}: {preview.dryRun ? `${r.wouldRemove} would be removed` : `${r.removed} removed`} (older than {r.retentionDays} days)</li>)}</ul>
                 )}

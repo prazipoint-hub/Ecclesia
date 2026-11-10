@@ -21,7 +21,7 @@ export const FieldDefinitions = () => {
   const update = useMutation({ mutationFn: (v: { id: string; body: Record<string, unknown> }) => apiClient.put(`${A}/fields/${v.id}`, v.body), onSuccess: refresh });
   return (
     <section className={card} aria-label="Extra profile fields">
-      <h2 className="mb-1 text-lg font-semibold text-gray-900">Extra profile fields</h2>
+      <h2 className="mb-1 text-lg font-medium text-gray-900">Extra profile fields</h2>
       <p className="mb-3 text-sm text-gray-600">Details your church wants beyond the standard ones. A required field counts toward each member's completion.</p>
       {(create.error || update.error) && <ApiError error={create.error ?? update.error} />}
       <div className="grid gap-3 sm:grid-cols-2">
@@ -55,7 +55,7 @@ export const GuardianLinks = () => {
   const revoke = useMutation({ mutationFn: (id: string) => apiClient.delete(`${A}/guardians/${id}`), onSuccess: refresh });
   return (
     <section className={card} aria-label="Guardians">
-      <h2 className="mb-1 text-lg font-semibold text-gray-900">Guardians of children</h2>
+      <h2 className="mb-1 text-lg font-medium text-gray-900">Guardians of children</h2>
       <p className="mb-3 text-sm text-gray-600">A linked adult can update a child's details and photo and ask for reviewed changes. The link ends by itself when the child turns 18. Both people need a recorded date of birth.</p>
       {(link.error || revoke.error) && <ApiError error={link.error ?? revoke.error} />}
       <div className="grid gap-3 sm:grid-cols-3">

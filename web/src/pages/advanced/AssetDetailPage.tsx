@@ -57,7 +57,7 @@ export const AssetDetailPage = () => {
             </section>
             {canManage && inService && (
               <form className={`${card} space-y-3`} aria-label="Record maintenance" onSubmit={(e) => { e.preventDefault(); if (form.description.trim().length >= 3) record.mutate(); }}>
-                <h2 className="text-lg font-semibold">Record maintenance</h2>
+                <h2 className="text-lg font-medium">Record maintenance</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Labeled label="Date of work"><input className={inputCls} type="date" value={form.performedOn} onChange={(e) => setForm({ ...form, performedOn: e.target.value })} /></Labeled>
                   <Labeled label="Cost"><input className={inputCls} type="number" min="0" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} /></Labeled>
@@ -69,7 +69,7 @@ export const AssetDetailPage = () => {
               </form>
             )}
             <section className={card}>
-              <h2 className="text-lg font-semibold">Maintenance history</h2>
+              <h2 className="text-lg font-medium">Maintenance history</h2>
               {a.maintenance.length === 0 ? <EmptyBlock message="No maintenance recorded." /> : (
                 <ul className="mt-2 divide-y divide-gray-100 text-sm">
                   {a.maintenance.map((m) => <li key={m.id} className="py-2">{formatDate(m.performedOn)} — {m.description}{m.cost !== null ? ` (${formatMoney(m.cost, 'USD')})` : ''}{m.nextDueDate ? ` · next due ${formatDate(m.nextDueDate)}` : ''}</li>)}

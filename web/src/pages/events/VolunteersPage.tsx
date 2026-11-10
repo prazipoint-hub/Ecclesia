@@ -49,7 +49,7 @@ export const VolunteersPage = () => {
   return (
     <Shell title="Volunteers" subtitle="Who is serving at which event." action={canManage && <button type="button" className={primaryBtn} onClick={() => setAdding(true)}>Assign volunteer</button>}>
       <section className={card}>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">My volunteering</h2>
+        <h2 className="mb-3 text-lg font-medium text-gray-900">My volunteering</h2>
         <ApiError error={respond.error} />
         <DataState query={mine.query} empty="You have no upcoming volunteer assignments.">
           <ul className="divide-y divide-gray-100">
@@ -69,14 +69,14 @@ export const VolunteersPage = () => {
 
       {canView && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-gray-900">All assignments</h2>
+          <h2 className="text-lg font-medium text-gray-900">All assignments</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <FormSelect label="Status" value={status} placeholder="All" options={STATUSES.map((s) => ({ value: s, label: s.replace('_', ' ').toLowerCase() }))} onChange={(e) => setStatus(e.target.value)} />
             <FormSelect label="Event" value={eventFilter} placeholder="All events" options={eventOptions} onChange={(e) => setEventFilter(e.target.value)} />
           </div>
           <ApiError error={setState.error} />
           <DataState query={all.query} empty="No volunteer assignments.">
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+            <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead><tr><th className={th}>Event</th><th className={th}>Volunteer</th><th className={th}>Role</th><th className={th}>Status</th><th className={th} /></tr></thead>
                 <tbody className="divide-y divide-gray-100">

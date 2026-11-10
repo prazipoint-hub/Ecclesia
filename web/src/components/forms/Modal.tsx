@@ -79,10 +79,10 @@ export const Modal = ({ open, title, onClose, children, footer }: ModalProps) =>
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/20 bg-white shadow-lift"
+        className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-white/20 bg-white shadow-lg"
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
-          <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+          <h2 id={titleId} className="text-lg font-medium text-gray-900">
             {title}
           </h2>
           <button

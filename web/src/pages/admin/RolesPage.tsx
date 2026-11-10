@@ -61,7 +61,7 @@ export const RolesPage = () => {
               <li key={role.id} className={card}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <Link to={`/admin/roles/${role.id}`} className="font-semibold text-primary-700 hover:underline">{role.name}</Link>
+                    <Link to={`/admin/roles/${role.id}`} className="font-medium text-primary-700 hover:underline">{role.name}</Link>
                     {role.description && <p className="text-sm text-gray-600">{role.description}</p>}
                   </div>
                   <p className="text-sm text-gray-500">{role.permissionCount} permissions · {role.assignmentCount} assignments</p>

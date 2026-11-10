@@ -100,7 +100,7 @@ export const CommitteesPage = () => {
         />
 
         {!canView ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm">Your role does not include committee access.</div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm">Your role does not include committee access.</div>
         ) : error ? (
           <ErrorNotice message={error} />
         ) : isLoading ? (
@@ -110,17 +110,17 @@ export const CommitteesPage = () => {
         ) : (
           <section aria-labelledby="committee-register-heading" className="space-y-4">
             <div className="flex items-center gap-3">
-              <span className="rounded-xl bg-primary-50 p-2.5 text-primary-700"><Layers3 className="h-5 w-5" /></span>
-              <div><h2 id="committee-register-heading" className="font-semibold text-gray-950">Committee register</h2><p className="text-sm text-gray-500">{committees.length} active record{committees.length === 1 ? '' : 's'}</p></div>
+              <span className="rounded-md bg-primary-50 p-2.5 text-primary-700"><Layers3 className="h-5 w-5" /></span>
+              <div><h2 id="committee-register-heading" className="font-medium text-gray-950">Committee register</h2><p className="text-sm text-gray-500">{committees.length} active record{committees.length === 1 ? '' : 's'}</p></div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               {committees.map((committee) => (
-                <article key={committee.id} className="group flex flex-col rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lift">
+                <article key={committee.id} className="group flex flex-col rounded-lg border border-gray-200/80 bg-white p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lg">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="rounded-xl bg-primary-50 p-2.5 text-primary-700"><UsersRound className="h-5 w-5" /></span>
-                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">{committee._count.members} assignment{committee._count.members === 1 ? '' : 's'}</span>
+                    <span className="rounded-md bg-primary-50 p-2.5 text-primary-700"><UsersRound className="h-5 w-5" /></span>
+                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">{committee._count.members} assignment{committee._count.members === 1 ? '' : 's'}</span>
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold text-gray-950">{committee.name}</h3>
+                  <h3 className="mt-4 text-lg font-medium text-gray-950">{committee.name}</h3>
                   <p className="mt-1 min-h-10 text-sm leading-relaxed text-gray-500">{committee.description ?? 'No description recorded.'}</p>
                   <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
                     <Link to={`/committees/${committee.id}/meetings`} className={`${secondaryBtn} group/link`}>

@@ -38,7 +38,7 @@ export const OrganizationSwitcher = () => {
         aria-haspopup="listbox"
         className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-sm hover:bg-gray-100"
       >
-        <span className="font-semibold text-gray-900">{scope}</span>
+        <span className="font-medium text-gray-900">{scope}</span>
         <span className="text-gray-500">{selectedUnit?.displayName ?? 'Loading workspace…'}</span>
         <ChevronDown className="h-4 w-4 text-gray-500" />
       </button>

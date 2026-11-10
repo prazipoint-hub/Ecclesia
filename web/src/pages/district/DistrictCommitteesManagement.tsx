@@ -49,11 +49,11 @@ export const DistrictCommitteesManagement = () => {
           <div>
             <div className="flex items-center gap-3">
               <ScopeBadge type="DISTRICT" />
-              <span className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">
+              <span className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500">
                 Governance
               </span>
             </div>
-            <h1 className="mt-3 text-3xl font-semibold text-gray-950 sm:text-4xl">Manage Committees</h1>
+            <h1 className="mt-3 text-2xl font-medium text-gray-950 sm:text-2xl">Manage Committees</h1>
           </div>
           {canCreateCommittee && (
             <Button variant="primary" onClick={() => setCreateOpen(true)}>
@@ -81,11 +81,11 @@ export const DistrictCommitteesManagement = () => {
             {committees.map((committee) => (
               <div
                 key={committee.id}
-                className="flex flex-col rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lift"
+                className="flex flex-col rounded-lg border border-gray-200/80 bg-white p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-lg"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{committee.name}</h3>
+                    <h3 className="text-lg font-medium text-gray-900">{committee.name}</h3>
                     <p className="mt-1 text-sm text-gray-600">ID: {committee.id.slice(0, 8)}</p>
                   </div>
                   <div className="flex gap-2">
@@ -95,7 +95,7 @@ export const DistrictCommitteesManagement = () => {
                           setSelectedCommittee(committee);
                           setEditOpen(true);
                         }}
-                        className="min-h-10 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-primary-50 hover:text-primary-800"
+                        className="min-h-10 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-primary-50 hover:text-primary-800"
                       >
                         Edit
                       </button>
@@ -106,7 +106,7 @@ export const DistrictCommitteesManagement = () => {
                           setSelectedCommittee(committee);
                           setDeleteOpen(true);
                         }}
-                        className="min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 shadow-sm hover:bg-red-50"
+                        className="min-h-10 rounded-md border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50"
                       >
                         Delete
                       </button>

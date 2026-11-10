@@ -34,7 +34,7 @@ const MonthlyBars = ({ currency, byMonth }: { currency: string; byMonth: GivingS
   const max = Math.max(...totals, 0);
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{currency} by month</p>
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">{currency} by month</p>
       <div className="flex h-32 items-end gap-1.5" role="img" aria-label={`Monthly giving in ${currency}`}>
         {totals.map((total, index) => (
           <div key={MONTHS[index]} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
@@ -115,7 +115,7 @@ export const MyGivingPage = () => {
         {download.isError && <ErrorNotice message={getApiErrorMessage(download.error, 'The statement could not be downloaded.')} />}
 
         <section className={card} aria-labelledby="totals-heading">
-          <h2 id="totals-heading" className="text-lg font-semibold text-gray-900">
+          <h2 id="totals-heading" className="text-lg font-medium text-gray-900">
             {year} summary
           </h2>
           {summary.isLoading && <LoadingBlock />}
@@ -130,7 +130,7 @@ export const MyGivingPage = () => {
                 <ul className="grid gap-4 sm:grid-cols-2">
                   {summary.data.totals.map((total) => (
                     <li key={total.currency} className="rounded-lg bg-gray-50 p-4">
-                      <p className="text-2xl font-bold text-gray-900">{formatMoney(total.total, total.currency)}</p>
+                      <p className="text-2xl font-medium text-gray-900">{formatMoney(total.total, total.currency)}</p>
                       <p className="text-xs text-gray-500">
                         {total.count} {total.count === 1 ? 'receipt' : 'receipts'}
                       </p>
@@ -139,7 +139,7 @@ export const MyGivingPage = () => {
                 </ul>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700">By type</h3>
+                  <h3 className="text-sm font-medium text-gray-700">By type</h3>
                   <ul className="mt-2 divide-y divide-gray-100 text-sm">
                     {summary.data.byIncomeType.map((entry) => (
                       <li key={`${entry.incomeType}-${entry.currency}`} className="flex justify-between py-2">
@@ -160,7 +160,7 @@ export const MyGivingPage = () => {
         </section>
 
         <section className={card} aria-labelledby="receipts-heading">
-          <h2 id="receipts-heading" className="text-lg font-semibold text-gray-900">
+          <h2 id="receipts-heading" className="text-lg font-medium text-gray-900">
             Receipts
           </h2>
           {list.isLoading && <LoadingBlock />}
@@ -194,7 +194,7 @@ export const MyGivingPage = () => {
                           <td className="py-2 pr-4">{titleCase(item.incomeType)}</td>
                           <td className="py-2 pr-4">{titleCase(item.paymentMethod)}</td>
                           <td className="py-2 pr-4">
-                            <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[item.status]}`}>
+                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[item.status]}`}>
                               {titleCase(item.status)}
                             </span>
                           </td>

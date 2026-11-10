@@ -8,7 +8,7 @@ interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const inputClassName = (hasError: boolean) =>
-  `block min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-4 ${
+  `block h-9 w-full rounded-md border bg-white px-3.5 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-4 ${
     hasError
       ? 'border-red-400 focus:ring-red-100'
       : 'border-gray-200 focus:border-primary-500 focus:ring-primary-100'

@@ -24,7 +24,7 @@ interface FieldErrors {
 
 const Detail = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</dt>
+    <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</dt>
     <dd className="mt-1 text-sm text-gray-900">{value}</dd>
   </div>
 );
@@ -89,7 +89,7 @@ export const MyProfilePage = () => {
         {data && (
           <>
             <section className={card} aria-labelledby="details-heading">
-              <h2 id="details-heading" className="text-lg font-semibold text-gray-900">
+              <h2 id="details-heading" className="text-lg font-medium text-gray-900">
                 Membership details
               </h2>
               <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -113,7 +113,7 @@ export const MyProfilePage = () => {
             </section>
 
             <section className={card} aria-labelledby="contact-heading">
-              <h2 id="contact-heading" className="text-lg font-semibold text-gray-900">
+              <h2 id="contact-heading" className="text-lg font-medium text-gray-900">
                 Contact information
               </h2>
               <form className="mt-4 space-y-4" onSubmit={onSubmit} noValidate>

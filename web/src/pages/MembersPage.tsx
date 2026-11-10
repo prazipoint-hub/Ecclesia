@@ -113,7 +113,7 @@ export const MembersPage = () => {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="page-eyebrow">People</p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Members</h1>
+            <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">Members</h1>
             <p className="mt-2 max-w-2xl text-gray-600">
               Searchable church records and registration in one place.
             </p>
@@ -139,30 +139,30 @@ export const MembersPage = () => {
         </div>
 
         {!user?.churchId ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-5 text-amber-900">
             Your account is not assigned to a church yet. A church workspace is required before
             member records can be viewed or created.
           </div>
         ) : listError ? (
-          <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+          <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-5 text-red-800">
             <p>{listError}</p>
             <button
               type="button"
               onClick={() => void loadMembers()}
-              className="mt-3 font-semibold underline"
+              className="mt-3 font-medium underline"
             >
               Try again
             </button>
           </div>
         ) : (
-          <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
+          <section className="overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-card">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
               <div className="flex items-center gap-3">
                 <span className="rounded-lg bg-primary-50 p-2 text-primary-700">
                   <Users className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="font-semibold text-gray-900">Church directory</h2>
+                  <h2 className="font-medium text-gray-900">Church directory</h2>
                   <p className="text-sm text-gray-500">
                     {total} member{total === 1 ? '' : 's'}
                   </p>
@@ -180,7 +180,7 @@ export const MembersPage = () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-left">
-                  <thead className="bg-gray-50/80 text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500">
+                  <thead className="bg-gray-50/80 text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500">
                     <tr>
                       <th className="px-5 py-3">Member</th>
                       <th className="px-5 py-3">Membership no.</th>
@@ -192,7 +192,7 @@ export const MembersPage = () => {
                     {members.map((member) => (
                       <tr key={member.id} className="hover:bg-primary-50/40">
                         <td className="px-5 py-4">
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-medium text-gray-900">
                             {member.firstName} {member.lastName}
                           </p>
                         </td>
@@ -203,7 +203,7 @@ export const MembersPage = () => {
                           {member.email ?? member.phone ?? '—'}
                         </td>
                         <td className="px-5 py-4">
-                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                             {member.membershipStatus}
                           </span>
                         </td>

@@ -53,7 +53,7 @@ export const ImportJobPanel = ({ base, templateUrl, templateName, kind }: { base
   return (
     <div className="space-y-4">
       <section className={card}>
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">1. Choose a file</h2>
+        <h2 className="mb-2 text-lg font-medium text-gray-900">1. Choose a file</h2>
         <p className="mb-3 text-sm text-gray-600">Nothing is saved until you confirm. Start from the template so the columns match.</p>
         <div className="flex flex-wrap gap-2">
           <button type="button" className={secondaryBtn} onClick={() => void fetchCsv(templateUrl, templateName).catch(() => undefined)}>Download template</button>
@@ -68,9 +68,9 @@ export const ImportJobPanel = ({ base, templateUrl, templateName, kind }: { base
       {jobId && (job.isLoading ? <LoadingBlock /> : job.error || !s ? <ErrorBlock error={job.error} /> : (
         <>
           <section className={card} aria-label="Import summary">
-            <h2 className="mb-2 text-lg font-semibold text-gray-900">2. Review: {s.fileName} <span className="text-sm font-normal text-gray-500">({s.status.toLowerCase()})</span></h2>
+            <h2 className="mb-2 text-lg font-medium text-gray-900">2. Review: {s.fileName} <span className="text-sm font-normal text-gray-500">({s.status.toLowerCase()})</span></h2>
             <dl className="grid gap-2 text-sm sm:grid-cols-3 lg:grid-cols-6">
-              {([['Rows', s.counts.totalRows], ['Ready', s.counts.readyToImport], ['Need a decision', s.counts.awaitingDecision], ['Rejected', s.counts.rejected], ['Imported', s.counts.imported], ['Skipped', s.counts.skipped]] as const).map(([l, v]) => <div key={l}><dt className="text-gray-500">{l}</dt><dd className="text-lg font-semibold tabular-nums">{v}</dd></div>)}
+              {([['Rows', s.counts.totalRows], ['Ready', s.counts.readyToImport], ['Need a decision', s.counts.awaitingDecision], ['Rejected', s.counts.rejected], ['Imported', s.counts.imported], ['Skipped', s.counts.skipped]] as const).map(([l, v]) => <div key={l}><dt className="text-gray-500">{l}</dt><dd className="text-lg font-medium tabular-nums">{v}</dd></div>)}
             </dl>
             {!s.reconciles && <p role="alert" className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">These counts do not add up to the number of rows. Do not rely on this import; contact support.</p>}
             {s.counts.rejected > 0 && <button type="button" className={`${secondaryBtn} mt-3`} onClick={() => void fetchCsv(`${base}/${jobId}/problems.csv`, 'import-problems.csv').catch(() => undefined)}>Download rejected rows to fix</button>}
@@ -106,7 +106,7 @@ export const ImportJobPanel = ({ base, templateUrl, templateName, kind }: { base
 
           {open && (
             <section className={card} aria-label="Confirm">
-              <h2 className="mb-2 text-lg font-semibold text-gray-900">3. Confirm</h2>
+              <h2 className="mb-2 text-lg font-medium text-gray-900">3. Confirm</h2>
               {confirm.error && <ErrorNotice message={getApiErrorMessage(confirm.error)} />}
               {s.counts.awaitingDecision > 0 && (
                 <label className="mb-2 flex items-center gap-2 text-sm text-gray-700">

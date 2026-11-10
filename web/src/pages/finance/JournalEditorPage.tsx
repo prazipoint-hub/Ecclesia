@@ -133,8 +133,8 @@ export const JournalEditorPage = () => {
               <tfoot>
                 <tr>
                   <td colSpan={3} className={td}>{!readOnly && <button type="button" className="inline-flex items-center gap-1 text-sm font-medium text-primary-600" onClick={() => setLines([...lines, blank()])}><Plus className="h-4 w-4" /> Add line</button>}</td>
-                  <td className={`${num} font-semibold`} data-testid="total-debit">{money(totalDebit)}</td>
-                  <td className={`${num} font-semibold`} data-testid="total-credit">{money(totalCredit)}</td><td />
+                  <td className={`${num} font-medium`} data-testid="total-debit">{money(totalDebit)}</td>
+                  <td className={`${num} font-medium`} data-testid="total-credit">{money(totalCredit)}</td><td />
                 </tr>
               </tfoot>
             </table>

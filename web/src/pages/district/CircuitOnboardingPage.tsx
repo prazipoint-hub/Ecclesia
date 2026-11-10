@@ -80,7 +80,7 @@ export const CircuitOnboardingPage = () => {
         <AdminHeader title="Circuits" subtitle="Register a circuit with its first church and Secretary, then work through onboarding. Each step is checked against real records." />
         {canRegister && (
           <section className={card}>
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">Register a circuit</h2>
+            <h2 className="mb-3 text-lg font-medium text-gray-900">Register a circuit</h2>
             {register.error && <ErrorNotice message={getApiErrorMessage(register.error)} />}
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField label="Circuit name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
@@ -106,14 +106,14 @@ export const CircuitOnboardingPage = () => {
           </section>
         )}
         <section className={card}>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">Your circuits</h2>
+          <h2 className="mb-3 text-lg font-medium text-gray-900">Your circuits</h2>
           {resend.error && <ErrorNotice message={getApiErrorMessage(resend.error)} />}
           {circuits.isLoading ? <LoadingBlock /> : circuits.error ? <ErrorBlock error={circuits.error} /> : !circuits.data?.length ? <EmptyBlock message="No circuits to show." /> : (
             <ul className="space-y-3">
               {circuits.data.map((c) => (
-                <li key={c.id} className="rounded-xl border border-gray-200 p-4">
+                <li key={c.id} className="rounded-md border border-gray-200 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div><p className="font-semibold text-gray-900">{c.name} <span className="text-xs font-normal text-gray-500">{c.status.toLowerCase()}</span></p><p className="text-sm text-gray-500">{[c.district?.name, c.conference?.name, c.location].filter(Boolean).join(' · ')}</p></div>
+                    <div><p className="font-medium text-gray-900">{c.name} <span className="text-xs font-normal text-gray-500">{c.status.toLowerCase()}</span></p><p className="text-sm text-gray-500">{[c.district?.name, c.conference?.name, c.location].filter(Boolean).join(' · ')}</p></div>
                     <span className="flex gap-2">
                       <button type="button" className={secondaryBtn} onClick={() => setOpen(open === c.id ? null : c.id)}>{open === c.id ? 'Hide onboarding' : 'Onboarding'}</button>
                       {canRegister && <button type="button" className={secondaryBtn} disabled={resend.isPending} onClick={() => resend.mutate(c.id)}>Resend Secretary invitation</button>}

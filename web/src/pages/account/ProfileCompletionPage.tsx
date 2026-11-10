@@ -38,16 +38,16 @@ export const ProfileCompletionPage = () => {
         {status.isLoading ? <LoadingBlock /> : status.error || !s ? <ErrorBlock error={status.error} onRetry={() => void status.refetch()} /> : (
           <>
             <section className={card} aria-label="Progress">
-              <div className="flex items-baseline justify-between"><h2 className="text-lg font-semibold text-gray-900">{s.percent}% complete</h2><span className="text-xs text-gray-500">{s.ruleSource === 'church' ? 'Your church’s rule' : 'Default rule'}</span></div>
+              <div className="flex items-baseline justify-between"><h2 className="text-lg font-medium text-gray-900">{s.percent}% complete</h2><span className="text-xs text-gray-500">{s.ruleSource === 'church' ? 'Your church’s rule' : 'Default rule'}</span></div>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-valuenow={s.percent} aria-valuemin={0} aria-valuemax={100}><div className="h-full bg-primary-600" style={{ width: `${s.percent}%` }} /></div>
               {s.missing.length ? <p className="mt-3 text-sm text-gray-700">Still needed: {s.missing.map(label).join(', ')}.</p> : <p className="mt-3 text-sm text-green-700">Everything your church requires is filled in.</p>}
             </section>
-            <section className={card} aria-label="Photo"><h2 className="mb-3 text-lg font-semibold text-gray-900">Photo</h2><PhotoControl /></section>
+            <section className={card} aria-label="Photo"><h2 className="mb-3 text-lg font-medium text-gray-900">Photo</h2><PhotoControl /></section>
             <ExtraFields />
             <Dependants />
 
             <section className={card}>
-              <h2 className="mb-1 text-lg font-semibold text-gray-900">Next of kin</h2>
+              <h2 className="mb-1 text-lg font-medium text-gray-900">Next of kin</h2>
               {s.nextOfKin && <p className="mb-3 text-sm text-gray-600">On file: {s.nextOfKin.name} ({s.nextOfKin.relationship}), {s.nextOfKin.phone}. Enter new details below to replace them.</p>}
               {saveKin.error && <ApiError error={saveKin.error} />}
               <div className="grid gap-3 sm:grid-cols-2">
@@ -60,7 +60,7 @@ export const ProfileCompletionPage = () => {
             </section>
 
             <section className={card}>
-              <h2 className="mb-1 text-lg font-semibold text-gray-900">Request a correction</h2>
+              <h2 className="mb-1 text-lg font-medium text-gray-900">Request a correction</h2>
               <p className="mb-3 text-sm text-gray-600">Date of birth, gender and marital status are checked by a church officer before they change. Phone, address and email you can edit directly on your profile.</p>
               {request.error && <ApiError error={request.error} />}
               <div className="grid gap-3 sm:grid-cols-2">
@@ -77,7 +77,7 @@ export const ProfileCompletionPage = () => {
                     </select></label>}
               </div>
               <button type="button" className={`${primaryBtn} mt-3`} disabled={!change.value || request.isPending} onClick={() => request.mutate()}>Submit for review</button>
-              <h3 className="mb-2 mt-5 text-sm font-semibold text-gray-700">Your requests</h3>
+              <h3 className="mb-2 mt-5 text-sm font-medium text-gray-700">Your requests</h3>
               {changes.data?.length ? (
                 <ul className="space-y-2 text-sm">{changes.data.map((r) => (
                   <li key={r.id} className="rounded-lg border border-gray-200 p-3">

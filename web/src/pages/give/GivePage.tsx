@@ -102,8 +102,8 @@ export const GivePage = () => {
         {funds.data && (
           <form onSubmit={submit} noValidate className={`${card} overflow-hidden p-0`} aria-label="Give">
             <div className="flex items-center gap-4 border-b border-gray-100 bg-gradient-to-r from-primary-50 to-amber-50/70 p-5 sm:p-6">
-              <span className="rounded-2xl bg-white p-3 text-primary-700 shadow-sm"><HeartHandshake className="h-6 w-6" /></span>
-              <div><h2 className="text-lg font-semibold text-gray-950">Make a secure gift</h2><p className="text-sm text-gray-600">Choose where your gift goes and how you would like to pay.</p></div>
+              <span className="rounded-lg bg-white p-3 text-primary-700 shadow-sm"><HeartHandshake className="h-6 w-6" /></span>
+              <div><h2 className="text-lg font-medium text-gray-950">Make a secure gift</h2><p className="text-sm text-gray-600">Choose where your gift goes and how you would like to pay.</p></div>
             </div>
             <div className="space-y-5 p-5 sm:p-6">
             {pay.isError && <ErrorNotice message={getApiErrorMessage(pay.error, 'The payment could not be started.')} />}
@@ -175,7 +175,7 @@ export const GivePage = () => {
             </button>
             <div className="grid gap-2 border-t border-gray-100 pt-4 text-xs text-gray-500 sm:grid-cols-2">
               <p className="flex items-center gap-2"><LockKeyhole className="h-4 w-4 text-green-600" /> Payments are securely processed.</p>
-              <p className="flex items-center gap-2 sm:justify-end"><Repeat2 className="h-4 w-4 text-primary-600" /> <Link to="/my-account/recurring" className="font-semibold text-primary-700 hover:text-primary-900">Set up recurring giving</Link></p>
+              <p className="flex items-center gap-2 sm:justify-end"><Repeat2 className="h-4 w-4 text-primary-600" /> <Link to="/my-account/recurring" className="font-medium text-primary-700 hover:text-primary-900">Set up recurring giving</Link></p>
             </div>
             </div>
           </form>

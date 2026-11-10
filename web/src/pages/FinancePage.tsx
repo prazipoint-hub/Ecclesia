@@ -73,7 +73,7 @@ export const FinancePage = () => {
             <p className="page-eyebrow">
               Church finance
             </p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Finance dashboard</h1>
+            <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">Finance dashboard</h1>
             <p className="mt-2 max-w-2xl text-gray-600">
               Live receipts, expenditure approvals, and current balance.
             </p>
@@ -82,7 +82,7 @@ export const FinancePage = () => {
             type="button"
             onClick={() => void loadDashboard()}
             disabled={isLoading || !user?.churchId}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:opacity-60"
+            className="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -90,22 +90,22 @@ export const FinancePage = () => {
         </div>
         <FinanceNav />
         {!user?.churchId ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-5 text-amber-900">
             Assign this account to a church workspace before using finance.
           </div>
         ) : error ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+          <div className="rounded-md border border-red-200 bg-red-50 p-5 text-red-800">
             <p>{error}</p>
             <button
               type="button"
               onClick={() => void loadDashboard()}
-              className="mt-3 font-semibold underline"
+              className="mt-3 font-medium underline"
             >
               Try again
             </button>
           </div>
         ) : isLoading && !dashboard ? (
-          <div className="rounded-2xl border border-gray-200/80 bg-white p-10 text-center text-gray-500 shadow-soft">
+          <div className="rounded-lg border border-gray-200/80 bg-white p-10 text-center text-gray-500 shadow-card">
             Loading finance dashboard…
           </div>
         ) : (
@@ -132,14 +132,14 @@ export const FinancePage = () => {
                 />
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
-                <section className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
-                  <h2 className="text-lg font-semibold text-gray-900">Recent receipts</h2>
+                <section className="rounded-lg border border-gray-200/80 bg-white p-5 shadow-card">
+                  <h2 className="text-lg font-medium text-gray-900">Recent receipts</h2>
                   <div className="mt-4 space-y-3">
                     {dashboard.recentReceipts.length ? (
                       dashboard.recentReceipts.map((receipt) => (
                         <div
                           key={receipt.id}
-                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3"
+                          className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50/70 px-4 py-3"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{receipt.receiptNumber}</p>
@@ -147,7 +147,7 @@ export const FinancePage = () => {
                               {new Date(receipt.recordedAt).toLocaleDateString()}
                             </p>
                           </div>
-                          <span className="font-semibold text-emerald-700">
+                          <span className="font-medium text-emerald-700">
                             {amount(receipt.amount, receipt.currency)}
                           </span>
                         </div>
@@ -157,20 +157,20 @@ export const FinancePage = () => {
                     )}
                   </div>
                 </section>
-                <section className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
-                  <h2 className="text-lg font-semibold text-gray-900">Pending expenditure</h2>
+                <section className="rounded-lg border border-gray-200/80 bg-white p-5 shadow-card">
+                  <h2 className="text-lg font-medium text-gray-900">Pending expenditure</h2>
                   <div className="mt-4 space-y-3">
                     {dashboard.pendingExpenditures.length ? (
                       dashboard.pendingExpenditures.map((expenditure) => (
                         <div
                           key={expenditure.id}
-                          className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3"
+                          className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50/70 px-4 py-3"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{expenditure.purpose}</p>
                             <p className="text-sm text-gray-500">{expenditure.status}</p>
                           </div>
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-medium text-gray-900">
                             {amount(expenditure.amount, currency)}
                           </span>
                         </div>
@@ -202,13 +202,13 @@ const Metric = ({
   icon: typeof WalletCards;
   tone: string;
 }) => (
-  <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+  <div className="rounded-lg border border-gray-200/80 bg-white p-5 shadow-card">
     <div className="flex items-start justify-between">
       <div>
         <p className="text-sm text-gray-500">{label}</p>
-        <p className="mt-3 font-display text-2xl font-semibold text-gray-950">{value}</p>
+        <p className="mt-3 font-display text-2xl font-medium text-gray-950">{value}</p>
       </div>
-      <span className={`rounded-xl p-2.5 ${tone}`}>
+      <span className={`rounded-md p-2.5 ${tone}`}>
         <Icon className="h-5 w-5" />
       </span>
     </div>

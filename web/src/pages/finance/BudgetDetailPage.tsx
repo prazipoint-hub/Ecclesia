@@ -28,7 +28,7 @@ const Progress = ({ item }: { item: Item }) => {
           className={`h-full ${over ? 'bg-red-500' : 'bg-primary-500'}`}
         />
       </div>
-      <span className={`text-xs tabular-nums ${over ? 'font-semibold text-red-600' : 'text-gray-600'}`}>{item.percentUsed}%</span>
+      <span className={`text-xs tabular-nums ${over ? 'font-medium text-red-600' : 'text-gray-600'}`}>{item.percentUsed}%</span>
     </div>
   );
 };
@@ -64,7 +64,7 @@ export const BudgetDetailPage = () => {
               {[['Income', t.revenueBudgeted, t.revenueActual], ['Spending', t.expenseBudgeted, t.expenseActual], ['Surplus', t.surplusBudgeted, t.surplusActual]].map(([label, planned, actual]) => (
                 <div key={label as string} className={card}>
                   <p className="text-sm text-gray-500">{label}</p>
-                  <p className="text-xl font-semibold tabular-nums">{money(actual as number)}</p>
+                  <p className="text-xl font-medium tabular-nums">{money(actual as number)}</p>
                   <p className="text-xs text-gray-500">of {money(planned as number)} budgeted</p>
                 </div>
               ))}

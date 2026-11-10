@@ -29,9 +29,9 @@ export const DistrictManagement = () => {
           <div>
             <div className="flex items-center gap-3">
               <ScopeBadge type="DISTRICT" />
-              <span className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">District</span>
+              <span className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500">District</span>
             </div>
-            <h1 className="mt-3 text-3xl font-bold text-gray-900">District Administration</h1>
+            <h1 className="mt-3 text-2xl font-medium text-gray-900">District Administration</h1>
           </div>
           <Button variant="primary" onClick={() => setIsCircuitModalOpen(true)}>
             <Plus className="h-4 w-4" />
@@ -45,7 +45,7 @@ export const DistrictManagement = () => {
               <span className="text-sm font-medium text-gray-500">District</span>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-3xl font-bold text-gray-900">Harare</p>
+              <p className="text-2xl font-medium text-gray-900">Harare</p>
               <p className="text-sm text-gray-600">Conference district</p>
             </CardContent>
           </Card>
@@ -55,7 +55,7 @@ export const DistrictManagement = () => {
               <span className="text-sm font-medium text-gray-500">Circuits</span>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-3xl font-bold text-gray-900">{circuits.length}</p>
+              <p className="text-2xl font-medium text-gray-900">{circuits.length}</p>
               <p className="text-sm text-gray-600">Active circuit units</p>
             </CardContent>
           </Card>
@@ -65,7 +65,7 @@ export const DistrictManagement = () => {
               <span className="text-sm font-medium text-gray-500">Selected Unit</span>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-xl font-bold text-gray-900">{selectedUnitId}</p>
+              <p className="text-xl font-medium text-gray-900">{selectedUnitId}</p>
               <p className="text-sm text-gray-600">Current district scope</p>
             </CardContent>
           </Card>
@@ -74,7 +74,7 @@ export const DistrictManagement = () => {
         <div className="grid gap-6 xl:grid-cols-2">
           <Card>
             <CardHeader className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Circuit roster</h2>
+              <h2 className="text-lg font-medium text-gray-900">Circuit roster</h2>
               <Building2 className="h-5 w-5 text-primary-600" />
             </CardHeader>
             <CardContent className="space-y-3">
@@ -84,7 +84,7 @@ export const DistrictManagement = () => {
                     <p className="font-medium text-gray-900">{circuit.displayName}</p>
                     <p className="text-sm text-gray-500">{circuit.name}</p>
                   </div>
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">Active</span>
+                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">Active</span>
                 </div>
               ))}
             </CardContent>
@@ -92,7 +92,7 @@ export const DistrictManagement = () => {
 
           <Card>
             <CardHeader className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Quick actions</h2>
+              <h2 className="text-lg font-medium text-gray-900">Quick actions</h2>
               <CalendarRange className="h-5 w-5 text-primary-600" />
             </CardHeader>
             <CardContent className="space-y-3">

@@ -15,7 +15,7 @@ export const R = '/api/v2/reports';
 export const ApiError = ({ error }: { error: unknown }) => (error ? <ErrorNotice message={getApiErrorMessage(error)} /> : null);
 export const label = (value: string | null | undefined): string => (value ? value.toLowerCase().replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase()) : '—');
 export const dateTime = (iso: string | null | undefined): string => (iso ? new Date(iso).toLocaleString() : '—');
-export const th = 'bg-gray-50/80 px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500';
+export const th = 'bg-gray-50/80 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500';
 export const td = 'px-4 py-3.5 text-sm text-gray-700 align-top';
 
 const LINKS: Array<{ to: string; label: string; permission?: string; end?: boolean }> = [
@@ -30,13 +30,13 @@ const LINKS: Array<{ to: string; label: string; permission?: string; end?: boole
 export const ReportsNav = () => {
   const has = usePermissions();
   return (
-    <nav aria-label="Report sections" className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-sm">
+    <nav aria-label="Report sections" className="flex gap-1 overflow-x-auto rounded-md border border-gray-200/80 bg-white p-1.5 shadow-sm">
       {LINKS.filter((l) => !l.permission || has(l.permission)).map((link) => (
         <NavLink
           key={link.to}
           to={link.to}
           end={link.end}
-          className={({ isActive }) => `min-h-9 shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${isActive ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+          className={({ isActive }) => `min-h-9 shrink-0 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
         >
           {link.label}
         </NavLink>
@@ -61,7 +61,7 @@ export const Shell = ({ title, subtitle, action, permission, children }: { title
 export const Tag = ({ value }: { value: string }) => {
   const red = ['FAILED'];
   const green = ['SUCCEEDED'];
-  return <span className={`inline-block rounded-full border border-black/[0.04] px-2.5 py-1 text-xs font-semibold ${red.includes(value) ? 'bg-red-100 text-red-700' : green.includes(value) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{label(value)}</span>;
+  return <span className={`inline-block rounded-full border border-black/[0.04] px-2.5 py-1 text-xs font-medium ${red.includes(value) ? 'bg-red-100 text-red-700' : green.includes(value) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{label(value)}</span>;
 };
 
 export const bytes = (n: number | null | undefined): string => (n === null || n === undefined ? '—' : n < 1024 ? `${n} B` : n < 1048576 ? `${(n / 1024).toFixed(1)} KB` : `${(n / 1048576).toFixed(1)} MB`);

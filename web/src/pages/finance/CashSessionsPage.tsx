@@ -13,7 +13,7 @@ const CURRENT = ['accounting', 'cash-sessions', 'current'] as const;
 const LIST = ['accounting', 'cash-sessions'] as const;
 
 export const varianceClass = (variance: number | null): string =>
-  variance === null || variance === 0 ? 'text-gray-800' : variance < 0 ? 'font-semibold text-red-600' : 'font-semibold text-amber-600';
+  variance === null || variance === 0 ? 'text-gray-800' : variance < 0 ? 'font-medium text-red-600' : 'font-medium text-amber-600';
 
 export const CashSessionsPage = () => {
   const has = usePermissions();
@@ -45,7 +45,7 @@ export const CashSessionsPage = () => {
           <>
             {canManage && (
               <section className={card}>
-                <h2 className="mb-3 text-lg font-semibold text-gray-900">Current session</h2>
+                <h2 className="mb-3 text-lg font-medium text-gray-900">Current session</h2>
                 {current.isLoading ? <LoadingBlock /> : current.error ? <ErrorBlock error={current.error} /> : session ? (
                   <div className="space-y-3">
                     <p className="text-sm text-gray-600">Opened {toDateInput(session.openedAt)} with {money(session.openingBalance)}. Cash received so far: <strong>{money(session.cashReceivedSoFar)}</strong>. Expected before payouts: <strong>{money(session.expectedBeforePayouts)}</strong>.</p>
@@ -73,7 +73,7 @@ export const CashSessionsPage = () => {
               </section>
             )}
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">History</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">History</h2>
               {list.isLoading ? <LoadingBlock /> : list.error ? <ErrorBlock error={list.error} /> : list.data && list.data.length === 0 ? <EmptyBlock message="No sessions yet." /> : (
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead><tr><th className={th}>Opened</th><th className={th}>Status</th><th className={`${th} text-right`}>Opening</th><th className={`${th} text-right`}>Expected</th><th className={`${th} text-right`}>Counted</th><th className={`${th} text-right`}>Variance</th></tr></thead>

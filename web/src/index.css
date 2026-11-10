@@ -5,18 +5,17 @@
 :root {
   font-synthesis: none;
   color-scheme: light;
-  --surface-canvas: #faf8fc;
+  --surface-canvas: #f9fafb;
   --surface-card: #ffffff;
-  --ink: #241b35;
-  --ink-muted: #6f667d;
+  --ink: #111827;
+  --ink-muted: #6b7280;
 }
 
 body {
-  @apply bg-[#faf8fc] font-sans text-[#241b35] antialiased;
+  @apply bg-gray-50 font-sans text-gray-900 antialiased;
   min-width: 320px;
-  background-image:
-    radial-gradient(circle at 92% 2%, rgba(124, 58, 237, 0.07), transparent 25rem),
-    linear-gradient(180deg, #fcfbfd 0%, #faf8fc 100%);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 html {
@@ -35,7 +34,7 @@ a,
 input,
 select,
 textarea {
-  @apply transition-colors duration-200;
+  @apply transition-colors duration-150;
 }
 
 button:disabled,
@@ -46,11 +45,11 @@ textarea:disabled {
 }
 
 :focus-visible {
-  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white;
+  @apply outline-none ring-2 ring-primary-500/40 ring-offset-1 ring-offset-white;
 }
 
 ::selection {
-  @apply bg-primary-200 text-primary-950;
+  @apply bg-primary-100 text-primary-900;
 }
 
 @layer base {
@@ -58,31 +57,31 @@ textarea:disabled {
   h2,
   h3,
   h4 {
-    @apply font-display tracking-[-0.02em];
+    @apply font-display tracking-[-0.02em] font-medium;
   }
 
   input:not([type='checkbox']):not([type='radio']),
   select,
   textarea {
-    @apply min-h-11 rounded-xl border-gray-200 bg-white text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-100;
+    @apply h-9 rounded-md border-gray-300 bg-white text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-100;
   }
 
   table tbody tr {
-    @apply transition-colors hover:bg-primary-50/40;
+    @apply transition-colors hover:bg-gray-50;
   }
 }
 
 @layer components {
   .surface-panel {
-    @apply rounded-2xl border border-gray-200/80 bg-white shadow-soft;
+    @apply rounded-lg border border-gray-200 bg-white shadow-card;
   }
 
   .page-eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.18em] text-primary-700;
+    @apply text-[11px] font-medium uppercase tracking-widest text-gray-500;
   }
 
   .icon-button {
-    @apply inline-flex h-11 w-11 items-center justify-center rounded-xl border border-transparent text-gray-600 hover:border-gray-200 hover:bg-white hover:text-primary-700 hover:shadow-sm;
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-gray-500 hover:border-gray-200 hover:bg-gray-50 hover:text-gray-700;
   }
 }
 

@@ -43,12 +43,12 @@ export const RegistrationsPage = () => {
     <Shell title="Registrations" permission="event:registration:manage">
       <div className="grid gap-4 md:grid-cols-2">
         <form onSubmit={submitMember} className={`${card} space-y-3`}>
-          <h2 className="font-semibold text-gray-900">Register a member</h2>
+          <h2 className="font-medium text-gray-900">Register a member</h2>
           <FormField label="Member ID" value={memberId} onChange={(e) => setMemberId(e.target.value)} />
           <button type="submit" className={primaryBtn} disabled={add.isPending}>Register</button>
         </form>
         <form onSubmit={submitGuest} className={`${card} space-y-3`}>
-          <h2 className="font-semibold text-gray-900">Add a guest</h2>
+          <h2 className="font-medium text-gray-900">Add a guest</h2>
           <FormField label="Name" value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} />
           <FormField label="Email" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} />
           <FormField label="Phone" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
@@ -59,7 +59,7 @@ export const RegistrationsPage = () => {
       <ApiError error={add.error ?? cancel.error} />
       <FormSelect label="Show" value={status} placeholder="All" options={[{ value: 'REGISTERED', label: 'Registered' }, { value: 'CANCELLED', label: 'Cancelled' }]} onChange={(e) => setStatus(e.target.value)} className="max-w-xs" />
       <DataState query={list.query} empty="No registrations.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Name</th><th className={th}>Contact</th><th className={th}>Registered</th><th className={th}>Status</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

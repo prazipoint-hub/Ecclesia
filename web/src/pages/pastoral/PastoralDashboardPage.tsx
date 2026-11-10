@@ -8,8 +8,8 @@ import { P, Shell, Tag, label, memberName, usePermissions } from './pastoralShar
 const Stat = ({ title, value, hint }: { title: string; value: number | string; hint?: string }) => (
   <div className={`${card} relative overflow-hidden`}>
     <span className="absolute inset-y-0 left-0 w-1 bg-primary-500" />
-    <p className="text-sm font-semibold text-gray-500">{title}</p>
-    <p className="mt-2 font-display text-3xl font-semibold text-gray-950">{value}</p>
+    <p className="text-sm font-medium text-gray-500">{title}</p>
+    <p className="mt-2 font-display text-2xl font-medium text-gray-950">{value}</p>
     {hint && <p className="mt-2 text-xs leading-relaxed text-gray-500">{hint}</p>}
   </div>
 );
@@ -34,7 +34,7 @@ export const PastoralDashboardPage = () => {
             <Stat title="Not visited" value={d.unvisitedMembers.count} hint={`of ${d.unvisitedMembers.activeMembers} active members, ${d.unvisitedMembers.thresholdDays}+ days`} />
           </div>
           <section className={card}>
-            <h2 className="mb-1 text-lg font-semibold text-gray-950">Priority cases</h2>
+            <h2 className="mb-1 text-lg font-medium text-gray-950">Priority cases</h2>
             <p className="mb-4 text-sm text-gray-500">Cases that need the team’s attention first.</p>
             {d.priorityCases.length === 0 ? <EmptyBlock message="No high-priority cases." /> : (
               <ul className="divide-y divide-gray-100">
@@ -48,7 +48,7 @@ export const PastoralDashboardPage = () => {
             )}
           </section>
           <section className={card}>
-            <h2 className="mb-1 text-lg font-semibold text-gray-950">Follow-ups due this week</h2>
+            <h2 className="mb-1 text-lg font-medium text-gray-950">Follow-ups due this week</h2>
             <p className="mb-4 text-sm text-gray-500">Planned care touchpoints for the next seven days.</p>
             {d.followUps.dueThisWeek.length === 0 ? <EmptyBlock message="Nothing due this week." /> : (
               <ul className="divide-y divide-gray-100">
@@ -60,12 +60,12 @@ export const PastoralDashboardPage = () => {
           </section>
           <div className="grid gap-4 md:grid-cols-2">
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold">Prayer requests</h2>
+              <h2 className="mb-3 text-lg font-medium">Prayer requests</h2>
               <p className="text-sm text-gray-600">{Object.keys(d.prayerRequests).length === 0 ? 'None yet.' : Object.entries(d.prayerRequests).map(([k, v]) => `${label(k)}: ${v}`).join(' · ')}</p>
               <p className="mt-1 text-xs text-gray-500">Confidential requests are not counted.</p>
             </section>
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold">Flagged assessments</h2>
+              <h2 className="mb-3 text-lg font-medium">Flagged assessments</h2>
               {d.flaggedAssessments.length === 0 ? <p className="text-sm text-gray-500">None.</p> : (
                 <ul className="space-y-1 text-sm">
                   {d.flaggedAssessments.map((a) => (

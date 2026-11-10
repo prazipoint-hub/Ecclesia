@@ -13,9 +13,9 @@ const OVERVIEW = ['accounting', 'treasurer', 'overview'] as const;
 const LIST = ['accounting', 'deposits'] as const;
 
 const Tile = ({ title, value, hint }: { title: string; value: Record<string, string>; hint: string }) => (
-  <div className="rounded-xl border border-gray-200 p-4">
-    <h3 className="text-sm font-semibold text-gray-600">{title}</h3>
-    <p className="mt-1 text-lg font-semibold tabular-nums text-gray-900">{Object.keys(value).length ? Object.entries(value).map(([c, v]) => <span key={c} className="mr-3 whitespace-nowrap">{c} {v}</span>) : '—'}</p>
+  <div className="rounded-md border border-gray-200 p-4">
+    <h3 className="text-sm font-medium text-gray-600">{title}</h3>
+    <p className="mt-1 text-lg font-medium tabular-nums text-gray-900">{Object.keys(value).length ? Object.entries(value).map(([c, v]) => <span key={c} className="mr-3 whitespace-nowrap">{c} {v}</span>) : '—'}</p>
     <p className="mt-1 text-xs text-gray-500">{hint}</p>
   </div>
 );
@@ -58,10 +58,10 @@ export const DepositsPage = () => {
                     <Tile title="Deposits awaiting verification" value={o.depositsAwaitingVerification} hint="Recorded, not yet verified" />
                   </div>
                   {o.sessionsOutstanding.length > 0 && (
-                    <div><h3 className="mb-1 text-sm font-semibold text-gray-700">Approved sessions with cash not yet deposited</h3>
+                    <div><h3 className="mb-1 text-sm font-medium text-gray-700">Approved sessions with cash not yet deposited</h3>
                       <ul className="space-y-1 text-sm text-gray-700">{o.sessionsOutstanding.map((s) => <li key={s.id}>{toDateInput(s.sessionDate)}: {Object.entries(s.outstanding).map(([c, v]) => `${c} ${v}`).join(', ')} <span className="text-xs text-gray-400">({s.id})</span></li>)}</ul></div>
                   )}
-                  <div><h3 className="mb-1 text-sm font-semibold text-gray-700">Fund balances</h3>
+                  <div><h3 className="mb-1 text-sm font-medium text-gray-700">Fund balances</h3>
                     {o.funds.length ? <ul className="grid gap-1 text-sm text-gray-700 sm:grid-cols-2">{o.funds.map((f) => <li key={f.id}>{f.name}{f.isRestricted && ' (restricted)'}: <strong className="tabular-nums">{money(f.balance)}</strong></li>)}</ul> : <p className="text-sm text-gray-500">No funds yet.</p>}
                   </div>
                   <p className="text-xs text-gray-500">{o.note}</p>
@@ -71,7 +71,7 @@ export const DepositsPage = () => {
 
             {has('finance:deposit:record') && (
               <section className={card}>
-                <h2 className="mb-3 text-lg font-semibold text-gray-900">Record a deposit</h2>
+                <h2 className="mb-3 text-lg font-medium text-gray-900">Record a deposit</h2>
                 {record.error && <ApiError error={record.error} />}
                 <div className="grid gap-3 sm:grid-cols-2">
                   <FormField label="Currency (3 letters)" maxLength={3} value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} />
@@ -87,7 +87,7 @@ export const DepositsPage = () => {
             )}
 
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">Deposits</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">Deposits</h2>
               {verify.error && <ApiError error={verify.error} />}
               {reject.error && <ApiError error={reject.error} />}
               {list.isLoading ? <LoadingBlock /> : list.error ? <ErrorBlock error={list.error} /> : !list.data?.length ? <EmptyBlock message="No deposits recorded." /> : (

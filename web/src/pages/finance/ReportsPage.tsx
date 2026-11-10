@@ -18,7 +18,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
 ];
 
 const Warning = ({ children }: { children: string }) => (
-  <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm font-semibold text-red-800">
+  <div role="alert" className="flex items-start gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-sm font-medium text-red-800">
     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {children}
   </div>
 );
@@ -27,9 +27,9 @@ const drill = (id: string, from?: string, to?: string) => `/finance/accounts?acc
 
 const Section = ({ title, rows, total, from, to }: { title: string; rows: StatementRow[]; total?: number; from?: string; to?: string }) => (
   <>
-    <tr><td colSpan={2} className="bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-900">{title}</td></tr>
+    <tr><td colSpan={2} className="bg-gray-50 px-3 py-2 text-sm font-medium text-gray-900">{title}</td></tr>
     {rows.map((r) => <tr key={r.accountId}><td className={td}><Link className="underline" to={drill(r.accountId, from, to)}>{r.code} {r.name}</Link></td><td className={num}>{money(r.amount)}</td></tr>)}
-    {total !== undefined && <tr><td className={`${td} font-semibold`}>Total {title.toLowerCase()}</td><td className={`${num} font-semibold`}>{money(total)}</td></tr>}
+    {total !== undefined && <tr><td className={`${td} font-medium`}>Total {title.toLowerCase()}</td><td className={`${num} font-medium`}>{money(total)}</td></tr>}
   </>
 );
 
@@ -71,7 +71,7 @@ export const FinanceReportsPage = () => {
                       <thead><tr><th className={th}>Account</th><th className={`${th} text-right`}>Debit</th><th className={`${th} text-right`}>Credit</th></tr></thead>
                       <tbody className="divide-y divide-gray-100">
                         {d.rows.map((r) => <tr key={r.accountId}><td className={td}><Link className="underline" to={drill(r.accountId, undefined, to)}>{r.code} {r.name}</Link></td><td className={num}>{r.debit ? money(r.debit) : ''}</td><td className={num}>{r.credit ? money(r.credit) : ''}</td></tr>)}
-                        <tr><td className={`${td} font-semibold`}>Total</td><td className={`${num} font-semibold`}>{money(d.totalDebit)}</td><td className={`${num} font-semibold`}>{money(d.totalCredit)}</td></tr>
+                        <tr><td className={`${td} font-medium`}>Total</td><td className={`${num} font-medium`}>{money(d.totalDebit)}</td><td className={`${num} font-medium`}>{money(d.totalCredit)}</td></tr>
                       </tbody>
                     </table>
                   </>
@@ -80,7 +80,7 @@ export const FinanceReportsPage = () => {
                   <table className="min-w-full"><tbody>
                     <Section title="Income" rows={d.revenue} total={d.totalRevenue} from={from} to={to} />
                     <Section title="Expenses" rows={d.expenses} total={d.totalExpenses} from={from} to={to} />
-                    <tr><td className={`${td} font-bold`}>Net surplus</td><td className={`${num} font-bold ${d.netSurplus < 0 ? 'text-red-600' : ''}`}>{money(d.netSurplus)}</td></tr>
+                    <tr><td className={`${td} font-medium`}>Net surplus</td><td className={`${num} font-medium ${d.netSurplus < 0 ? 'text-red-600' : ''}`}>{money(d.netSurplus)}</td></tr>
                   </tbody></table>
                 )}
                 {tab === 'balance-sheet' && 'totalAssets' in d && (

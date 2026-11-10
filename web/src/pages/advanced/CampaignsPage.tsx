@@ -68,8 +68,8 @@ export const CampaignsPage = () => {
             {list.data.items.map((c) => (
               <li key={c.id} className={card}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <Link to={`/campaigns/${c.id}`} className="text-lg font-semibold text-primary-700 hover:underline">{c.name}</Link>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-700">{titleCase(c.status)}</span>
+                  <Link to={`/campaigns/${c.id}`} className="text-lg font-medium text-primary-700 hover:underline">{c.name}</Link>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">{titleCase(c.status)}</span>
                 </div>
                 <div className="mt-3"><ProgressBar percent={c.percent} label={`${c.name} progress`} /></div>
                 <p className="mt-2 text-sm text-gray-600">{formatMoney(c.raised, 'USD')} of {formatMoney(c.goalAmount, 'USD')} ({c.percent}%) · {c.donors} donor(s) · from {formatDate(c.startDate)}</p>

@@ -49,7 +49,7 @@ export const ReferralsPage = () => {
       <FormSelect label="Status" value={status} placeholder="All" options={selectOptions(REFERRAL_STATUSES)} onChange={(e) => setStatus(e.target.value)} className="max-w-xs" />
       <ApiError error={move.error} />
       <DataState query={list.query} empty="No referrals.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Date</th><th className={th}>Member</th><th className={th}>Provider</th><th className={th}>Status</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

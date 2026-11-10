@@ -69,7 +69,7 @@ export const NotificationBell = () => {
         {unread > 0 && (
           <span
             data-testid="unread-badge"
-            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-xs font-semibold text-white"
+            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-xs font-medium text-white"
           >
             {unread > 99 ? '99+' : unread}
           </span>
@@ -79,7 +79,7 @@ export const NotificationBell = () => {
       {open && (
         <div role="region" aria-label="Recent notifications" className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <h2 className="text-sm font-semibold text-gray-900">Notifications</h2>
+            <h2 className="text-sm font-medium text-gray-900">Notifications</h2>
             <button
               type="button"
               className="text-xs font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50"
@@ -102,7 +102,7 @@ export const NotificationBell = () => {
                     }}
                     className={`block w-full px-4 py-3 text-left hover:bg-gray-50 ${item.read ? '' : 'bg-primary-50/60'}`}
                   >
-                    <span className={`block text-sm text-gray-900 ${item.read ? 'font-medium' : 'font-semibold'}`}>
+                    <span className={`block text-sm text-gray-900 ${item.read ? 'font-medium' : 'font-medium'}`}>
                       {!item.read && <span className="sr-only">Unread: </span>}
                       {item.title}
                     </span>

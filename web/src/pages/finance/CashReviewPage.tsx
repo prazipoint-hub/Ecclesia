@@ -35,13 +35,13 @@ const ReviewPanel = ({ id, onDone }: { id: string; onDone: () => void }) => {
   const allEntered = counts.length > 0 && counts.every((c) => received[c.currency] !== undefined && received[c.currency] !== '' && Number.isFinite(Number(received[c.currency])));
   return (
     <section className={card} aria-label="Session review">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">Review submission #{d.submissionNo}</h2>
+      <h2 className="mb-3 text-lg font-medium text-gray-900">Review submission #{d.submissionNo}</h2>
       {d.changedSinceSubmission && <p role="alert" className="mb-3 rounded-lg bg-red-50 p-3 text-sm text-red-700">Receipts changed after this was submitted. Approval will be refused; reject it so the cashier can resubmit.</p>}
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
-        <div><dt className="font-semibold text-gray-600">Expected cash (frozen at submission)</dt><dd><MoneyList value={d.snapshot?.expected ?? {}} /></dd></div>
-        <div><dt className="font-semibold text-gray-600">Cashier counted</dt><dd>{counts.map((c) => <span key={c.currency} className="mr-3 tabular-nums">{c.currency} {c.counted.toFixed(2)}</span>)}</dd></div>
-        <div><dt className="font-semibold text-gray-600">Non-cash collected (verified separately)</dt><dd><MoneyList value={d.snapshot?.other ?? {}} /></dd></div>
-        <div><dt className="font-semibold text-gray-600">Differences</dt><dd><MoneyList value={d.submission?.variances ?? {}} /></dd></div>
+        <div><dt className="font-medium text-gray-600">Expected cash (frozen at submission)</dt><dd><MoneyList value={d.snapshot?.expected ?? {}} /></dd></div>
+        <div><dt className="font-medium text-gray-600">Cashier counted</dt><dd>{counts.map((c) => <span key={c.currency} className="mr-3 tabular-nums">{c.currency} {c.counted.toFixed(2)}</span>)}</dd></div>
+        <div><dt className="font-medium text-gray-600">Non-cash collected (verified separately)</dt><dd><MoneyList value={d.snapshot?.other ?? {}} /></dd></div>
+        <div><dt className="font-medium text-gray-600">Differences</dt><dd><MoneyList value={d.submission?.variances ?? {}} /></dd></div>
       </dl>
       {d.submission?.notes && <p className="mt-3 text-sm text-gray-700"><strong>Cashier note:</strong> {d.submission.notes}</p>}
       <div className="mt-4 overflow-x-auto"><table className="w-full"><caption className="sr-only">Receipts in this session</caption>
@@ -83,7 +83,7 @@ export const CashReviewPage = () => {
         {!allowed ? <NoAccess permission="finance:cash_session:review" /> : (
           <>
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">Awaiting review</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">Awaiting review</h2>
               {queue.isLoading ? <LoadingBlock /> : queue.error ? <ErrorBlock error={queue.error} /> : !queue.data?.length ? <EmptyBlock message="No submitted sessions." /> : (
                 <div className="overflow-x-auto"><table className="w-full"><caption className="sr-only">Submitted cash sessions</caption>
                   <thead><tr><th className={th}>Submitted</th><th className={th}>Expected cash</th><th className={th}>Receipts</th><th className={th}>Flags</th><th className={th}><span className="sr-only">Action</span></th></tr></thead>
@@ -92,7 +92,7 @@ export const CashReviewPage = () => {
                       <td className={td}>{s.submittedAt ? new Date(s.submittedAt).toLocaleString() : '—'}</td>
                       <td className={td}><MoneyList value={s.expected} /></td>
                       <td className={td}>{s.receiptCount}</td>
-                      <td className={td}>{s.discrepancy && <span className="font-semibold text-red-600">Count differs</span>}{s.ownSession && <span className="text-gray-500"> Your own session</span>}</td>
+                      <td className={td}>{s.discrepancy && <span className="font-medium text-red-600">Count differs</span>}{s.ownSession && <span className="text-gray-500"> Your own session</span>}</td>
                       <td className={td}><button type="button" className={secondaryBtn} disabled={s.ownSession} title={s.ownSession ? 'You cannot review your own session' : undefined} onClick={() => setSelected(s.id)}>Review</button></td>
                     </tr>))}</tbody>
                 </table></div>

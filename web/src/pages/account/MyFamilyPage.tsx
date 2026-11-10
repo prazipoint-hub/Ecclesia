@@ -14,7 +14,7 @@ const PersonRow = ({ person, detail }: { person: FamilyPerson; detail?: string }
   <li className="flex items-center justify-between py-3">
     <span className="font-medium text-gray-900">
       {person.firstName} {person.lastName}
-      {person.isDependent && <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700">Dependent</span>}
+      {person.isDependent && <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">Dependent</span>}
     </span>
     {detail && <span className="text-sm text-gray-500">{detail}</span>}
   </li>
@@ -38,7 +38,7 @@ export const MyFamilyPage = () => {
         {data && !nothing && (
           <>
             <section className={card} aria-labelledby="relationships-heading">
-              <h2 id="relationships-heading" className="text-lg font-semibold text-gray-900">
+              <h2 id="relationships-heading" className="text-lg font-medium text-gray-900">
                 Relationships
               </h2>
               {data.relationships.length === 0 ? (
@@ -53,7 +53,7 @@ export const MyFamilyPage = () => {
             </section>
 
             <section className={card} aria-labelledby="dependents-heading">
-              <h2 id="dependents-heading" className="text-lg font-semibold text-gray-900">
+              <h2 id="dependents-heading" className="text-lg font-medium text-gray-900">
                 Dependents
               </h2>
               {data.dependents.length === 0 ? (
@@ -68,7 +68,7 @@ export const MyFamilyPage = () => {
             </section>
 
             <section className={card} aria-labelledby="household-heading">
-              <h2 id="household-heading" className="text-lg font-semibold text-gray-900">
+              <h2 id="household-heading" className="text-lg font-medium text-gray-900">
                 Household
               </h2>
               {data.household.length === 0 ? (

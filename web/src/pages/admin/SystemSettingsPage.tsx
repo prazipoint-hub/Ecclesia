@@ -23,7 +23,7 @@ const SettingCard = ({ setting }: { setting: SystemSettingRow }) => {
   const id = `setting-${setting.key}`;
   return (
     <li className={card}>
-      <label htmlFor={id} className="font-semibold text-gray-900">{setting.key}</label>
+      <label htmlFor={id} className="font-medium text-gray-900">{setting.key}</label>
       <p className="text-sm text-gray-600">{setting.description}</p>
       <p className="text-xs text-gray-500">Used by: {setting.usedBy} · default {setting.default}{setting.isDefault ? '' : ' (changed)'}</p>
       <div className="mt-3 flex items-center gap-2">

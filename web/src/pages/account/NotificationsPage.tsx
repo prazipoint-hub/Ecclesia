@@ -113,7 +113,7 @@ export const NotificationsPage = () => {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className={`text-sm text-gray-900 ${item.read ? 'font-medium' : 'font-semibold'}`}>{item.title}</p>
+                      <p className={`text-sm text-gray-900 ${item.read ? 'font-medium' : 'font-medium'}`}>{item.title}</p>
                       <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{titleCase(item.type)}</span>
                       {!item.read && <span className="sr-only">Unread</span>}
                     </div>

@@ -137,7 +137,7 @@ export const RecurringGivingPage = () => {
               {recurring.data.map((item) => (
                 <li key={item.id} className={`${card} flex flex-wrap items-center justify-between gap-4`}>
                   <div>
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-medium text-gray-900">
                       {formatMoney(item.amount, item.currency)} {item.frequency === 'WEEKLY' ? 'every week' : 'every month'}
                     </p>
                     <p className="text-sm text-gray-500">

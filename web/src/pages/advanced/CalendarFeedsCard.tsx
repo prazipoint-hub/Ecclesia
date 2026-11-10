@@ -30,12 +30,12 @@ export const CalendarFeedsCard = () => {
   return (
     <section className={`${card} space-y-4`} aria-labelledby="calendar-title">
       <div>
-        <h2 id="calendar-title" className="text-lg font-semibold text-gray-900">Calendar subscription</h2>
+        <h2 id="calendar-title" className="text-lg font-medium text-gray-900">Calendar subscription</h2>
         <p className="mt-1 text-sm text-gray-600">Add church events to Google Calendar, Outlook or Apple Calendar with a private link. Anyone with the link can see the church event list, so keep it to yourself.</p>
       </div>
       {shown && (
         <div role="status" className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
-          <p className="text-sm font-semibold text-amber-900">Copy this link now. It is shown only once.</p>
+          <p className="text-sm font-medium text-amber-900">Copy this link now. It is shown only once.</p>
           <code className="block break-all rounded bg-white p-2 text-xs">{shown}</code>
           <div className="flex gap-2">
             <button type="button" onClick={copy} className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? 'Copied' : 'Copy link'}</button>

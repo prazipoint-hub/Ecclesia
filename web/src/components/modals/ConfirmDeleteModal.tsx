@@ -64,7 +64,7 @@ export const ConfirmDeleteModal = ({
     >
       <div className="flex items-start gap-3">
         <span
-          className={`rounded-xl p-2.5 ${isDangerous ? 'bg-red-50 text-red-600' : 'bg-primary-50 text-primary-700'}`}
+          className={`rounded-md p-2.5 ${isDangerous ? 'bg-red-50 text-red-600' : 'bg-primary-50 text-primary-700'}`}
         >
           <Trash2 className="h-5 w-5" />
         </span>
@@ -73,7 +73,7 @@ export const ConfirmDeleteModal = ({
           {error && (
             <p
               role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700"
             >
               {error}
             </p>

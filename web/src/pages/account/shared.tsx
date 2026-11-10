@@ -3,11 +3,11 @@ import { AlertTriangle, ChevronLeft, ChevronRight, Inbox, Loader2 } from 'lucide
 import { Link } from 'react-router-dom';
 import { getApiErrorMessage } from '@/utils/apiError';
 
-export const card = 'rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft sm:p-6';
+export const card = 'rounded-lg border border-gray-200/80 bg-white p-5 shadow-card sm:p-6';
 export const primaryBtn =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-primary-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60';
 export const secondaryBtn =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:cursor-not-allowed disabled:opacity-60';
+  'inline-flex h-9 items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:border-primary-200 hover:bg-primary-50 hover:text-primary-800 disabled:cursor-not-allowed disabled:opacity-60';
 
 export const formatMoney = (amount: number, currency: string): string => {
   try {
@@ -32,7 +32,7 @@ export const PageHeader = ({ title, subtitle, action }: { title: string; subtitl
       <Link to="/my-account" className="page-eyebrow hover:text-primary-900">
         My Account
       </Link>
-      <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">{title}</h1>
+      <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">{title}</h1>
       {subtitle && <p className="mt-2 max-w-2xl text-gray-600">{subtitle}</p>}
     </div>
     {action}
@@ -40,18 +40,18 @@ export const PageHeader = ({ title, subtitle, action }: { title: string; subtitl
 );
 
 export const LoadingBlock = ({ label = 'Loading…' }: { label?: string }) => (
-  <div role="status" className="flex min-h-32 items-center justify-center gap-3 rounded-2xl border border-gray-200/80 bg-white py-8 text-sm font-medium text-gray-500 shadow-soft">
+  <div role="status" className="flex min-h-32 items-center justify-center gap-3 rounded-lg border border-gray-200/80 bg-white py-8 text-sm font-medium text-gray-500 shadow-card">
     <Loader2 className="h-5 w-5 animate-spin text-primary-600" /> {label}
   </div>
 );
 
 export const ErrorBlock = ({ error, onRetry }: { error: unknown; onRetry?: () => void }) => (
-  <div role="alert" className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-sm">
+  <div role="alert" className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-800 shadow-sm">
     <span className="rounded-lg bg-red-100 p-2"><AlertTriangle className="h-4 w-4 shrink-0" /></span>
     <div className="flex-1">
       <p>{getApiErrorMessage(error)}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="mt-2 font-semibold underline">
+        <button type="button" onClick={onRetry} className="mt-2 font-medium underline">
           Try again
         </button>
       )}
@@ -60,8 +60,8 @@ export const ErrorBlock = ({ error, onRetry }: { error: unknown; onRetry?: () =>
 );
 
 export const EmptyBlock = ({ message }: { message: string }) => (
-  <div className="flex min-h-36 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white/60 p-6 text-center">
-    <span className="mb-3 rounded-xl bg-gray-100 p-2.5 text-gray-500"><Inbox className="h-5 w-5" /></span>
+  <div className="flex min-h-36 flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white/60 p-6 text-center">
+    <span className="mb-3 rounded-md bg-gray-100 p-2.5 text-gray-500"><Inbox className="h-5 w-5" /></span>
     <p className="max-w-md text-sm leading-relaxed text-gray-500">{message}</p>
   </div>
 );
@@ -80,7 +80,7 @@ export const Pagination = ({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   if (pages <= 1) return null;
   return (
-    <nav aria-label="Pagination" className="mt-4 flex items-center justify-between rounded-xl border border-gray-200/80 bg-white p-2 text-sm text-gray-600 shadow-sm">
+    <nav aria-label="Pagination" className="mt-4 flex items-center justify-between rounded-md border border-gray-200/80 bg-white p-2 text-sm text-gray-600 shadow-sm">
       <button type="button" className={secondaryBtn} disabled={page <= 1} onClick={() => onPage(page - 1)}>
         <ChevronLeft className="h-4 w-4" /> Previous
       </button>

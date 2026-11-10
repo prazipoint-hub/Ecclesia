@@ -93,17 +93,17 @@ export const VisitorsPage = () => {
           <NoAccess permission="visitor:view" />
         ) : (
           <>
-            <div className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-sm" role="group" aria-label="Filter by status">
-              <button type="button" aria-pressed={status === ''} className={`min-h-10 shrink-0 rounded-lg px-3 py-2 text-sm font-semibold ${status === '' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`} onClick={() => { setStatus(''); setPage(1); }}>
+            <div className="flex gap-1 overflow-x-auto rounded-md border border-gray-200/80 bg-white p-1.5 shadow-sm" role="group" aria-label="Filter by status">
+              <button type="button" aria-pressed={status === ''} className={`min-h-10 shrink-0 rounded-lg px-3 py-2 text-sm font-medium ${status === '' ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`} onClick={() => { setStatus(''); setPage(1); }}>
                 All
               </button>
               {VISITOR_STATUSES.map((s) => (
-                <button key={s} type="button" aria-pressed={status === s} className={`min-h-10 shrink-0 rounded-lg px-3 py-2 text-sm font-semibold ${status === s ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`} onClick={() => { setStatus(s); setPage(1); }}>
+                <button key={s} type="button" aria-pressed={status === s} className={`min-h-10 shrink-0 rounded-lg px-3 py-2 text-sm font-medium ${status === s ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`} onClick={() => { setStatus(s); setPage(1); }}>
                   {s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, ' ')} ({list.data?.statusCounts[s] ?? 0})
                 </button>
               ))}
             </div>
-            <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-soft"><SearchInput onSearch={onSearch} placeholder="Search visitors" className="max-w-md" /></div>
+            <div className="rounded-lg border border-gray-200/80 bg-white p-4 shadow-card"><SearchInput onSearch={onSearch} placeholder="Search visitors" className="max-w-md" /></div>
             {list.isLoading ? (
               <LoadingBlock label="Loading visitors…" />
             ) : list.isError ? (

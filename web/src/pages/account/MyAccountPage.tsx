@@ -40,8 +40,8 @@ export const MyAccountPage = () => {
     <MainLayout>
       <div className="mx-auto max-w-5xl space-y-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary-600">My Account</p>
-          <h1 className="mt-1 text-3xl font-bold text-gray-900">{data ? `Welcome, ${data.firstName}` : 'Welcome'}</h1>
+          <p className="text-sm font-medium uppercase tracking-wider text-primary-600">My Account</p>
+          <h1 className="mt-1 text-2xl font-medium text-gray-900">{data ? `Welcome, ${data.firstName}` : 'Welcome'}</h1>
           <p className="mt-2 text-gray-600">Your membership, giving and messages in one place.</p>
         </div>
 
@@ -50,12 +50,12 @@ export const MyAccountPage = () => {
 
         <div className="grid gap-6 md:grid-cols-3">
           <section className={`${card} md:col-span-1`} aria-labelledby="summary-profile">
-            <h2 id="summary-profile" className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h2 id="summary-profile" className="text-sm font-medium uppercase tracking-wide text-gray-500">
               Membership
             </h2>
             {data ? (
               <div className="mt-3 space-y-1 text-sm text-gray-700">
-                <p className="text-lg font-semibold text-gray-900">
+                <p className="text-lg font-medium text-gray-900">
                   {data.firstName} {data.lastName}
                 </p>
                 <p>No. {data.membershipNumber}</p>
@@ -69,7 +69,7 @@ export const MyAccountPage = () => {
           </section>
 
           <section className={card} aria-labelledby="summary-giving">
-            <h2 id="summary-giving" className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h2 id="summary-giving" className="text-sm font-medium uppercase tracking-wide text-gray-500">
               {summary.data ? `Giving in ${summary.data.year}` : 'Giving this year'}
             </h2>
             {summary.isLoading && <LoadingBlock />}
@@ -80,7 +80,7 @@ export const MyAccountPage = () => {
               ) : (
                 <ul className="mt-3 space-y-1">
                   {summary.data.totals.map((total) => (
-                    <li key={total.currency} className="text-2xl font-bold text-gray-900">
+                    <li key={total.currency} className="text-2xl font-medium text-gray-900">
                       {formatMoney(total.total, total.currency)}
                       <span className="ml-2 text-xs font-normal text-gray-500">
                         {total.count} {total.count === 1 ? 'receipt' : 'receipts'}
@@ -92,13 +92,13 @@ export const MyAccountPage = () => {
           </section>
 
           <section className={card} aria-labelledby="summary-notifications">
-            <h2 id="summary-notifications" className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h2 id="summary-notifications" className="text-sm font-medium uppercase tracking-wide text-gray-500">
               Notifications
             </h2>
             {notifications.isLoading && <LoadingBlock />}
             {notifications.isError && <ErrorBlock error={notifications.error} />}
             {notifications.data && (
-              <p className="mt-3 text-2xl font-bold text-gray-900">
+              <p className="mt-3 text-2xl font-medium text-gray-900">
                 {notifications.data.unreadCount}
                 <span className="ml-2 text-sm font-normal text-gray-500">unread</span>
               </p>
@@ -113,7 +113,7 @@ export const MyAccountPage = () => {
                 <Icon className="h-5 w-5" />
               </span>
               <span>
-                <span className="block font-semibold text-gray-900">{label}</span>
+                <span className="block font-medium text-gray-900">{label}</span>
                 <span className="block text-sm text-gray-500">{description}</span>
               </span>
             </Link>

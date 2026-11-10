@@ -40,30 +40,30 @@ export const DistrictDashboard = () => {
   return (
     <MainLayout>
       <div className="mx-auto max-w-7xl space-y-8">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
                 <ScopeBadge type="DISTRICT" />
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-500">District overview</span>
+                <span className="text-sm font-medium uppercase tracking-[0.18em] text-gray-500">District overview</span>
               </div>
-              <h1 className="mt-3 text-3xl font-bold text-gray-900">{selectedScope}</h1>
+              <h1 className="mt-3 text-2xl font-medium text-gray-900">{selectedScope}</h1>
               <p className="mt-2 text-gray-600">District Superintendent</p>
             </div>
-            <div className="rounded-xl border border-primary-100 bg-primary-50 px-4 py-3 text-right">
+            <div className="rounded-md border border-primary-100 bg-primary-50 px-4 py-3 text-right">
               <p className="text-xs uppercase tracking-[0.2em] text-primary-600">Current Scope</p>
-              <p className="mt-1 text-xl font-bold text-primary-700">District</p>
+              <p className="mt-1 text-xl font-medium text-primary-700">District</p>
             </div>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {districtStats.map(({ label, value, icon: Icon, tone }) => (
-            <div key={label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div key={label} className="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-gray-500">{label}</p>
-                  <p className="mt-3 text-3xl font-bold text-gray-900">{value}</p>
+                  <p className="mt-3 text-2xl font-medium text-gray-900">{value}</p>
                 </div>
                 <div className={`rounded-lg p-2 ${tone}`}>
                   <Icon className="h-5 w-5" />
@@ -74,9 +74,9 @@ export const DistrictDashboard = () => {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Circuits</h2>
+              <h2 className="text-xl font-medium text-gray-900">Circuits</h2>
               <button className="inline-flex items-center gap-1 text-sm font-medium text-primary-600">
                 View all <ArrowRight className="h-4 w-4" />
               </button>
@@ -92,13 +92,13 @@ export const DistrictDashboard = () => {
             </div>
           </section>
 
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">Committee oversight</h2>
+          <section className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-medium text-gray-900">Committee oversight</h2>
             <div className="mt-4 space-y-3">
               {committeeOversight.map(({ name, value, tone }) => (
                 <div key={name} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2">
                   <span className="font-medium text-gray-800">{name}</span>
-                  <span className={`rounded-full px-2.5 py-1 text-sm font-semibold ${tone}`}>{value} reports</span>
+                  <span className={`rounded-full px-2.5 py-1 text-sm font-medium ${tone}`}>{value} reports</span>
                 </div>
               ))}
             </div>
@@ -106,13 +106,13 @@ export const DistrictDashboard = () => {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">District programs</h2>
+          <section className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-medium text-gray-900">District programs</h2>
             <div className="mt-4 space-y-3">
               {districtPrograms.map(({ name, status }) => (
                 <div key={name} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
                   <span className="font-medium text-gray-800">{name}</span>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                     {status}
                   </span>
                 </div>
@@ -120,13 +120,13 @@ export const DistrictDashboard = () => {
             </div>
           </section>
 
-          <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-gray-900">Reports requiring review</h2>
+          <section className="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-medium text-gray-900">Reports requiring review</h2>
             <div className="mt-4 space-y-3">
               {reviewItems.map((item) => (
                 <div key={item} className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                   <span className="font-medium text-gray-800">{item}</span>
-                  <span className="text-xs font-semibold uppercase tracking-wide text-amber-700">Pending</span>
+                  <span className="text-xs font-medium uppercase tracking-wide text-amber-700">Pending</span>
                 </div>
               ))}
             </div>

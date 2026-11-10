@@ -54,7 +54,7 @@ const Detail = ({ id }: { id: string }) => {
   return (
     <div className="space-y-4">
       <section className={card} aria-label="Summary">
-        <h2 className="mb-2 text-lg font-semibold text-gray-900">{toDateInput(d.periodStart)} to {toDateInput(d.periodEnd)} ({d.currency}) — {d.status.toLowerCase()}</h2>
+        <h2 className="mb-2 text-lg font-medium text-gray-900">{toDateInput(d.periodStart)} to {toDateInput(d.periodEnd)} ({d.currency}) — {d.status.toLowerCase()}</h2>
         <dl className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <div><dt className="text-gray-500">Statement closing</dt><dd className="tabular-nums">{s.statementClosing}</dd></div>
           <div><dt className="text-gray-500">Ledger bank balance</dt><dd className="tabular-nums">{s.ledgerBalance}</dd></div>
@@ -62,7 +62,7 @@ const Detail = ({ id }: { id: string }) => {
           <div><dt className="text-gray-500">On statement, not in ledger ({s.unmatchedStatementCount})</dt><dd className="tabular-nums">{s.unmatchedStatementNet}</dd></div>
           <div><dt className="text-gray-500">Adjusted bank</dt><dd className="tabular-nums">{s.adjustedBank}</dd></div>
           <div><dt className="text-gray-500">Adjusted ledger</dt><dd className="tabular-nums">{s.adjustedBook}</dd></div>
-          <div><dt className="text-gray-500">Difference</dt><dd className={`font-semibold tabular-nums ${s.difference === '0.00' ? 'text-green-700' : 'text-red-700'}`}>{s.difference}</dd></div>
+          <div><dt className="text-gray-500">Difference</dt><dd className={`font-medium tabular-nums ${s.difference === '0.00' ? 'text-green-700' : 'text-red-700'}`}>{s.difference}</dd></div>
         </dl>
         {draft && has('finance:reconcile:complete') && (
           <div className="mt-3">
@@ -75,7 +75,7 @@ const Detail = ({ id }: { id: string }) => {
 
       {draft && manage && (
         <section className={card} aria-label="Import statement">
-          <h3 className="mb-2 font-semibold text-gray-900">Add statement lines</h3>
+          <h3 className="mb-2 font-medium text-gray-900">Add statement lines</h3>
           {upload.error && <ApiError error={upload.error} />}
           <FormTextarea label="One per line: YYYY-MM-DD,description,reference,amount (money in positive, money out negative)" rows={5} value={text} onChange={(e) => setText(e.target.value)} />
           {parsed.errors.length > 0 && <p role="alert" className="text-sm text-red-700">{parsed.errors.slice(0, 3).join(' ')}</p>}
@@ -88,7 +88,7 @@ const Detail = ({ id }: { id: string }) => {
       )}
 
       <section className={card} aria-label="Unmatched statement lines">
-        <h3 className="mb-2 font-semibold text-gray-900">Statement lines not matched</h3>
+        <h3 className="mb-2 font-medium text-gray-900">Statement lines not matched</h3>
         {match.error && <ApiError error={match.error} />}
         {unmatched.length === 0 ? <EmptyBlock message="No unmatched statement lines." /> : (
           <div className="overflow-x-auto"><table className="w-full"><caption className="sr-only">Unmatched statement lines</caption>
@@ -112,7 +112,7 @@ const Detail = ({ id }: { id: string }) => {
       </section>
 
       <section className={card} aria-label="Ledger lines not on the statement">
-        <h3 className="mb-2 font-semibold text-gray-900">Ledger bank lines not on the statement</h3>
+        <h3 className="mb-2 font-medium text-gray-900">Ledger bank lines not on the statement</h3>
         {!d.unmatchedBook?.length ? <EmptyBlock message="Every ledger bank line up to the statement date is matched." /> : (
           <ul className="space-y-1 text-sm text-gray-700">{d.unmatchedBook.map((b) => <li key={b.journalLineId}>{toDateInput(b.date)} {b.reference} {b.description}: <strong className="tabular-nums">{b.amount}</strong></li>)}</ul>
         )}
@@ -120,7 +120,7 @@ const Detail = ({ id }: { id: string }) => {
 
       {matched.length > 0 && (
         <section className={card} aria-label="Matched lines">
-          <h3 className="mb-2 font-semibold text-gray-900">Matched ({matched.length})</h3>
+          <h3 className="mb-2 font-medium text-gray-900">Matched ({matched.length})</h3>
           {unmatch.error && <ApiError error={unmatch.error} />}
           <ul className="space-y-1 text-sm text-gray-700">{matched.map((l) => <li key={l.id}>{toDateInput(l.lineDate)} {l.description}: <span className="tabular-nums">{l.amount}</span> {draft && manage && <button type="button" className="ml-2 text-xs underline" onClick={() => unmatch.mutate(l.id)}>Unmatch</button>}</li>)}</ul>
         </section>
@@ -150,7 +150,7 @@ export const BankReconciliationPage = () => {
           <>
             {has('finance:reconcile:manage') && (
               <section className={card}>
-                <h2 className="mb-3 text-lg font-semibold text-gray-900">Start a reconciliation</h2>
+                <h2 className="mb-3 text-lg font-medium text-gray-900">Start a reconciliation</h2>
                 {start.error && <ApiError error={start.error} />}
                 <div className="grid gap-3 sm:grid-cols-3">
                   <FormField label="Currency" maxLength={3} value={f.currency} onChange={(e) => setF({ ...f, currency: e.target.value.toUpperCase() })} />
@@ -163,7 +163,7 @@ export const BankReconciliationPage = () => {
               </section>
             )}
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">Reconciliations</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">Reconciliations</h2>
               {list.isLoading ? <LoadingBlock /> : list.error ? <ErrorBlock error={list.error} /> : !list.data?.length ? <EmptyBlock message="No reconciliations yet." /> : (
                 <ul className="space-y-1 text-sm">{list.data.map((r) => <li key={r.id}><button type="button" className="underline" onClick={() => setOpen(r.id)}>{toDateInput(r.periodStart)} to {toDateInput(r.periodEnd)} {r.currency}</button> <span className="text-gray-500">{r.status.toLowerCase()}</span></li>)}</ul>
               )}

@@ -29,7 +29,7 @@ export const ScopeBadge = ({ type }: { type: OrganizationUnit['type'] }) => {
   const config = labels[type];
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${config.className}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${config.className}`}>
       {config.icon}
       {config.label}
     </span>

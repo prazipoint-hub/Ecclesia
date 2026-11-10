@@ -25,7 +25,7 @@ export const ScanPage = () => {
         <ApiError error={checkIn.error} />
         {result && (
           <div role="status" className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
-            <p className="font-semibold">{result.alreadyCheckedIn ? 'You were already checked in' : 'You are checked in'}</p>
+            <p className="font-medium">{result.alreadyCheckedIn ? 'You were already checked in' : 'You are checked in'}</p>
             <p>{personName(result.member)} · {result.event.title}</p>
             <p className="text-green-800">{formatDate(result.checkedInAt)}</p>
           </div>

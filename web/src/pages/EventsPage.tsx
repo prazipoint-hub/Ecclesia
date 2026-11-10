@@ -173,7 +173,7 @@ export const EventsPage = () => {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="page-eyebrow">Ministry calendar</p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">
+            <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">
               Events & attendance
             </h1>
             <p className="mt-2 max-w-2xl text-gray-600">
@@ -200,7 +200,7 @@ export const EventsPage = () => {
         {!canView ? (
           <div
             role="alert"
-            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm"
+            className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm"
           >
             Your role does not include access to events. Ask an administrator to assign the event
             permission.
@@ -208,13 +208,13 @@ export const EventsPage = () => {
         ) : error ? (
           <ErrorNotice message={error} />
         ) : (
-          <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
+          <section className="overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-card">
             <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
-              <span className="rounded-xl bg-primary-50 p-2.5 text-primary-700">
+              <span className="rounded-md bg-primary-50 p-2.5 text-primary-700">
                 <CalendarDays className="h-5 w-5" />
               </span>
               <div>
-                <h2 className="font-semibold text-gray-900">Event calendar</h2>
+                <h2 className="font-medium text-gray-900">Event calendar</h2>
                 <p className="text-sm text-gray-500">
                   {events.length} scheduled or recorded event{events.length === 1 ? '' : 's'}
                 </p>
@@ -244,7 +244,7 @@ export const EventsPage = () => {
                     {events.map((event) => (
                       <tr key={event.id}>
                         <td className="px-5 py-4">
-                          <p className="font-semibold text-gray-900">{event.title}</p>
+                          <p className="font-medium text-gray-900">{event.title}</p>
                           <p className="text-sm text-gray-500">
                             {pretty(event.eventType)} · {pretty(event.status)}
                           </p>
@@ -358,7 +358,7 @@ export const EventsPage = () => {
               onChange={(event) => setForm({ ...form, capacity: event.target.value })}
             />
           </div>
-          <label className="flex min-h-11 items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700">
+          <label className="flex h-9 items-center gap-3 rounded-md border border-gray-200 bg-gray-50 px-4 text-sm font-medium text-gray-700">
             <input
               type="checkbox"
               checked={form.registrationRequired}
@@ -405,7 +405,7 @@ export const EventsPage = () => {
               </button>
             </div>
           )}
-          <div className="max-h-72 overflow-auto rounded-xl border border-gray-200">
+          <div className="max-h-72 overflow-auto rounded-md border border-gray-200">
             {attendance.length === 0 ? (
               <p className="p-5 text-sm text-gray-500">No attendance has been recorded yet.</p>
             ) : (
@@ -417,7 +417,7 @@ export const EventsPage = () => {
                   <span className="font-medium text-gray-900">
                     {entry.member.firstName} {entry.member.lastName}
                   </span>
-                  <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">
+                  <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-800">
                     {pretty(entry.status)}
                   </span>
                 </div>

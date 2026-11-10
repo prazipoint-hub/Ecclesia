@@ -25,7 +25,7 @@ const SyncPanel = () => {
   const pending = result?.preview ? result.receipts + result.expenditures + result.reversed : 0;
   return (
     <section className={card} aria-label="Sync receipts and expenditures">
-      <h2 className="text-lg font-semibold text-gray-900">Sync receipts and expenditures</h2>
+      <h2 className="text-lg font-medium text-gray-900">Sync receipts and expenditures</h2>
       <p className="mt-1 text-sm text-gray-600">Post journal entries for receipts and paid expenditures not yet in the ledger. Safe to repeat.</p>
       {run.error && <ApiError error={run.error} />}
       {result && (

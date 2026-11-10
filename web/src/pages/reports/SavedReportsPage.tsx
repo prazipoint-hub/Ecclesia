@@ -71,7 +71,7 @@ export const SavedReportsPage = () => {
       <ApiError error={runNow.error ?? update.error ?? remove.error ?? runDue.error} />
       {sweep && <p role="status" className="text-sm text-green-700">Schedules run: {sweep.ran} succeeded, {sweep.failed} failed.</p>}
       {outcome?.kind === 'file' && <p role="status" className="text-sm text-green-700">Downloaded {outcome.filename}.</p>}
-      {outcome?.kind === 'json' && <section className={`${card} space-y-2`}><h2 className="font-semibold text-gray-900">{outcome.filename}</h2><JsonPreview data={outcome.data} /></section>}
+      {outcome?.kind === 'json' && <section className={`${card} space-y-2`}><h2 className="font-medium text-gray-900">{outcome.filename}</h2><JsonPreview data={outcome.data} /></section>}
 
       {list.isLoading ? <LoadingBlock /> : list.error ? <ErrorBlock error={list.error} onRetry={() => void list.refetch()} /> : (list.data ?? []).length === 0 ? <EmptyBlock message="No saved reports yet. Build a report and choose “Save this report”." /> : (
         <div className="space-y-3">
@@ -82,7 +82,7 @@ export const SavedReportsPage = () => {
               <article key={r.id} className={`${card} space-y-2`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-semibold text-gray-900">{r.name}</h2>
+                    <h2 className="font-medium text-gray-900">{r.name}</h2>
                     <p className="text-sm text-gray-600">{label(r.reportType)} · {r.format} · {r.visibility === 'CHURCH' ? 'Shared with the church' : 'Private'}{owner ? ' · Yours' : ''}</p>
                     {r.description && <p className="mt-1 text-sm text-gray-500">{r.description}</p>}
                   </div>
@@ -110,7 +110,7 @@ export const SavedReportsPage = () => {
 
       <section className={`${card} space-y-3`}>
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">{historyFor ? 'History of this report' : 'Recent runs'}</h2>
+          <h2 className="font-medium text-gray-900">{historyFor ? 'History of this report' : 'Recent runs'}</h2>
           {historyFor && <button type="button" className={secondaryBtn} onClick={() => { setHistoryFor(''); setPage(1); }}>Show all runs</button>}
         </div>
         {executions.isLoading ? <LoadingBlock /> : executions.error ? <ErrorBlock error={executions.error} onRetry={() => void executions.refetch()} /> : (executions.data?.items.length ?? 0) === 0 ? <EmptyBlock message="No runs yet." /> : (

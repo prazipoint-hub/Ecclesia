@@ -25,7 +25,7 @@ export const ExtraFields = ({ path = ME, title = 'More about you' }: { path?: st
   const changed = q.data.some((f) => (draft[f.key] ?? '') !== f.value);
   return (
     <section className={card} aria-label={title}>
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">{title}</h2>
+      <h2 className="mb-3 text-lg font-medium text-gray-900">{title}</h2>
       {save.error && <ApiError error={save.error} />}
       <div className="grid gap-3 sm:grid-cols-2">
         {q.data.map((f) => f.type === 'CHOICE' ? (
@@ -84,7 +84,7 @@ export const Dependants = () => {
   if (!q.data?.length) return null;
   return (
     <section className={card} aria-label="Children in your care">
-      <h2 className="mb-3 text-lg font-semibold text-gray-900">Children in your care</h2>
+      <h2 className="mb-3 text-lg font-medium text-gray-900">Children in your care</h2>
       <ul className="space-y-3">
         {q.data.map((d) => (
           <li key={d.memberId} className="rounded-lg border border-gray-200 p-3">

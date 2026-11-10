@@ -73,7 +73,7 @@ export const CounselingPage = () => {
     <Shell title="Counseling" subtitle="Session records. Confidential notes are shown only to authorised counselors." permission="pastoral:counseling:view"
       action={has('pastoral:counseling:create') && <button type="button" className={primaryBtn} onClick={() => setAdding(true)}>Record session</button>}>
       <DataState query={list.query} empty="No counseling sessions yet.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Date</th><th className={th}>Member</th><th className={th}>Type</th><th className={th}>Outcome</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

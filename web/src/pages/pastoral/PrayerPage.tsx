@@ -30,7 +30,7 @@ const MyRequests = () => {
   return (
     <div className="space-y-4">
       <form onSubmit={onSubmit} className={`${card} space-y-3`}>
-        <h2 className="text-lg font-semibold">Ask for prayer</h2>
+        <h2 className="text-lg font-medium">Ask for prayer</h2>
         <ApiError error={submit.error} />
         <FormTextarea label="Your request" value={draft.request} onChange={(e) => setDraft({ ...draft, request: e.target.value })} error={error} />
         <FormSelect label="Who can see this" value={draft.visibility} options={selectOptions(PRAYER_VISIBILITY)} onChange={(e) => setDraft({ ...draft, visibility: e.target.value })} />

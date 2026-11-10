@@ -65,7 +65,7 @@ const StepList = ({ kind }: { kind: Exclude<Kind, 'funeral'> }) => {
     <div className="space-y-4">
       <div><button type="button" className={primaryBtn} onClick={() => setAdding(true)}>New {kind} record</button></div>
       <DataState query={list.query} empty={`No ${kind} records.`}>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>{kind === 'marriage' ? 'Couple' : 'Member'}</th><th className={th}>Status</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">
@@ -126,7 +126,7 @@ const FuneralList = () => {
     <div className="space-y-4">
       <div><button type="button" className={primaryBtn} onClick={() => setAdding(true)}>New funeral record</button></div>
       <DataState query={list.query} empty="No funeral records.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Deceased</th><th className={th}>Died</th><th className={th}>Funeral</th><th className={th}>Family told</th><th className={th} /></tr></thead>
             <tbody className="divide-y divide-gray-100">

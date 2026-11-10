@@ -49,7 +49,7 @@ export const UserDetail = ({ user, onClose }: { user: AdminUser; onClose: () => 
     <div className="space-y-4 text-sm">
       <p className="text-gray-600">{user.email}{user.membershipNumber ? ` · ${user.membershipNumber}` : ''}</p>
       <div>
-        <h3 className="mb-1 font-semibold text-gray-900">Roles</h3>
+        <h3 className="mb-1 font-medium text-gray-900">Roles</h3>
         {user.roles.length === 0 ? <p className="text-gray-500">No roles.</p> : (
           <ul className="space-y-1">
             {user.roles.map((r) => (
@@ -103,7 +103,7 @@ export const UsersPage = () => {
         <AdminHeader title="Users" subtitle="Manage sign-in accounts, their roles, and whether they can sign in." />
         {!allowed && <NoAccess permission={PERMISSION} />}
         {allowed && (
-          <div className="flex flex-wrap gap-3 rounded-2xl border border-gray-200/80 bg-white p-4 shadow-soft">
+          <div className="flex flex-wrap gap-3 rounded-lg border border-gray-200/80 bg-white p-4 shadow-card">
             <FormField className="flex-1" label="Search" value={q} placeholder="Name or email" onChange={(e) => setQ(e.target.value)} />
             <FormSelect label="Status" value={status} onChange={(e) => setStatus(e.target.value)} options={[{ value: '', label: 'All' }, { value: 'ACTIVE', label: 'Active' }, { value: 'DISABLED', label: 'Switched off' }]} />
           </div>
@@ -114,10 +114,10 @@ export const UsersPage = () => {
         {users.data && users.data.items.length > 0 && (
           <ul className="space-y-2">
             {users.data.items.map((u) => (
-              <li key={u.id} className={`${card} transition-shadow hover:shadow-lift`}>
+              <li key={u.id} className={`${card} transition-shadow hover:shadow-lg`}>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-gray-900">{u.name ?? u.email}{u.disabled && <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Switched off</span>}</p>
+                    <p className="font-medium text-gray-900">{u.name ?? u.email}{u.disabled && <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs text-red-700">Switched off</span>}</p>
                     <p className="text-sm text-gray-600">{u.email} · {u.roles.map((r) => r.role).join(', ') || 'no roles'}</p>
                   </div>
                   <button type="button" className={secondaryBtn} onClick={() => setSelectedId(u.id)} aria-label={`Manage ${u.name ?? u.email}`}>Manage</button>

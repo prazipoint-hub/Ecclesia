@@ -12,7 +12,7 @@ import { BackLink, Badge, FormError, Header } from './peopleShared';
 
 const Row = ({ label, value }: { label: string; value: string | null | undefined }) => (
   <div>
-    <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</dt>
+    <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</dt>
     <dd className="mt-1 break-words text-gray-900">{value || '—'}</dd>
   </div>
 );
@@ -68,7 +68,7 @@ export const MemberDetailPage = () => {
                 <Badge value={m.membershipStatus} />
                 {archived && <Badge value="INACTIVE" label={`Archived ${formatDate(m.archivedAt)}`} />}
               </div>
-              <dl className="grid gap-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:grid-cols-2">
+              <dl className="grid gap-5 rounded-md border border-gray-200 bg-white p-6 shadow-sm sm:grid-cols-2">
                 <Row label="Email" value={m.email} />
                 <Row label="Phone" value={m.phone} />
                 <Row label="Gender" value={titleCase(m.gender)} />

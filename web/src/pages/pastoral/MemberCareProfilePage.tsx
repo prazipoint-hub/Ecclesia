@@ -10,7 +10,7 @@ const Section = ({ title, items, render }: { title: string; items: unknown[] | n
   if (items === null || items === undefined) return null; // null means the viewer has no access to this section
   return (
     <section className={card}>
-      <h2 className="mb-3 text-lg font-semibold">{title}</h2>
+      <h2 className="mb-3 text-lg font-medium">{title}</h2>
       {items.length === 0 ? <EmptyBlock message="Nothing recorded." /> : <ul className="divide-y divide-gray-100 text-sm">{items.map((item, i) => <li key={i} className="py-2">{render(item as never)}</li>)}</ul>}
     </section>
   );

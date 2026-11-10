@@ -47,7 +47,7 @@ export const VisitsPage = () => {
     <Shell title="Pastoral visits" subtitle="Home, hospital and other pastoral visits." permission="pastoral:visit:view"
       action={has('pastoral:visit:create') && <button type="button" className={primaryBtn} onClick={() => setAdding(true)}>Record visit</button>}>
       <DataState query={list.query} empty="No visits recorded yet.">
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-md border border-gray-200 bg-white">
           <table className="min-w-full divide-y divide-gray-200">
             <thead><tr><th className={th}>Date</th><th className={th}>Member</th><th className={th}>Type</th><th className={th}>Outcome</th><th className={th}>Follow-up</th></tr></thead>
             <tbody className="divide-y divide-gray-100">

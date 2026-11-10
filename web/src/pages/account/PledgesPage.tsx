@@ -138,13 +138,13 @@ export const PledgesPage = () => {
                   <li key={pledge.id} className={`${card} space-y-3`}>
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <h2 className="font-semibold text-gray-900">{pledge.name}</h2>
+                        <h2 className="font-medium text-gray-900">{pledge.name}</h2>
                         <p className="text-sm text-gray-500">
                           {pledge.fundName} · since {formatDate(pledge.startDate)}
                           {pledge.endDate && ` · by ${formatDate(pledge.endDate)}`}
                         </p>
                       </div>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[pledge.status]}`}>{titleCase(pledge.status)}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[pledge.status]}`}>{titleCase(pledge.status)}</span>
                     </div>
                     <PledgeProgress pledge={pledge} />
                     {pledge.status === 'ACTIVE' && (

@@ -140,7 +140,7 @@ export const TemplatesPage = () => {
               <li key={template.id} className={card}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="font-semibold text-gray-900">{template.name}</h2>
+                    <h2 className="font-medium text-gray-900">{template.name}</h2>
                     <p className="text-sm text-gray-600">{template.subject}</p>
                     <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm text-gray-500">{template.body}</p>
                   </div>

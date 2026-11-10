@@ -62,7 +62,7 @@ export const AccessAssignmentsPage = () => {
         {grants.error ? <ErrorNotice message={getApiErrorMessage(grants.error)} /> : (
           <>
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">Give access</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">Give access</h2>
               {assign.error && <ErrorNotice message={getApiErrorMessage(assign.error)} />}
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
@@ -84,7 +84,7 @@ export const AccessAssignmentsPage = () => {
             </section>
 
             <section className={card}>
-              <h2 className="mb-3 text-lg font-semibold text-gray-900">Who has access here</h2>
+              <h2 className="mb-3 text-lg font-medium text-gray-900">Who has access here</h2>
               {revoke.error && <ErrorNotice message={getApiErrorMessage(revoke.error)} />}
               {grants.isLoading ? <LoadingBlock /> : !grants.data?.length ? <EmptyBlock message="Nobody holds a role directly at this unit." /> : (
                 <div className="overflow-x-auto"><table className="w-full"><caption className="sr-only">Role grants</caption>

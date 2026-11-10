@@ -183,7 +183,7 @@ export const AccountsPage = () => {
         ) : (
           grouped.map((group) => (
             <section key={group.type} className={card}>
-              <h2 className="mb-2 text-lg font-semibold text-gray-900">{ACCOUNT_TYPE_LABELS[group.type]}</h2>
+              <h2 className="mb-2 text-lg font-medium text-gray-900">{ACCOUNT_TYPE_LABELS[group.type]}</h2>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead><tr><th className={th}>Code</th><th className={th}>Name</th><th className={`${th} text-right`}>Balance</th><th className={th}>Status</th><th className={th} /></tr></thead>
                 <tbody className="divide-y divide-gray-100">

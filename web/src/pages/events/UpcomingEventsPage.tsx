@@ -24,7 +24,7 @@ export const UpcomingEventsPage = () => {
               <article key={e.id} className={`${card} overflow-hidden !p-0`}>
                 <div className="h-1.5 bg-gradient-to-r from-primary-600 via-primary-400 to-accent-500" />
                 <div className="p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-3"><div><p className="page-eyebrow">{label(e.eventType)} event</p><h2 className="mt-2 text-lg font-semibold text-gray-950">{e.title}</h2></div><span className="rounded-xl bg-primary-50 p-2.5 text-primary-700"><CalendarDays className="h-5 w-5" /></span></div>
+                <div className="flex items-start justify-between gap-3"><div><p className="page-eyebrow">{label(e.eventType)} event</p><h2 className="mt-2 text-lg font-medium text-gray-950">{e.title}</h2></div><span className="rounded-md bg-primary-50 p-2.5 text-primary-700"><CalendarDays className="h-5 w-5" /></span></div>
                 <p className="mt-3 flex items-center gap-2 text-sm text-gray-600"><CalendarDays className="h-4 w-4 text-gray-400" />{dateTime(e.startDateTime)}</p>
                 {e.location && <p className="mt-2 flex items-center gap-2 text-sm text-gray-600"><MapPin className="h-4 w-4 text-gray-400" />{e.location}</p>}
                 {e.description && <p className="mt-2 text-sm text-gray-700">{e.description}</p>}

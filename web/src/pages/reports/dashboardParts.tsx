@@ -5,16 +5,16 @@ import type { AttendanceBlock, MembersBlock, MonthPoint } from '@/types/reports'
 import { label } from './reportsShared';
 
 export const Tile = ({ name, value, hint }: { name: string; value: ReactNode; hint?: string }) => (
-  <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+  <div className="rounded-md border border-gray-200 bg-white p-4 shadow-sm">
     <p className="text-sm text-gray-500">{name}</p>
-    <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+    <p className="mt-1 text-2xl font-medium text-gray-900">{value}</p>
     {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
   </div>
 );
 
 export const Block = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className={`${card} space-y-3`}>
-    <h2 className="font-semibold text-gray-900">{title}</h2>
+    <h2 className="font-medium text-gray-900">{title}</h2>
     {children}
   </section>
 );

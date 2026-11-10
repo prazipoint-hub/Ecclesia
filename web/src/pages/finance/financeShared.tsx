@@ -28,14 +28,14 @@ const LINKS: Array<{ to: string; label: string }> = [
 ];
 
 export const FinanceNav = () => (
-  <nav aria-label="Finance sections" className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-sm print:hidden">
+  <nav aria-label="Finance sections" className="flex gap-1 overflow-x-auto rounded-md border border-gray-200/80 bg-white p-1.5 shadow-sm print:hidden">
     {LINKS.map((link) => (
       <NavLink
         key={link.to}
         to={link.to}
         end={link.to === '/finance'}
         className={({ isActive }) =>
-          `min-h-9 shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${isActive ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`
+          `min-h-9 shrink-0 rounded px-2.5 py-1.5 text-[13px] font-normal transition-colors ${isActive ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`
         }
       >
         {link.label}
@@ -58,10 +58,10 @@ export const statusBadge = (status: string): string => {
     CLOSED: 'bg-gray-200 text-gray-700',
     APPROVED: 'bg-green-100 text-green-700',
   };
-  return `inline-block rounded-full border border-black/[0.04] px-2.5 py-1 text-xs font-semibold ${tone[status] ?? 'bg-gray-100 text-gray-700'}`;
+  return `inline-block rounded-full border border-black/[0.04] px-2.5 py-1 text-xs font-medium ${tone[status] ?? 'bg-gray-100 text-gray-700'}`;
 };
 
-export const th = 'bg-gray-50/80 px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500';
+export const th = 'bg-gray-50/80 px-4 py-3.5 text-left text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500';
 export const td = 'px-4 py-3.5 text-sm text-gray-700';
 export const num = 'px-4 py-3.5 text-right text-sm font-medium tabular-nums text-gray-800';
 

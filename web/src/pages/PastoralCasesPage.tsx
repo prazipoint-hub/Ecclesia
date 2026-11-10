@@ -182,7 +182,7 @@ export const PastoralCasesPage = () => {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="page-eyebrow">Care ministry</p>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-950 sm:text-4xl">Pastoral care</h1>
+            <h1 className="mt-2 text-2xl font-medium text-gray-950 sm:text-2xl">Pastoral care</h1>
             <p className="mt-2 max-w-2xl text-gray-600">
               A confidential queue for follow-up, support, and accountable care.
             </p>
@@ -208,7 +208,7 @@ export const PastoralCasesPage = () => {
         {!hasViewPermission ? (
           <div
             role="alert"
-            className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm"
+            className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-amber-900 shadow-sm"
           >
             Your role does not include access to pastoral cases. Ask a church administrator to
             assign the required pastoral-care permission.
@@ -223,13 +223,13 @@ export const PastoralCasesPage = () => {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+              <div className="rounded-lg border border-gray-200/80 bg-white p-5 shadow-card">
                 <p className="text-sm font-medium text-gray-500">Open or active</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{activeCases}</p>
+                <p className="mt-2 text-2xl font-medium text-gray-900">{activeCases}</p>
               </div>
-              <div className="rounded-2xl border border-red-200/80 bg-white p-5 shadow-soft">
+              <div className="rounded-lg border border-red-200/80 bg-white p-5 shadow-card">
                 <p className="text-sm font-medium text-gray-500">Urgent</p>
-                <p className="mt-2 flex items-center gap-2 text-3xl font-semibold text-red-700">
+                <p className="mt-2 flex items-center gap-2 text-2xl font-medium text-red-700">
                   <AlertTriangle className="h-6 w-6" />
                   {
                     cases.filter(
@@ -239,18 +239,18 @@ export const PastoralCasesPage = () => {
                   }
                 </p>
               </div>
-              <div className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-soft">
+              <div className="rounded-lg border border-gray-200/80 bg-white p-5 shadow-card">
                 <p className="text-sm font-medium text-gray-500">Recorded cases</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{total}</p>
+                <p className="mt-2 text-2xl font-medium text-gray-900">{total}</p>
               </div>
             </div>
-            <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-soft">
+            <section className="overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-card">
               <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
-                <span className="rounded-xl bg-primary-50 p-2.5 text-primary-700">
+                <span className="rounded-md bg-primary-50 p-2.5 text-primary-700">
                   <HeartHandshake className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="font-semibold text-gray-900">Care queue</h2>
+                  <h2 className="font-medium text-gray-900">Care queue</h2>
                   <p className="text-sm text-gray-500">
                     Only authorised pastoral workers can access these records.
                   </p>
@@ -280,7 +280,7 @@ export const PastoralCasesPage = () => {
                       {cases.map((pastoralCase) => (
                         <tr key={pastoralCase.id}>
                           <td className="px-5 py-4">
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-medium text-gray-900">
                               {pastoralCase.memberName ?? 'Member record'}
                             </p>
                             <p className="mt-1 max-w-sm truncate text-sm text-gray-500">
@@ -292,7 +292,7 @@ export const PastoralCasesPage = () => {
                           </td>
                           <td className="px-5 py-4">
                             <span
-                              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${priorityStyle[pastoralCase.priority]}`}
+                              className={`rounded-full px-2.5 py-1 text-xs font-medium ${priorityStyle[pastoralCase.priority]}`}
                             >
                               {label(pastoralCase.priority)}
                             </span>
@@ -342,7 +342,7 @@ export const PastoralCasesPage = () => {
         }
       >
         <form id="open-pastoral-case-form" onSubmit={createCase} className="space-y-4">
-          <p className="rounded-xl border border-primary-100 bg-primary-50 p-3 text-sm text-primary-900">
+          <p className="rounded-md border border-primary-100 bg-primary-50 p-3 text-sm text-primary-900">
             Keep the record factual, concise, and limited to information needed for care.
           </p>
           <FormSelect

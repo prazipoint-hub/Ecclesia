@@ -47,14 +47,14 @@ export const CheckInPage = () => {
         <div className="space-y-6">
           {has('event:qr:generate') && (
             <section className={`${card} text-center`}>
-              <h2 className="mb-2 text-lg font-semibold text-gray-900">Door code</h2>
+              <h2 className="mb-2 text-lg font-medium text-gray-900">Door code</h2>
               <ApiError error={qr.error} />
               {qr.data && <img src={qr.data.dataUrl} alt="Event check-in QR code" className="mx-auto h-64 w-64" />}
               <p className="mt-2 text-xs text-gray-500">Members scan this to check themselves in. It stops working when check-in closes{qr.data ? ` (${dateTime(qr.data.expiresAt)})` : ''}.</p>
             </section>
           )}
           <section className={`${card} space-y-3`}>
-            <h2 className="text-lg font-semibold text-gray-900">Check in a member</h2>
+            <h2 className="text-lg font-medium text-gray-900">Check in a member</h2>
             <form onSubmit={submitManual} className="space-y-3">
               <FormField label="Member ID" value={memberId} onChange={(e) => setMemberId(e.target.value)} />
               <FormField label="Membership number" value={membershipNumber} onChange={(e) => setMembershipNumber(e.target.value)} error={formError} />
@@ -64,7 +64,7 @@ export const CheckInPage = () => {
             <ApiError error={manual.error} />
           </section>
           <section className={`${card} space-y-3`}>
-            <h2 className="text-lg font-semibold text-gray-900">Scan a member badge</h2>
+            <h2 className="text-lg font-medium text-gray-900">Scan a member badge</h2>
             <CameraScanner onToken={(t) => scan.mutate(t)} />
             <FormTextarea label="Badge code" rows={2} value={badge} onChange={(e) => setBadge(e.target.value)} />
             <button type="button" className={primaryBtn} disabled={scan.isPending || !badge.trim()} onClick={() => scan.mutate(badge)}>Check in</button>
@@ -72,13 +72,13 @@ export const CheckInPage = () => {
           </section>
           {last && (
             <div role="status" className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
-              <p className="font-semibold">{last.alreadyCheckedIn ? 'Already checked in' : 'Checked in'}: {personName(last.member)}</p>
+              <p className="font-medium">{last.alreadyCheckedIn ? 'Already checked in' : 'Checked in'}: {personName(last.member)}</p>
               <p>{formatDate(last.checkedInAt)} · {last.method}</p>
             </div>
           )}
         </div>
         <section className={card}>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">Checked in{list.query.data ? ` (${list.query.data.total})` : ''}</h2>
+          <h2 className="mb-3 text-lg font-medium text-gray-900">Checked in{list.query.data ? ` (${list.query.data.total})` : ''}</h2>
           <DataState query={list.query} empty="Nobody has checked in yet.">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">

@@ -152,7 +152,7 @@ export const MeetingDetailPage = () => {
               {locked && <SuccessNotice message="These minutes are the permanent record and can no longer be edited." />}
               <FormError error={transition.error} />
 
-              <section className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm" aria-label="Meeting details">
+              <section className="space-y-4 rounded-md border border-gray-200 bg-white p-6 shadow-sm" aria-label="Meeting details">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <FormField label="Title" value={form.title} disabled={!editable} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                   <FormField label="Date and time" type="datetime-local" value={form.scheduledAt} disabled={!editable} onChange={(e) => setForm({ ...form, scheduledAt: e.target.value })} />
@@ -174,7 +174,7 @@ export const MeetingDetailPage = () => {
 
               <section className="space-y-3" aria-label="Decisions">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-900">Decisions</h2>
+                  <h2 className="text-lg font-medium text-gray-900">Decisions</h2>
                   {editable && <button type="button" className={secondaryBtn} onClick={() => setDecisionModal({ open: true, editing: null })}>Record a decision</button>}
                 </div>
                 {m.decisions.length === 0 ? (

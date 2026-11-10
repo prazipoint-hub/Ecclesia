@@ -137,7 +137,7 @@ export const ReportBuilderPage = () => {
       {outcome?.kind === 'file' && <p role="status" className="text-sm text-green-700">Downloaded {outcome.filename}.</p>}
       {outcome?.kind === 'json' && (
         <section className={`${card} space-y-2`}>
-          <h2 className="font-semibold text-gray-900">{outcome.filename}</h2>
+          <h2 className="font-medium text-gray-900">{outcome.filename}</h2>
           <JsonPreview data={outcome.data} />
         </section>
       )}
