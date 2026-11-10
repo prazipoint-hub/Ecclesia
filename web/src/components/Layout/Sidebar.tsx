@@ -17,6 +17,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const overview = [
     item(t('nav.myAccount'), '/my-account', UserCircle),
     item(t('nav.give'), '/give', Heart),
+    item('Where I hold a role', '/my-account/contexts', UserCircle),
     item(t('nav.dashboard'), `/${scopePrefix}`, Home),
   ];
   const people = [
@@ -25,6 +26,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     item(t('nav.members'), '/members', Users),
     ...(permissions.includes('member:view') ? [item(t('nav.directory'), '/members/search', Search)] : []),
     ...(permissions.includes('member:import') ? [item(t('nav.importMembers'), '/members/import', Upload)] : []),
+    ...(permissions.includes('member:import') ? [item('Import (checked first)', '/members/import-jobs', Upload)] : []),
+    ...(['leadership:appointment:view', 'leadership:appointment:manage', 'leadership:appointment:approve', 'leadership:import'].some((p) => permissions.includes(p)) ? [item('Leadership register', '/leadership/register', UsersRound)] : []),
+    ...(['circuit:view', 'circuit:register', 'circuit:onboard'].some((p) => permissions.includes(p)) ? [item('Circuits and onboarding', '/circuits', Building2)] : []),
     ...(permissions.includes('visitor:view') ? [item(t('nav.visitors'), '/visitors', UserPlus)] : []),
     ...(permissions.includes('leadership:term:manage') ? [item(t('nav.leadership'), '/leadership', UsersRound)] : []),
   ];
@@ -55,6 +59,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ...(permissions.includes('notification:broadcast:create') ? [item(t('nav.broadcasts'), '/admin/broadcasts', Megaphone)] : []),
     ...(permissions.includes('notification:template:manage') ? [item(t('nav.templates'), '/admin/templates', Mail)] : []),
     ...(permissions.includes('admin:role:manage') ? [item(t('nav.roles'), '/admin/roles', Shield)] : []),
+    ...(permissions.includes('access:assign') || permissions.includes('access:assign:global') ? [item('Access by unit', '/admin/access', Shield)] : []),
     ...(permissions.includes('admin:user:manage') ? [item(t('nav.users'), '/admin/users', UserCog)] : []),
     ...(permissions.includes('admin:settings:manage') ? [item(t('nav.systemSettings'), '/admin/settings', SlidersHorizontal)] : []),
     ...(permissions.includes('admin:audit:view') ? [item(t('nav.auditLog'), '/admin/audit-log', ScrollText)] : []),

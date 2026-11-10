@@ -89,6 +89,11 @@ import { VisitorsPage } from '@/pages/visitors/VisitorsPage';
 import { VisitorDetailPage } from '@/pages/visitors/VisitorDetailPage';
 import { CommitteeMeetingsPage } from '@/pages/committees/CommitteeMeetingsPage';
 import { MeetingDetailPage } from '@/pages/committees/MeetingDetailPage';
+import { CircuitOnboardingPage } from '@/pages/district/CircuitOnboardingPage';
+import { AccessAssignmentsPage } from '@/pages/admin/AccessAssignmentsPage';
+import { ContextsPage } from '@/pages/account/ContextsPage';
+import { MemberImportJobsPage } from '@/pages/members/MemberImportJobsPage';
+import { LeadershipRegisterPage } from '@/pages/leadership/LeadershipRegisterPage';
 import { LeadershipPage } from '@/pages/leadership/LeadershipPage';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -659,6 +664,46 @@ function App() {
           element={
             <ProtectedRoute>
               <BankReconciliationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/circuits"
+          element={
+            <ProtectedRoute>
+              <CircuitOnboardingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/access"
+          element={
+            <ProtectedRoute>
+              <AccessAssignmentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-account/contexts"
+          element={
+            <ProtectedRoute>
+              <ContextsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/members/import-jobs"
+          element={
+            <ProtectedRoute>
+              <MemberImportJobsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leadership/register"
+          element={
+            <ProtectedRoute>
+              <LeadershipRegisterPage />
             </ProtectedRoute>
           }
         />
