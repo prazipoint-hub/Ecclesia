@@ -42,3 +42,6 @@ LeadershipAssignment), `src/features/auth/permissions.ts`.
 4. LEAD-1/2 catalogue + importer.
 5. POS session state machine + review.
 
+
+## Status after final pass
+Closed on this branch: scoped access screens, onboarding UI, imports UI, hierarchy reports, bank reconciliation (manual), expenditure approval controls, profile extras/guardians/photo, drill-down, audit evidence. Still open: multi-currency fund balances, automated bank feeds and period locking after reconciliation, production-data migration rehearsal.

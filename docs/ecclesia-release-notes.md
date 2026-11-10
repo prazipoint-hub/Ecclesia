@@ -61,3 +61,7 @@ Note: 0015_scoped_role_assignments was edited before first deployment (narrower 
 - New permission `report:view:hierarchy` (seed) for conference/district/circuit consolidated reports. Not auto-assigned to existing roles in production; grant it deliberately.
 
 - Migration 0025 (additive): `BankReconciliation`, `BankStatementLine`. New permissions `finance:reconcile:manage` and `finance:reconcile:complete` (seed; not auto-assigned to existing roles).
+
+- Migration 0026 (additive): `ExpenditureApproval`. New permission `finance:policy:manage`. Default policy changes nothing until set.
+- Migration 0027 (additive): `MemberPhoto`, `GuardianLink`, `ProfileFieldDefinition`, `ProfileFieldValue`. New use of `member:profile:configure`. Not auto-assigned to existing roles; grant deliberately.
+- Run `prisma migrate deploy` only after a backup; migrations were verified on a scratch MySQL 8.0 only.

@@ -57,12 +57,26 @@
 | Transaction reference | Now stored on the receipt (`reference`), not unique | Provider semantics unknown; guide §11.1 says enforce only where real |
 | Receipt currency | Must be a 3-letter code, upper-cased | Guide §11.1 |
 
-## Unresolved business decisions
+## Business decisions settled with defaults (reversible; change if the church disagrees)
 
-- Meaning of "bi-annually" for section audits (twice a year vs every two years). No audit scheduling built.
-- Whether accounting posts at receipt time or handover approval (guide default: at receipt, once).
-- Whether new cash sessions may open while earlier ones await review.
-- Approval limits, budget-overspend behaviour, non-member giving policy.
+- **Posting time:** the ledger posts at receipt time, once. Cashier submission and reviewer approval of a cash session record custody only and post nothing. Deposits are Dr Bank / Cr Cash and are never income.
+- **"Bi-annual" section audits:** no fixed schedule is built. Audit evidence is produced on demand for any date range (`SECTION_AUDIT_EVIDENCE` report), so twice-a-year or every-two-years both work without code change.
+- **New cash sessions while earlier ones await review:** allowed. Review-required sessions are an opt-in church setting; recommendation is to enable it in production once a second reviewer exists.
+- **Approval limits:** optional two-approver threshold plus "payer cannot be an approver" in setting `finance.expenditure.policy` (migration 0026). Default is off (threshold null, payer segregation on). Nobody can approve or pay their own request regardless of settings.
+- **Budget overspend and non-member giving:** not blocked; existing behaviour kept. No policy was invented.
+- **Import data retention:** imported rows follow the existing retention tooling; no new retention rule added.
+
+## Hierarchy reports live on their own page
+They need a unit picker and scoped authorisation (`report:view:hierarchy` via `allowedAt`), so they are not in the saved-report catalog. Totals only, one row per church, currencies never added together, capped at 500 churches. The INCOME kind counts church receipts only (not circuit/district/section receipts).
+
+## Dependants and spouses are admin-mediated
+Members cannot create family links themselves. A guardian link needs `family:update`; the minor must be under 18 and the guardian an adult with a recorded date of birth. Access ends automatically at 18. Lookups return a uniform 404. `GuardianLink` has no foreign keys to Member (known limit).
+
+## Registration claims are by email only
+Recycled phone numbers are not a claim vector. If more than one unclaimed profile has the email, registration refuses (same error as not found). Every claim is audited (`MEMBER_PROFILE_CLAIMED`).
+
+## Bank reconciliation scope
+Manual statement text/CSV paste, exact-amount one-to-one matching, auto-match only for a unique pair within 5 days. Completion needs `finance:reconcile:complete`, a different user from the creator, and difference 0.00; it freezes a summary. It does not create fee/interest journals and does not lock the ledger period.
 
 ## Deposits are movements, not income
 A cash deposit debits 1100 Bank and credits 1000 Cash. Income was already recognised per receipt, so a deposit never touches revenue. Recorder and verifier must differ; `bankReference` is unique per church to stop the same slip being entered twice. Open: whether deposits should be tied to specific cash sessions (currently matched only in aggregate per currency) and whether bank-statement import is wanted.
